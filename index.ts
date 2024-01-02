@@ -300,8 +300,24 @@ const $subtract = at('$subtract');
 const $subtractSafe = safeNumberArgs($subtract);
 const $pow = at('$pow');
 const $round = at('$round');
-// TODO
-// const $roundStandard = round;
+// based on mongo-round
+const $roundStandard = (valueExpression: Expression, decimals: number) => {
+	const multiplier = Math.pow(10, decimals || 0);
+
+	if (multiplier === 1) { // zero decimals
+		return $let({
+      val: $add(valueExpression, $if($gte(valueExpression, 0)).then(0.5).else(-0.5)),
+    }).in($subtract('$$val', $mod('$$val', 1)));
+	}
+
+	return $let({
+    val: $add(
+      $multiply(valueExpression, multiplier),
+      $if($gte(valueExpression, 0)).then(0.5).else(-0.5),
+    ),
+  }).in($divide($subtract('$$val', $mod('$$val', 1)), multiplier));
+};
+
 const $setDifference = at('$setDifference');
 const $setIsSubset = at('$setIsSubset');
 const $split = at('$split');
@@ -720,8 +736,8 @@ export = {
   replaceRoot: $replaceRoot,
   $round,
   round: $round,
-  // $roundStandard,
-  // roundStandard: $roundStandard,
+  $roundStandard,
+  roundStandard: $roundStandard,
   $sampleRate,
   sampleRate: $sampleRate,
   $set,
