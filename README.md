@@ -3,66 +3,45 @@
 _Aggregation Syntax for Javascript_; Use Javascript syntax—instead of JSON—to
 compose MongoDB aggregations.
 
+[Browse Reference Documentation &raquo;](./REFERENCE.md)
+
 ## Installation
 
-_Add `mongo-js-syntax` to your MongoDB project:_
+_Add `mongodb-pipelinejs` to your MongoDB project:_
 
-With Yarn: `yarn add mongo-js-syntax`
+With Yarn: `yarn add mongodb-pipelinejs`
 
-With NPM: `npm install mongo-js-syntax`
+With NPM: `npm install mongodb-pipelinejs`
 
 ## Usage
 
+_Example needs refinement..._
+
 ```js
-import { pipeline, $ } from 'mongo-js-syntax';
+const $ = require('mongodb-pipelinejs');
 
-
-mongoDB.collection('transactions').aggregate(pipline()
-  .match({
+mongoDB.collection('transactions').aggregate([
+  $.match({
     userId: MY_USER_ID,
     amount: $.gte(100),
     type: $.in(['sale', 'transfer']),
     status: $.neq('new'),
-  })
-  .redact($.switch('$$PRUNE')
-    .case($.eq(
-  })
-  .addFields({
+  }),
+  $.redact($.switch('$$PRUNE')
+    .case($.eq('$type', 'sale')),
+  }),
+  $.addFields({
     payments: $.filter('$payments', 'payment', $.in('$$payment.status', ['complete', 'approved'])),
-  })
-  .unwind('$payments')
-  .group({
+  }),
+  $.unwind('$payments'),
+  $.group({
     _id: '$transactionId',
     payments: $.push('$payments.paymentId'),
     amountDue: $.last('$amount'),
     amountPaid: $.sum('$payments.amount'),
   })
-  .unwind('$payments', true)
-);
+  $.unwind('$payments', true)
+]).toArray();
 
 ```
 
-Which would otherwise be written something like this (JSON):
-
-```js
-mongoDB.collection('transactions').aggregate([{
-  $match: {
-    userId: MY_USER_ID,
-    amount: { $gte: 100 },
-    type: { $in: ['sale', 'transfer'] },
-    status: { $neq: 'new' },
-  },
-  $redact: {
-    $cond: {
-      if: { $not: '$authorized' },
-      then: '$$PRUNE',
-      else: '$$KEEP',
-    },
-  },
-  $unwind: { path: '$payments', preserveNullAndEmptyArrays: true },
-}]);
-```
-
-
-* [See All Examples &raquo;](./EXAMPLES.md)
-* [Browse Reference Documentation &raquo;](./REFERENCE.md)
