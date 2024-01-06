@@ -35,6 +35,14 @@ describe('aggregation', () => {
           };
           expect($.lookup('colName', 'asName', 'lKey', 'fKey')).toEqual(expected);
         });
+        it('prevents redundant calls to methods', () => {
+          expect(() => $.lookup('f', 'o').from('a').from('b')).toThrow(/redundant/i);
+          expect(() => $.lookup('f', 'o').as('a').as('b')).toThrow(/redundant/i);
+          expect(() => $.lookup('f', 'o').localField('a').localField('b')).toThrow(/redundant/i);
+          expect(() => $.lookup('f', 'o').foreignField('a').foreignField('b')).toThrow(/redundant/i);
+          expect(() => $.lookup('f', 'o').let({ v: 1 }).let({ v: 2 })).toThrow(/redundant/i);
+          expect(() => $.lookup('f', 'o').pipeline([{ p: 1 }]).pipeline({ p: 2 })).toThrow(/redundant/i);
+        });
         it('resolves collection name from collection object', () => {
           expect($.lookup({ s: { namespace: { collection: 'colName' } } }, 'asName')).toEqual({ $lookup: { from: 'colName', as: 'asName' } });
         });
@@ -77,6 +85,12 @@ describe('aggregation', () => {
           .whenNotMatched($.MergeActionWhenNotMatched.Insert);
         expect(actual).toEqual(expected);
       });
+      it('prevents redundant calls to methods', () => {
+        expect(() => $.merge('colName').on(2).on(3)).toThrow();
+        expect(() => $.merge('colName').let(2).let(3)).toThrow();
+        expect(() => $.merge('colName').whenMatched($.MergeActionWhenMatched.Fail).whenMatched($.MergeActionWhenMatched.Fail)).toThrow();
+        expect(() => $.merge('colName').whenNotMatched($.MergeActionWhenNotMatched.Fail).whenNotMatched($.MergeActionWhenNotMatched.Fail)).toThrow();
+      });
     });
 
     describe('$set', () => { // alias of $addFields
@@ -111,6 +125,13 @@ describe('aggregation', () => {
           .toEqual({ $unwind: { path: '$foo', preserveNullAndEmptyArrays: true, includeArrayIndex: 'idx' } });
         expect($.unwind('$foo', false).includeArrayIndex('idx'))
           .toEqual({ $unwind: { path: '$foo', preserveNullAndEmptyArrays: false, includeArrayIndex: 'idx' } });
+      });
+      it('prevents redundant calls to methods', () => {
+        expect(() => $.unwind('p').preserveNullAndEmptyArrays(true).preserveNullAndEmptyArrays(false)).toThrow();
+        expect(() => $.unwind('p', true).preserveNullAndEmptyArrays(false)).toThrow();
+        expect(() => $.unwind('p', false).preserveNullAndEmptyArrays(true)).toThrow();
+        // This is somewhat arbitrary
+        expect(() => $.unwind('p').includeArrayIndex('x').includeArrayIndex('y')).toThrow();
       });
     });
   });
@@ -151,10 +172,21 @@ describe('aggregation', () => {
         expect($.$cond).toBeDefined();
         expect($.cond).toStrictEqual($.$cond);
       });
-      it('returns expected result', () => {
-        const expected = { $cond: { if: 1, then: 2, else: 3 } };
-        expect($.cond(1).then(2).else(3)).toEqual(expected);
-        expect($.cond(1, 2, 3)).toEqual(expected);
+      describe('static notation', () => {
+        it('returns expected result', () => {
+          const expected = { $cond: { if: 1, then: 2, else: 3 } };
+          expect($.cond(1, 2, 3)).toEqual(expected);
+        });
+      });
+      describe('object notation', () => {
+        it('returns expected result', () => {
+          const expected = { $cond: { if: 1, then: 2, else: 3 } };
+          expect($.cond(1).then(2).else(3)).toEqual(expected);
+        });
+        it('prevents redundant calls to methods', () => {
+          expect(() => $.cond(1).then(2).then(3)).toThrow(/redundant/i);
+          expect(() => $.cond(1).else(2).else(3)).toThrow(/redundant/i);
+        });
       });
     });
 
@@ -164,15 +196,27 @@ describe('aggregation', () => {
         expect($.$redact).toBeDefined();
         expect($.redact).toStrictEqual($.$redact);
       });
-      it('returns expected result', () => {
-        expect($.redact(1).then('$$PRUNE').else('$$KEEP')).toEqual({
-          $redact: {
-            $cond: {
-              if: 1,
-              then: '$$PRUNE',
-              else: '$$KEEP',
-            },
+      const expected = {
+        $redact: {
+          $cond: {
+            if: 1,
+            then: '$$PRUNE',
+            else: '$$KEEP',
           },
+        },
+      };
+      describe('static notation', () => {
+        it('returns expected result', () => {
+          expect($.redact(1, '$$PRUNE', '$$KEEP')).toEqual(expected);
+        });
+      });
+      describe('object notation', () => {
+        it('returns expected result', () => {
+          expect($.redact(1).then('$$PRUNE').else('$$KEEP')).toEqual(expected);
+        });
+        it('prevents redundant calls to methods', () => {
+          expect(() => $.redact(1).then(2).then(3)).toThrow(/redundant/i);
+          expect(() => $.redact(1).else(2).else(3)).toThrow(/redundant/i);
         });
       });
     });
@@ -187,6 +231,10 @@ describe('aggregation', () => {
         const expected = { $let: { vars: { foo: 'bar' }, in: { y: 'z' } } };
         expect($.let({ foo: 'bar' }, { y: 'z' })).toEqual(expected);
         expect($.let({ foo: 'bar' }).in({ y: 'z' })).toEqual(expected);
+      });
+      it('prevents redundant calls to methods', () => {
+        expect(() => $.let({ x: 1 }).vars({ y: 2 })).toThrow();
+        expect(() => $.let().in({ x: 1 }).in({ y: 2 })).toThrow();
       });
     });
 
@@ -210,6 +258,9 @@ describe('aggregation', () => {
         expect($.switch().branch(1, 1).branch(2, 2).default(0)).toEqual(expected);
         expect($.switch([{ case: 1, then: 1 }, { case: 2, then: 2 }], 0)).toEqual(expected);
         // expect($.switch(0, [{ case: 1, then: 1 }, { case: 2, then: 2 }])).toEqual(expected);
+      });
+      it('prevents redundant calls to methods', () => {
+        expect(() => $.switch(1).default(2).default(3)).toThrow(/redundant/i);
       });
 
       describe('branch/case', () => {
