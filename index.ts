@@ -7,6 +7,21 @@ type CollectionInfo = { namespace: CollectionNamespace };
 type Collection = { s: CollectionInfo };
 type MixedCollectionName = string | Collection;
 
+const onlyOnce = (subject: { [k: string]: any }, methodName: string) => {
+  const subjectText = subject.constructor.name;
+  if (subject[methodName] === undefined) {
+    throw new Error(`Method name "${methodName}" does not exist on ${subjectText}`);
+  }
+  if (typeof subject[methodName] !== 'function') {
+    throw new Error(`The ${methodName} method is not a function on ${subjectText}`);
+  }
+  Object.defineProperty(subject, methodName, {
+    value: function() {
+      throw new Error(`Redundant call to ${methodName}() on ${subjectText} not allowed.`);
+    },
+  });
+};
+
 const getCollectionName = (v: MixedCollectionName) => {
   if (typeof v === 'string') {
     return v;
@@ -29,13 +44,13 @@ enum MergeActionWhenMatched {
   Merge = 'merge',
   Fail = 'fail',
   Pipeline = 'pipeline',
-};
+}
 
 enum MergeActionWhenNotMatched {
   Insert = 'insert',
   Discard = 'discard',
   Fail = 'fail',
-};
+}
 
 type MergeExpression = {
   into: string,
@@ -55,21 +70,25 @@ class Merge {
 
   on(onExpression: Expression) {
     this.$merge.on = onExpression;
+    onlyOnce(this, 'on');
     return this;
   }
 
   let(varsExpression: Expression) {
     this.$merge.let = varsExpression;
+    onlyOnce(this, 'let');
     return this;
   }
 
   whenMatched(action: MergeActionWhenMatched) {
     this.$merge.whenMatched = action;
+    onlyOnce(this, 'whenMatched');
     return this;
   }
 
   whenNotMatched(action: MergeActionWhenNotMatched) {
     this.$merge.whenNotMatched = action;
+    onlyOnce(this, 'whenNotMatched');
     return this;
   }
 }
@@ -91,13 +110,13 @@ class Condition {
 
   then(thenExpr: Expression) {
     this.$cond.then = thenExpr;
-    // onlyOnce(this, 'then');
+    onlyOnce(this, 'then');
     return this;
   }
 
   else(elseExpr: Expression) {
     this.$cond.else = elseExpr;
-    // onlyOnce(this, 'else');
+    onlyOnce(this, 'else');
     return this;
   }
 }
@@ -111,13 +130,11 @@ class Redaction {
 
   then(thenExpr: Expression) {
     this.$redact.then(thenExpr);
-    // onlyOnce(this, 'then');
     return this;
   }
 
   else(elseExpr: Expression) {
     this.$redact.else(elseExpr);
-    // onlyOnce(this, 'else');
     return this;
   }
 }
@@ -175,6 +192,7 @@ class Switch {
 
   default(defaultReturn: Expression) {
     this.$switch.default = defaultReturn;
+    onlyOnce(this, 'default');
     return this;
   }
 }
@@ -194,15 +212,21 @@ type LetExpression = {
 class LetVarsIn {
   $let: Partial<LetExpression>;
 
-  constructor(varsExpr: Expression, inExpr?: Expression) {
-    this.$let = { vars: varsExpr };
+  constructor(varsExpr?: Expression, inExpr?: Expression) {
+    this.$let = {}
+    if (varsExpr) this.vars(varsExpr);
     if (inExpr) this.in(inExpr);
+  }
+
+  vars(varsExpr: Expression) {
+    this.$let.vars = varsExpr;
+    onlyOnce(this, 'vars');
+    return this;
   }
 
   in(inExpr: Expression) {
     this.$let.in = inExpr;
-    // TODO
-    // onlyOnce(this, 'in');
+    onlyOnce(this, 'in');
     return this;
   }
 }
@@ -272,16 +296,14 @@ class Unwind {
 
   preserveNullAndEmptyArrays(value: boolean) {
     this.params.preserveNullAndEmptyArrays = value;
+    onlyOnce(this, 'preserveNullAndEmptyArrays');
     return this;
   }
 
   includeArrayIndex(value: string) {
     this.params.includeArrayIndex = value;
+    onlyOnce(this, 'includeArrayIndex');
     return this;
-  }
-
-  toJson() {
-    return
   }
 }
 
@@ -446,26 +468,31 @@ class Lookup {
 
   from(v: MixedCollectionName) {
     this.$lookup.from = getCollectionName(v);
+    onlyOnce(this, 'from');
     return this;
   }
 
   as(v: string) {
     this.$lookup.as = v;
+    onlyOnce(this, 'as');
     return this;
   }
 
   localField(v: string) {
     this.$lookup.localField = v;
+    onlyOnce(this, 'localField');
     return this;
   }
 
   foreignField(v: string) {
     this.$lookup.foreignField = v;
+    onlyOnce(this, 'foreignField');
     return this;
   }
 
   let(v: Expression) {
     this.$lookup.let = v;
+    onlyOnce(this, 'let');
     return this;
   }
 
@@ -475,6 +502,7 @@ class Lookup {
     } else {
       this.$lookup.pipeline = args;
     }
+    onlyOnce(this, 'pipeline');
     return this;
   }
 }
@@ -545,12 +573,12 @@ const $sort = se('$sort');
 const $cond = (ifExpr: Expression, thenExpr?: Expression, elseExpr?: Expression) => new Condition(ifExpr, thenExpr, elseExpr);
 
 const $redact = (ifExpr: Expression, thenExpr?: Expression, elseExpr?: Expression) => new Redaction(ifExpr, thenExpr, elseExpr);
-const $let = (varsExpr: Expression, inExpr?: Expression) => new LetVarsIn(varsExpr, inExpr);
+const $let = (varsExpr?: Expression, inExpr?: Expression) => new LetVarsIn(varsExpr, inExpr);
 
 /* $switch */
 const $switch = (arg1?: DefaultOrBranches, arg2?: DefaultOrBranches) => new Switch(arg1, arg2);
 
-const $merge = (into: MixedCollectionName, onExpr: Expression) => new Merge(into, onExpr);
+const $merge = (into: MixedCollectionName, onExpr?: Expression) => new Merge(into, onExpr);
 
 // Unique
 const $replaceRoot = (newRoot: string) => ({ $replaceRoot: { newRoot } });
