@@ -266,10 +266,10 @@ describe('aggregation', () => {
       describe('branch/case', () => {
         it('exports expected vars', () => {
           expect($.branch).toBeDefined();
-          // @ts-expect-error
+          // @ts-expect-error Testing for undefined
           expect($.$branch).not.toBeDefined();
           expect($.case).toBeDefined();
-          // @ts-expect-error
+          // @ts-expect-error Testing for undefined
           expect($.$case).not.toBeDefined();
           expect($.branch).toStrictEqual($.case);
         });
