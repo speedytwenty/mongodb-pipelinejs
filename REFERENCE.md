@@ -5,7 +5,15 @@ _[&laquo; View README](./README.md)_
 ## Functions
 
 <dl>
-<dt><a href="#$redact">$redact(expression)</a> ⇒ <code>Redaction</code></dt>
+<dt><a href="#$cond">$cond(ifExpr, [thenExpr], [elseExpr])</a> ⇒ <code>Condition</code></dt>
+<dd><p>Evaluates a boolean expression to return one of the two specified return
+expressions.</p></dd>
+<dt><a href="#$if">$if(ifExpr)</a> ⇒ <code>Condition</code></dt>
+<dd><p>Shortcut object-notation for the $cond operation (if/then/else).</p></dd>
+<dt><a href="#$let">$let(varsExpr, [inExpr])</a> ⇒ <code>LetVarsIn</code></dt>
+<dd><p>Binds variables for use in the specified expression and returns the result of
+the expression.</p></dd>
+<dt><a href="#$redact">$redact(ifExpr, thenExpr, elseExpr)</a> ⇒ <code>Redaction</code></dt>
 <dd><p>Restricts entire documents or content within documents from being outputted
 based on information stored in the documents themselves.</p></dd>
 <dt><a href="#$switch">$switch([arg1], [arg2])</a> ⇒ <code>Switch</code></dt>
@@ -17,8 +25,8 @@ the control flow.</p></dd>
 for each element.</p></dd>
 <dt><a href="#$ifNull">$ifNull(input, replacement)</a> ⇒ <code>IfNullOperator</code></dt>
 <dd><p>Evaluates input expressions for null values and returns the first non-null
-value.</p>
-<p>TODO - Should support more than two args.</p></dd>
+value.
+TODO - Should support more than two args.</p></dd>
 <dt><a href="#$arrayElemAt">$arrayElemAt(arrayExpression, index)</a> ⇒ <code>ArrayElemAtOperator</code></dt>
 <dd><p>Returns the element at the specified array index.</p></dd>
 <dt><a href="#$cmp">$cmp(expression1, expression2)</a> ⇒ <code>CmpOperator</code></dt>
@@ -28,8 +36,8 @@ value.</p>
 evaluated using documents in the $setWindowFields stage window.</p></dd>
 <dt><a href="#$covarianceSamp">$covarianceSamp(expression1, expression2)</a> ⇒ <code>CovarianceSampOperator</code></dt>
 <dd><p>Returns the sample covariance of two numeric expressions that are evaluated
-using documents in the $setWindowFields stage window.</p>
-<p>Non-numeric, null and missing fields are ignored.</p></dd>
+using documents in the $setWindowFields stage window.
+Non-numeric, null and missing fields are ignored.</p></dd>
 <dt><a href="#$divide">$divide(expression1, expression2)</a> ⇒ <code>DivideOperator</code></dt>
 <dd><p>Divides one number by another and returns the result.</p></dd>
 <dt><a href="#$log">$log(expression1, expression2)</a> ⇒ <code>LogOperator</code></dt>
@@ -102,15 +110,15 @@ otherwise.</p></dd>
 documents. Only meaningful when documents are in a defined order.</p></dd>
 <dt><a href="#$linearFill">$linearFill(expression)</a> ⇒ <code>LinearFillOperator</code></dt>
 <dd><p>Fills null and missing fields in a window using linear interpolation based on
-surrounding field values.</p>
-<p>Only available in the $setWindowFields stage.</p></dd>
+surrounding field values.
+Only available in the $setWindowFields stage.</p></dd>
 <dt><a href="#$literal">$literal(value)</a> ⇒ <code>LiteralOperator</code></dt>
 <dd><p>Returns a value without parsing. Use for values that the aggregation pipeline
 may interpret as an expression.</p></dd>
 <dt><a href="#$locf">$locf(expression)</a> ⇒ <code>LocfOperator</code></dt>
 <dd><p>Last observation carried forward. Sets values for null and missing fields in
-a window to the last non-null value for the field.</p>
-<p>Only available in the $setWindowFields stage.</p></dd>
+a window to the last non-null value for the field.
+Only available in the $setWindowFields stage.</p></dd>
 <dt><a href="#$log10">$log10(numberOrExpression)</a> ⇒ <code>Log10Operator</code></dt>
 <dd><p>Calculates the log base 10 of a number and returns the result as a double.</p></dd>
 <dt><a href="#$meta">$meta(metaDataKeyword)</a> ⇒ <code>MetaOperator</code></dt>
@@ -128,7 +136,7 @@ conditions(s) to the next pipeline stage.</p></dd>
 the pipeline.</p></dd>
 <dt><a href="#$group">$group(expression)</a> ⇒ <code>GroupStage</code></dt>
 <dd><p>Separates documents into groups according to a &quot;group key&quot;.</p></dd>
-<dt><a href="#$limit">$limit(value)</a> ⇒ <code>LimitOperator</code></dt>
+<dt><a href="#$limit">$limit(value)</a> ⇒ <code>LimitStage</code></dt>
 <dd><p>Limits the number of documents passed to the next stage in the pipeline.</p></dd>
 <dt><a href="#$type">$type(Any)</a> ⇒ <code>TypeOperator</code></dt>
 <dd><p>Returns a string that specifies the BSON type of the argument.</p></dd>
@@ -200,26 +208,18 @@ documents.</p></dd>
 expression to each document in a group.</p></dd>
 <dt><a href="#$sort">$sort(expression)</a> ⇒ <code>SortStage</code></dt>
 <dd><p>Sorts all input documents and returns them to the pipeline in sorted order.</p></dd>
-<dt><a href="#$cond">$cond(ifExpr, [thenExpr], [elseExpr])</a> ⇒ <code>Condition</code></dt>
-<dd><p>Evaluates a boolean expression to return one of the two specified return
-expressions.</p></dd>
-<dt><a href="#$let">$let(varsExpr, [inExpr])</a> ⇒ <code>LetVarsIn</code></dt>
-<dd><p>Binds variables for use in the specified expression and returns the result of
-the expression.</p></dd>
 </dl>
 
 ## Typedefs
 
 <dl>
-<dt><a href="#ObjectExpression">ObjectExpression</a> : <code>Object</code></dt>
-<dd></dd>
-<dt><a href="#Expression">Expression</a> : <code><a href="#ObjectExpression">ObjectExpression</a></code> | <code>string</code> | <code>number</code> | <code>boolean</code> | <code>null</code></dt>
+<dt><a href="#Expression">Expression</a> : <code>ObjectExpression</code> | <code>string</code> | <code>number</code> | <code>boolean</code> | <code>null</code></dt>
 <dd><p>A valid expression, string, number, boolean or null.</p></dd>
-<dt><a href="#NumberExpression">NumberExpression</a> : <code><a href="#ObjectExpression">ObjectExpression</a></code> | <code>number</code></dt>
+<dt><a href="#NumberExpression">NumberExpression</a> : <code>ObjectExpression</code> | <code>number</code></dt>
 <dd><p>A number or any valid expression that resolves to a number.</p></dd>
-<dt><a href="#ArrayExpression">ArrayExpression</a> : <code><a href="#ObjectExpression">ObjectExpression</a></code> | <code>Array.&lt;any&gt;</code></dt>
+<dt><a href="#ArrayExpression">ArrayExpression</a> : <code>ObjectExpression</code> | <code>Array.&lt;any&gt;</code></dt>
 <dd><p>An array or any valid expression that resolves to an array.</p></dd>
-<dt><a href="#StringExpression">StringExpression</a> : <code><a href="#ObjectExpression">ObjectExpression</a></code> | <code>string</code></dt>
+<dt><a href="#StringExpression">StringExpression</a> : <code>ObjectExpression</code> | <code>string</code></dt>
 <dd><p>A string or any valid expression that resolves to a string.</p></dd>
 <dt><a href="#MergeActionWhenMatched">MergeActionWhenMatched</a> : <code>string</code></dt>
 <dd><p>Enumeration of: Replace (replace), KeepExisting (keepExisting), Merge
@@ -228,23 +228,122 @@ the expression.</p></dd>
 <dd><p>Enumeration of: Insert (insert), Discard (discard) or Fail
 (fail).</p></dd>
 <dt><a href="#DefaultOrBranches">DefaultOrBranches</a> : <code><a href="#Expression">Expression</a></code> | <code>Array.&lt;Branch&gt;</code></dt>
-<dd></dd>
+<dd><p>The default path or an array of (switch) branches.</p></dd>
 </dl>
 
+<a name="$cond"></a>
+
+## $cond(ifExpr, [thenExpr], [elseExpr]) ⇒ <code>Condition</code>
+<p>Evaluates a boolean expression to return one of the two specified return
+expressions.</p>
+
+**Kind**: global function  
+**Returns**: <code>Condition</code> - <p>Returns a &quot;Condition&quot; object that represents the $cond
+operator whose usage varies based on the optional arguments (<code>thenExpr</code>
+and <code>elseExpr</code>).
+_The optional arguments are required but can be alternatively be provided
+using a corresponding method (see the Object Notation example).</p>  
+**See**: [MongoDB reference](https://www.mongodb.com/docs/manual/reference/operator/aggregation/cond/)
+for $cond  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| ifExpr | [<code>Expression</code>](#Expression) | <p>A boolean expression.</p> |
+| [thenExpr] | [<code>Expression</code>](#Expression) | <p>The true case.</p> |
+| [elseExpr] | [<code>Expression</code>](#Expression) | <p>The false case.</p> |
+
+**Example** *(Static Notation)*  
+```js
+$cond($.lte($.size('$myArray'), 5), '$myArray', $.slice('$myArray', -5));
+```
+**Example** *(Object Notation)*  
+```js
+$cond($.lte($.size('$myArray'), 5)).then('$myArray').else($.slice('$myArray', -5));
+```
+<a name="$if"></a>
+
+## $if(ifExpr) ⇒ <code>Condition</code>
+<p>Shortcut object-notation for the $cond operation (if/then/else).</p>
+
+**Kind**: global function  
+**Returns**: <code>Condition</code> - <p>A Condition object that resembles the $cond operation
+whose then and else case should be set using the corresponding methods.</p>  
+**See**: $cond  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| ifExpr | [<code>Expression</code>](#Expression) | <p>A boolean expression.</p> |
+
+**Example**  
+```js
+$if($.lte($.size('$myArray'), 5), '$myArray', $.slice('$myArray', -5));
+```
+<a name="$let"></a>
+
+## $let(varsExpr, [inExpr]) ⇒ <code>LetVarsIn</code>
+<p>Binds variables for use in the specified expression and returns the result of
+the expression.</p>
+
+**Kind**: global function  
+**Returns**: <code>LetVarsIn</code> - <p>Returns a &quot;LetVarsIn&quot; object that resembles the $let
+operator whose usage varies based on the optional arguments.
+_The optional arguments can be alternatively be provided using a
+corresponding method (see the Object Notation example).</p>  
+**See**: [MongoDB reference](https://www.mongodb.com/docs/manual/reference/operator/aggregation/let/)
+for $let  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| varsExpr | [<code>Expression</code>](#Expression) | <p>Assign for the variables accessible in the in expression.</p> |
+| [inExpr] | [<code>Expression</code>](#Expression) | <p>The expression to evaluate.</p> |
+
+**Example** *(Static Notation)*  
+```js
+$let({ myVar: 'val' }, $.concat('myVar equals: ', '$$myVar'));
+```
+**Example** *(Object Notation #1)*  
+```js
+$let({ myVar: 'val' }}).in($.concat('myVar equals: ', '$$myVar'));
+```
+**Example** *(Object Notation #2)*  
+```js
+$let().vars({ myVar: 'val' }}).in($.concat('myVar equals: ', '$$myVar'));
+```
+**Example** *(Return value of all above examples)*  
+```js
+{ $let: { vars: { myVar: 'val', in: { $concat: ['myVar equals: ', '$$myVar'] } } } }
+```
 <a name="$redact"></a>
 
-## $redact(expression) ⇒ <code>Redaction</code>
+## $redact(ifExpr, thenExpr, elseExpr) ⇒ <code>Redaction</code>
 <p>Restricts entire documents or content within documents from being outputted
 based on information stored in the documents themselves.</p>
 
 **Kind**: global function  
+**Returns**: <code>Redaction</code> - <p>Returns a Redaction object that resembles the $redact
+stage whose usage varies based on optional argument input.</p>  
 **See**: [MongoDB reference](https://www.mongodb.com/docs/manual/reference/operator/aggregation/redact/)
 for $redact  
+**Todo**
+
+- [ ] Expand for supporting sub-syntax like: `$redact().cond(...`
+- [ ] Support non-$cond expression
+
 
 | Param | Type | Description |
 | --- | --- | --- |
-| expression | [<code>Expression</code>](#Expression) | <p>Any valid expression as long as it resolves to the $$DESCEND, $$PRUNE, or $$KEEP system variables.</p> |
+| ifExpr | [<code>Expression</code>](#Expression) | <p>Any valid expression as long as it resolves to a boolean.</p> |
+| thenExpr | [<code>Expression</code>](#Expression) | <p>Any valid expression as long as it resolves to the $$DESCEND, $$PRUNE, or $$KEEP system variables.</p> |
+| elseExpr | [<code>Expression</code>](#Expression) | <p>Any valid expression as long as it resolves to the $$DESCEND, $$PRUNE, or $$KEEP system variables.</p> |
 
+**Example** *(Static Notation)*  
+```js
+$redact('$isAdmin', '$$KEEP', '$$PRUNE');
+```
+**Example** *(Object Notation)*  
+```js
+$redact('$isAdmin').then('$$KEEP').else('$$PRUNE');
+```
 <a name="$switch"></a>
 
 ## $switch([arg1], [arg2]) ⇒ <code>Switch</code>
@@ -253,6 +352,10 @@ evaluates to true, $switch executes a specified expression and breaks out of
 the control flow.</p>
 
 **Kind**: global function  
+**Returns**: <code>Switch</code> - <p>Returns a Switch object that resembles the $switch operator
+whose usage varies based on the optional argument input.
+<em>Optional arguments should be provided through their corresponding methods
+to complete the expression.</em></p>  
 **See**: [MongoDB reference](https://www.mongodb.com/docs/manual/reference/operator/aggregation/switch/)
 for $switch  
 
@@ -307,20 +410,37 @@ $switch('$$PRUNE')
 for each element.</p>
 
 **Kind**: global function  
+**Returns**: <code>Unwind</code> - <p>Returns an Unwind object that resembles the $unwind stage
+which can be further manipulated using the relevant methods.</p>  
 **See**: [MongoDB reference](https://www.mongodb.com/docs/manual/reference/operator/aggregation/unwind/)
 for $unwind  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | path | <code>string</code> | <p>Field path to an array field.</p> |
-| [preserveNullAndEmptyArrays] | <code>boolean</code> | <p>Keep or prune documents that don't have at least one value in the array field.</p> |
+| [preserveNullAndEmptyArrays] | <code>boolean</code> \| <code>undefined</code> | <p>Keep or prune documents that don't have at least one value in the array field.</p> |
 
+**Example** *(Static Notation)*  
+```js
+$unwind('$myArray');
+// returns { $unwind: '$myArray' }
+```
+**Example** *(Static Notation and preserveNullAndEmptyArrays)*  
+```js
+$unwind('$myArray', true);
+// returns { $unwind: { path: '$myArray', preserverNullAndEmptyArray: true } }
+```
+**Example** *(Include Array Index)*  
+```js
+$unwind('$myArray', true).includeArrayIndex('idxName');
+// returns { $unwind: { path: '$myArray', preserverNullAndEmptyArray: true, includeArrayIndex: 'idxName' } }
+```
 <a name="$ifNull"></a>
 
 ## $ifNull(input, replacement) ⇒ <code>IfNullOperator</code>
 <p>Evaluates input expressions for null values and returns the first non-null
-value.</p>
-<p>TODO - Should support more than two args.</p>
+value.
+TODO - Should support more than two args.</p>
 
 **Kind**: global function  
 **See**: [MongoDB reference](https://www.mongodb.com/docs/manual/reference/operator/aggregation/ifNull/)
@@ -378,8 +498,8 @@ for $covariancePop
 
 ## $covarianceSamp(expression1, expression2) ⇒ <code>CovarianceSampOperator</code>
 <p>Returns the sample covariance of two numeric expressions that are evaluated
-using documents in the $setWindowFields stage window.</p>
-<p>Non-numeric, null and missing fields are ignored.</p>
+using documents in the $setWindowFields stage window.
+Non-numeric, null and missing fields are ignored.</p>
 
 **Kind**: global function  
 **See**: [MongoDB reference](https://www.mongodb.com/docs/manual/reference/operator/aggregation/covarianceSamp/)
@@ -484,10 +604,6 @@ for $pow
 <p>Rounds a number to a whole integer or to a specified decimal place.</p>
 
 **Kind**: global function  
-**Sample**: $round(10.5) // 10
-$round(11.5) // 12
-$round(12.5) // 12
-$round(13.5) // 14  
 **See**: [MongoDB reference](https://www.mongodb.com/docs/manual/reference/operator/aggregation/round/)
 for $round  
 
@@ -496,6 +612,13 @@ for $round
 | expression1 | [<code>NumberExpression</code>](#NumberExpression) | <p>A number of any valid expression that resolves to a number.</p> |
 | expression2 | [<code>NumberExpression</code>](#NumberExpression) | <p>A number of any valid expression that resolves to an integer between -20 and 100. Defaults to 0 if unspecified.</p> |
 
+**Example**  
+```js
+$round(10.5) // 10
+$round(11.5) // 12
+$round(12.5) // 12
+$round(13.5) // 14
+```
 <a name="$setDifference"></a>
 
 ## $setDifference(expression1, expression2) ⇒ <code>SetDifferenceOperator</code>
@@ -710,7 +833,7 @@ for $bsonSize
 
 | Param | Type | Description |
 | --- | --- | --- |
-| expression | [<code>ObjectExpression</code>](#ObjectExpression) \| <code>null</code> | <p>Any valid expression that resolves an object or null.</p> |
+| expression | <code>ObjectExpression</code> \| <code>null</code> | <p>Any valid expression that resolves an object or null.</p> |
 
 <a name="$ceil"></a>
 
@@ -821,8 +944,8 @@ for $last
 
 ## $linearFill(expression) ⇒ <code>LinearFillOperator</code>
 <p>Fills null and missing fields in a window using linear interpolation based on
-surrounding field values.</p>
-<p>Only available in the $setWindowFields stage.</p>
+surrounding field values.
+Only available in the $setWindowFields stage.</p>
 
 **Kind**: global function  
 **See**: [MongoDB reference](https://www.mongodb.com/docs/manual/reference/operator/aggregation/linearFill/)
@@ -850,8 +973,8 @@ for $literal
 
 ## $locf(expression) ⇒ <code>LocfOperator</code>
 <p>Last observation carried forward. Sets values for null and missing fields in
-a window to the last non-null value for the field.</p>
-<p>Only available in the $setWindowFields stage.</p>
+a window to the last non-null value for the field.
+Only available in the $setWindowFields stage.</p>
 
 **Kind**: global function  
 **See**: [MongoDB reference](https://www.mongodb.com/docs/manual/reference/operator/aggregation/locf/)
@@ -926,7 +1049,7 @@ for $match
 
 | Param | Type |
 | --- | --- |
-| fieldExpression | [<code>ObjectExpression</code>](#ObjectExpression) | 
+| fieldExpression | <code>ObjectExpression</code> | 
 
 <a name="$project"></a>
 
@@ -940,7 +1063,7 @@ for $project
 
 | Param | Type | Description |
 | --- | --- | --- |
-| expression | [<code>ObjectExpression</code>](#ObjectExpression) | <p>Refer to documentation.</p> |
+| expression | <code>ObjectExpression</code> | <p>Refer to documentation.</p> |
 
 <a name="$group"></a>
 
@@ -953,11 +1076,11 @@ for $group
 
 | Param | Type | Description |
 | --- | --- | --- |
-| expression | [<code>ObjectExpression</code>](#ObjectExpression) | <p>Refer to documentation.</p> |
+| expression | <code>ObjectExpression</code> | <p>Refer to documentation.</p> |
 
 <a name="$limit"></a>
 
-## $limit(value) ⇒ <code>LimitOperator</code>
+## $limit(value) ⇒ <code>LimitStage</code>
 <p>Limits the number of documents passed to the next stage in the pipeline.</p>
 
 **Kind**: global function  
@@ -992,7 +1115,7 @@ for $objectToArray
 
 | Param | Type | Description |
 | --- | --- | --- |
-| object | [<code>ObjectExpression</code>](#ObjectExpression) | <p>Any valid expression that evaluates to an expression.</p> |
+| object | <code>ObjectExpression</code> | <p>Any valid expression that evaluates to an expression.</p> |
 
 <a name="$radiansToDegrees"></a>
 
@@ -1312,7 +1435,7 @@ for $addFields
 
 | Param | Type | Description |
 | --- | --- | --- |
-| expression | [<code>ObjectExpression</code>](#ObjectExpression) | <p>Specify the name of each field to add and set its value to an aggregation expression or an empty object.</p> |
+| expression | <code>ObjectExpression</code> | <p>Specify the name of each field to add and set its value to an aggregation expression or an empty object.</p> |
 
 **Example**  
 ```js
@@ -1329,7 +1452,7 @@ $addFields({ fullName: $.concat('$firstName', ' ', '$lastName') });
 
 | Param | Type | Description |
 | --- | --- | --- |
-| expression | [<code>ObjectExpression</code>](#ObjectExpression) | <p>Specify the name of each field to add and set its value to an aggregation expression or an empty object.</p> |
+| expression | <code>ObjectExpression</code> | <p>Specify the name of each field to add and set its value to an aggregation expression or an empty object.</p> |
 
 **Example**  
 ```js
@@ -1378,62 +1501,27 @@ for $sort
 | --- | --- | --- |
 | expression | [<code>Expression</code>](#Expression) | <p>Refer to documentation.</p> |
 
-<a name="$cond"></a>
-
-## $cond(ifExpr, [thenExpr], [elseExpr]) ⇒ <code>Condition</code>
-<p>Evaluates a boolean expression to return one of the two specified return
-expressions.</p>
-
-**Kind**: global function  
-**See**: [MongoDB reference](https://www.mongodb.com/docs/manual/reference/operator/aggregation/cond/)
-for $cond  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| ifExpr | [<code>Expression</code>](#Expression) | <p>A boolean expression.</p> |
-| [thenExpr] | [<code>Expression</code>](#Expression) | <p>The true case.</p> |
-| [elseExpr] | [<code>Expression</code>](#Expression) | <p>The false case.</p> |
-
-<a name="$let"></a>
-
-## $let(varsExpr, [inExpr]) ⇒ <code>LetVarsIn</code>
-<p>Binds variables for use in the specified expression and returns the result of
-the expression.</p>
-
-**Kind**: global function  
-**See**: [MongoDB reference](https://www.mongodb.com/docs/manual/reference/operator/aggregation/let/)
-for $let  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| varsExpr | [<code>Expression</code>](#Expression) | <p>Assign for the variables accessible in the in expression.</p> |
-| [inExpr] | [<code>Expression</code>](#Expression) | <p>The expression to evaluate.</p> |
-
-<a name="ObjectExpression"></a>
-
-## ObjectExpression : <code>Object</code>
-**Kind**: global typedef  
 <a name="Expression"></a>
 
-## Expression : [<code>ObjectExpression</code>](#ObjectExpression) \| <code>string</code> \| <code>number</code> \| <code>boolean</code> \| <code>null</code>
+## Expression : <code>ObjectExpression</code> \| <code>string</code> \| <code>number</code> \| <code>boolean</code> \| <code>null</code>
 <p>A valid expression, string, number, boolean or null.</p>
 
 **Kind**: global typedef  
 <a name="NumberExpression"></a>
 
-## NumberExpression : [<code>ObjectExpression</code>](#ObjectExpression) \| <code>number</code>
+## NumberExpression : <code>ObjectExpression</code> \| <code>number</code>
 <p>A number or any valid expression that resolves to a number.</p>
 
 **Kind**: global typedef  
 <a name="ArrayExpression"></a>
 
-## ArrayExpression : [<code>ObjectExpression</code>](#ObjectExpression) \| <code>Array.&lt;any&gt;</code>
+## ArrayExpression : <code>ObjectExpression</code> \| <code>Array.&lt;any&gt;</code>
 <p>An array or any valid expression that resolves to an array.</p>
 
 **Kind**: global typedef  
 <a name="StringExpression"></a>
 
-## StringExpression : [<code>ObjectExpression</code>](#ObjectExpression) \| <code>string</code>
+## StringExpression : <code>ObjectExpression</code> \| <code>string</code>
 <p>A string or any valid expression that resolves to a string.</p>
 
 **Kind**: global typedef  
@@ -1454,5 +1542,6 @@ for $let
 <a name="DefaultOrBranches"></a>
 
 ## DefaultOrBranches : [<code>Expression</code>](#Expression) \| <code>Array.&lt;Branch&gt;</code>
+<p>The default path or an array of (switch) branches.</p>
+
 **Kind**: global typedef  
-**Decsription**: The default path or an array of (switch) branches.  
