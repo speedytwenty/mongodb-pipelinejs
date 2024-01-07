@@ -403,9 +403,9 @@ $switch('$$PRUNE')
   },
 }
 ```
-<a name="_class6"></a>
+<a name="unwind"></a>
 
-## \_class6(path, [preserveNullAndEmptyArrays]) ⇒ <code>Unwind</code>
+## $unwind(path, [preserveNullAndEmptyArrays]) ⇒ <code>Unwind</code>
 <p>Deconstructs an array field from the input documents to output a document
 for each element.</p>
 
