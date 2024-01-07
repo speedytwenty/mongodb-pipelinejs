@@ -1,5 +1,3 @@
-/* eslint-disable max-classes-per-file */
-
 import { nonenumerable } from "nonenumerable";
 
 type CollectionNamespace = { collection: string };
@@ -37,10 +35,6 @@ type Binary<N extends number = number> = string & {
   length: N;
 };
 
-/**
- * @typedef {object} ObjectExpression
- * @property
- */
 type ObjectExpression = { [k: string]: any };
 
 /**
@@ -66,6 +60,46 @@ type ArrayExpression = ObjectExpression | Array<any>;
  * @description A string or any valid expression that resolves to a string.
  */
 type StringExpression = ObjectExpression | Array<any>;
+
+// always two
+const at = (ns: string) => (...args: any[]) => {
+  if (args.length !== 2) {
+    throw new TypeError(`${ns} expects two arguments. Received ${args.length} arguments.`);
+  }
+  const [a1, a2] = args;
+  return { [ns]: [a1, a2] };
+};
+
+// pass thru args (as array)
+const pta = (ns: string) => (...args: any[]) => ({ [ns]: args });
+// no expression
+const ne = (ns: string) => () => ({ [ns]: {} });
+// single expression
+const se = (ns: string, validate?: (ns: string, expr: Expression) => void) => (expr: Expression) => {
+  if (validate) validate(ns, expr);
+  return { [ns]: expr };
+};
+
+// [dynamic] two or one arguments indicate varied application in drive
+const taf = (ns: string) => (...args: any[]) => {
+  if (args.length > 1) {
+    return { [ns]: args };
+  }
+  return { [ns]: args[0] };
+};
+
+type OperatorFn = (...args: any[]) => ObjectExpression;
+
+const safeNumberArgs = (fn: OperatorFn) => (...args: any[]) => fn(...args.map((arg) => {
+  return typeof arg === 'number' ? arg : $ifNull(arg, 0);
+}));
+
+type PipelineStage = Expression;
+
+// Allow easier syntax for conditional stages in pipeline.
+const pipeline = (...args: PipelineStage[]) => args.filter((v) => v).map((v) => {
+  return typeof v === 'function' ? v(v) : v;
+});
 
 /**
  * @typedef {string} MergeActionWhenMatched
@@ -160,6 +194,93 @@ class Condition {
   }
 }
 
+/**
+ * Evaluates a boolean expression to return one of the two specified return
+ * expressions.
+ * @static
+ * @function
+ * @param {Expression} ifExpr A boolean expression.
+ * @param {Expression} [thenExpr] The true case.
+ * @param {Expression} [elseExpr] The false case.
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/cond/|MongoDB reference}
+ * for $cond
+ * @example <caption>Static Notation</caption>
+ * $cond($.lte($.size('$myArray'), 5), '$myArray', $.slice('$myArray', -5));
+ * @example <caption>Object Notation</caption>
+ * $cond($.lte($.size('$myArray'), 5)).then('$myArray').else($.slice('$myArray', -5));
+ * @returns {Condition} Returns a "Condition" object that represents the $cond
+ * operator whose usage varies based on the optional arguments (`thenExpr`
+ * and `elseExpr`).
+ * _The optional arguments are required but can be alternatively be provided
+ * using a corresponding method (see the Object Notation example).
+ */
+const $cond = (ifExpr: Expression, thenExpr?: Expression, elseExpr?: Expression) => new Condition(ifExpr, thenExpr, elseExpr);
+
+/**
+ * Shortcut object-notation for the $cond operation (if/then/else).
+ * @static
+ * @function
+ * @param {Expression} ifExpr A boolean expression.
+ * @returns {Condition} A Condition object that resembles the $cond operation
+ * whose then and else case should be set using the corresponding methods.
+ * @see $cond
+ * @example
+ * $if($.lte($.size('$myArray'), 5), '$myArray', $.slice('$myArray', -5));
+ */
+const $if = (ifExpr: Expression) => new Condition(ifExpr);
+
+type LetExpression = {
+  vars: Expression,
+  in: Expression,
+};
+
+class LetVarsIn {
+  $let: Partial<LetExpression>;
+
+  constructor(varsExpr?: Expression, inExpr?: Expression) {
+    this.$let = {}
+    if (varsExpr) this.vars(varsExpr);
+    if (inExpr) this.in(inExpr);
+  }
+
+  vars(varsExpr: Expression) {
+    this.$let.vars = varsExpr;
+    onlyOnce(this, 'vars');
+    return this;
+  }
+
+  in(inExpr: Expression) {
+    this.$let.in = inExpr;
+    onlyOnce(this, 'in');
+    return this;
+  }
+}
+
+/**
+ * Binds variables for use in the specified expression and returns the result of
+ * the expression.
+ * @static
+ * @function
+ * @param {Expression} varsExpr Assign for the variables accessible in the in
+ * expression.
+ * @param {Expression} [inExpr] The expression to evaluate.
+ * @returns {LetVarsIn} Returns a "LetVarsIn" object that resembles the $let
+ * operator whose usage varies based on the optional arguments.
+ * _The optional arguments can be alternatively be provided using a
+ * corresponding method (see the Object Notation example).
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/let/|MongoDB reference}
+ * for $let
+ * @example <caption>Static Notation</caption>
+ * $let({ myVar: 'val' }, $.concat('myVar equals: ', '$$myVar'));
+ * @example <caption>Object Notation #1</caption>
+ * $let({ myVar: 'val' }}).in($.concat('myVar equals: ', '$$myVar'));
+ * @example <caption>Object Notation #2</caption>
+ * $let().vars({ myVar: 'val' }}).in($.concat('myVar equals: ', '$$myVar'));
+ * @example <caption>Return value of all above examples</caption>
+ * { $let: { vars: { myVar: 'val', in: { $concat: ['myVar equals: ', '$$myVar'] } } } }
+ */
+const $let = (varsExpr?: Expression, inExpr?: Expression) => new LetVarsIn(varsExpr, inExpr);
+
 class Redaction {
   $redact: Condition;
 
@@ -189,9 +310,16 @@ class Redaction {
  * the $$DESCEND, $$PRUNE, or $$KEEP system variables.
  * @param {Expression} elseExpr Any valid expression as long as it resolves to
  * the $$DESCEND, $$PRUNE, or $$KEEP system variables.
- * @returns {Redaction}
+ * @returns {Redaction} Returns a Redaction object that resembles the $redact
+ * stage whose usage varies based on optional argument input.
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/redact/|MongoDB reference}
  * for $redact
+ * @example <caption>Static Notation</caption>
+ * $redact('$isAdmin', '$$KEEP', '$$PRUNE');
+ * @example <caption>Object Notation</caption>
+ * $redact('$isAdmin').then('$$KEEP').else('$$PRUNE');
+ * @todo Expand for supporting sub-syntax like: `$redact().cond(...`
+ * @todo Support non-$cond expression
  */
 const $redact = (ifExpr: Expression, thenExpr?: Expression, elseExpr?: Expression) => new Redaction(ifExpr, thenExpr, elseExpr);
 
@@ -265,7 +393,10 @@ class Switch {
  * @function
  * @param {DefaultOrBranches} [arg1] Default path or array of branches.
  * @param {DefaultOrBranches} [arg2] Default path or array of branches.
- * @returns {Switch}
+ * @returns {Switch} Returns a Switch object that resembles the $switch operator
+ * whose usage varies based on the optional argument input.
+ * _Optional arguments should be provided through their corresponding methods
+ * to complete the expression._
  * @example <caption>Static Notation</caption>
  * $switch('$$PRUNE', [
  *   $case('$user.isAdministrator', '$$KEEP'),
@@ -299,72 +430,6 @@ class Switch {
  * for $switch
  */
 const $switch = (arg1?: DefaultOrBranches, arg2?: DefaultOrBranches) => new Switch(arg1, arg2);
-
-
-type PipelineStage = Expression;
-
-// Allow easier syntax for conditional stages in pipeline.
-const pipeline = (...args: PipelineStage[]) => args.filter((v) => v).map((v) => {
-  return typeof v === 'function' ? v(v) : v;
-});
-
-type LetExpression = {
-  vars: Expression,
-  in: Expression,
-};
-
-class LetVarsIn {
-  $let: Partial<LetExpression>;
-
-  constructor(varsExpr?: Expression, inExpr?: Expression) {
-    this.$let = {}
-    if (varsExpr) this.vars(varsExpr);
-    if (inExpr) this.in(inExpr);
-  }
-
-  vars(varsExpr: Expression) {
-    this.$let.vars = varsExpr;
-    onlyOnce(this, 'vars');
-    return this;
-  }
-
-  in(inExpr: Expression) {
-    this.$let.in = inExpr;
-    onlyOnce(this, 'in');
-    return this;
-  }
-}
-
-// always two
-const at = (ns: string) => (...args: any[]) => {
-  if (args.length !== 2) {
-    throw new TypeError(`${ns} expects two arguments. Received ${args.length} arguments.`);
-  }
-  const [a1, a2] = args;
-  return { [ns]: [a1, a2] };
-};
-
-// pass thru args (as array)
-const pta = (ns: string) => (...args: any[]) => ({ [ns]: args });
-// no expression
-const ne = (ns: string) => () => ({ [ns]: {} });
-// single expression
-const se = (ns: string, validate?: Function) => (expr: Expression) => {
-  if (validate) validate(ns, expr);
-  return { [ns]: expr };
-};
-
-// [dynamic] two or one arguments indicate varied application in drive
-const taf = (ns: string) => (...args: any[]) => {
-  if (args.length > 1) {
-    return { [ns]: args };
-  }
-  return { [ns]: args[0] };
-};
-
-const safeNumberArgs = (fn: Function) => (...args: any[]) => fn(...args.map((arg) => {
-  return typeof arg === 'number' ? arg : $ifNull(arg, 0);
-}));
 
 type UnwindExpression = {
   path: string;
@@ -415,11 +480,21 @@ class Unwind {
  * @static
  * @function
  * @param {string} path Field path to an array field.
- * @param {boolean} [preserveNullAndEmptyArrays] Keep or prune documents that
+ * @param {boolean | undefined} [preserveNullAndEmptyArrays] Keep or prune documents that
  * don't have at least one value in the array field.
- * @returns {Unwind}
+ * @returns {Unwind} Returns an Unwind object that resembles the $unwind stage
+ * which can be further manipulated using the relevant methods.
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/unwind/|MongoDB reference}
  * for $unwind
+ * @example <caption>Static Notation</caption>
+ * $unwind('$myArray');
+ * // returns { $unwind: '$myArray' }
+ * @example <caption>Static Notation and preserveNullAndEmptyArrays</caption>
+ * $unwind('$myArray', true);
+ * // returns { $unwind: { path: '$myArray', preserverNullAndEmptyArray: true } }
+ * @example <caption>Include Array Index</caption>
+ * $unwind('$myArray', true).includeArrayIndex('idxName');
+ * // returns { $unwind: { path: '$myArray', preserverNullAndEmptyArray: true, includeArrayIndex: 'idxName' } }
  */
 const $unwind = (path: string, preserveNullAndEmptyArrays: boolean | undefined = undefined) => new Unwind(path, preserveNullAndEmptyArrays);
 
@@ -1864,34 +1939,6 @@ type SortStage = {
  */
 const $sort = se('$sort');
 
-/**
- * Evaluates a boolean expression to return one of the two specified return
- * expressions.
- * @static
- * @function
- * @param {Expression} ifExpr A boolean expression.
- * @param {Expression} [thenExpr] The true case.
- * @param {Expression} [elseExpr] The false case.
- * @returns {Condition}
- * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/cond/|MongoDB reference}
- * for $cond
- */
-const $cond = (ifExpr: Expression, thenExpr?: Expression, elseExpr?: Expression) => new Condition(ifExpr, thenExpr, elseExpr);
-
-/**
- * Binds variables for use in the specified expression and returns the result of
- * the expression.
- * @static
- * @function
- * @param {Expression} varsExpr Assign for the variables accessible in the in
- * expression.
- * @param {Expression} [inExpr] The expression to evaluate.
- * @returns {LetVarsIn}
- * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/let/|MongoDB reference}
- * for $let
- */
-const $let = (varsExpr?: Expression, inExpr?: Expression) => new LetVarsIn(varsExpr, inExpr);
-
 const $merge = (into: MixedCollectionName, onExpr?: Expression) => new Merge(into, onExpr);
 
 // Unique
@@ -1899,7 +1946,6 @@ const $replaceRoot = (newRoot: string) => ({ $replaceRoot: { newRoot } });
 const $count = (v = {}) => ({ $count: v });
 
 // Custom
-const $if = (ifExpr: Expression) => new Condition(ifExpr);
 const $divideSafe = (dividend: number | string, divisor: number | string, defaultValue = '$$REMOVE') => $let({
   dividend: typeof dividend === 'number' ? dividend : $ifNull(dividend, 0),
   divisor: typeof divisor === 'number' ? divisor : $ifNull(divisor, 0),
