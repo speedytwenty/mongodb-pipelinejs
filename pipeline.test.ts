@@ -190,6 +190,23 @@ describe('aggregation', () => {
       });
     });
 
+    describe('$let', () => {
+      it('exports expected vars', () => {
+        expect($.let).toBeDefined();
+        expect($.$let).toBeDefined();
+        expect($.let).toStrictEqual($.$let);
+      });
+      it('returns expected result', () => {
+        const expected = { $let: { vars: { foo: 'bar' }, in: { y: 'z' } } };
+        expect($.let({ foo: 'bar' }, { y: 'z' })).toEqual(expected);
+        expect($.let({ foo: 'bar' }).in({ y: 'z' })).toEqual(expected);
+      });
+      it('prevents redundant calls to methods', () => {
+        expect(() => $.let({ x: 1 }).vars({ y: 2 })).toThrow();
+        expect(() => $.let().in({ x: 1 }).in({ y: 2 })).toThrow();
+      });
+    });
+
     describe('$redact', () => {
       it('exports expected vars', () => {
         expect($.redact).toBeDefined();
@@ -218,23 +235,6 @@ describe('aggregation', () => {
           expect(() => $.redact(1).then(2).then(3)).toThrow(/redundant/i);
           expect(() => $.redact(1).else(2).else(3)).toThrow(/redundant/i);
         });
-      });
-    });
-
-    describe('$let', () => {
-      it('exports expected vars', () => {
-        expect($.let).toBeDefined();
-        expect($.$let).toBeDefined();
-        expect($.let).toStrictEqual($.$let);
-      });
-      it('returns expected result', () => {
-        const expected = { $let: { vars: { foo: 'bar' }, in: { y: 'z' } } };
-        expect($.let({ foo: 'bar' }, { y: 'z' })).toEqual(expected);
-        expect($.let({ foo: 'bar' }).in({ y: 'z' })).toEqual(expected);
-      });
-      it('prevents redundant calls to methods', () => {
-        expect(() => $.let({ x: 1 }).vars({ y: 2 })).toThrow();
-        expect(() => $.let().in({ x: 1 }).in({ y: 2 })).toThrow();
       });
     });
 
