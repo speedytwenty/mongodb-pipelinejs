@@ -35,7 +35,7 @@
     "docs": "jsdoc2md --files ./index.ts -t .reference.hbs.md --configure ./jsdoc2md.json > REFERENCE.md",
     "lint": "eslint --fix --ext .ts .",
     "test": "jest",
-    "watch": "nodemon --exec yarn build"
+    "watch": "nodemon -w index.ts -x yarn docs"
   },
   "files": [
     "index.js",
