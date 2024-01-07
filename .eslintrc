@@ -9,5 +9,9 @@
       "jsdoc",
       "@typescript-eslint"
   ],
-  "root": true
+  "root": true,
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "off",
+    "max-classes-per-file": "off"
+  }
 }

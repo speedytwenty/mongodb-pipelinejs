@@ -190,6 +190,23 @@ describe('aggregation', () => {
       });
     });
 
+    describe('$let', () => {
+      it('exports expected vars', () => {
+        expect($.let).toBeDefined();
+        expect($.$let).toBeDefined();
+        expect($.let).toStrictEqual($.$let);
+      });
+      it('returns expected result', () => {
+        const expected = { $let: { vars: { foo: 'bar' }, in: { y: 'z' } } };
+        expect($.let({ foo: 'bar' }, { y: 'z' })).toEqual(expected);
+        expect($.let({ foo: 'bar' }).in({ y: 'z' })).toEqual(expected);
+      });
+      it('prevents redundant calls to methods', () => {
+        expect(() => $.let({ x: 1 }).vars({ y: 2 })).toThrow();
+        expect(() => $.let().in({ x: 1 }).in({ y: 2 })).toThrow();
+      });
+    });
+
     describe('$redact', () => {
       it('exports expected vars', () => {
         expect($.redact).toBeDefined();
@@ -221,23 +238,6 @@ describe('aggregation', () => {
       });
     });
 
-    describe('$let', () => {
-      it('exports expected vars', () => {
-        expect($.let).toBeDefined();
-        expect($.$let).toBeDefined();
-        expect($.let).toStrictEqual($.$let);
-      });
-      it('returns expected result', () => {
-        const expected = { $let: { vars: { foo: 'bar' }, in: { y: 'z' } } };
-        expect($.let({ foo: 'bar' }, { y: 'z' })).toEqual(expected);
-        expect($.let({ foo: 'bar' }).in({ y: 'z' })).toEqual(expected);
-      });
-      it('prevents redundant calls to methods', () => {
-        expect(() => $.let({ x: 1 }).vars({ y: 2 })).toThrow();
-        expect(() => $.let().in({ x: 1 }).in({ y: 2 })).toThrow();
-      });
-    });
-
     describe('$switch', () => {
       it('exports expected vars', () => {
         expect($.switch).toBeDefined();
@@ -266,10 +266,10 @@ describe('aggregation', () => {
       describe('branch/case', () => {
         it('exports expected vars', () => {
           expect($.branch).toBeDefined();
-          // @ts-expect-error
+          // @ts-expect-error Testing for undefined
           expect($.$branch).not.toBeDefined();
           expect($.case).toBeDefined();
-          // @ts-expect-error
+          // @ts-expect-error Testing for undefined
           expect($.$case).not.toBeDefined();
           expect($.branch).toStrictEqual($.case);
         });
