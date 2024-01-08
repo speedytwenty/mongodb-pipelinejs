@@ -6,14 +6,16 @@
 
 # MongoDB PipelineJS
 
-_Aggregation Syntax for Javascript_; Use Javascript syntax—instead of JSON—to
-compose MongoDB aggregations.
+_Convenient JS syntax for authoring MongoDB aggregations._
 
-_Documentation and examples are under development._
+Tired of the clunky default syntax involved with assembling MongoDB
+aggregations? Cleanup that clutter, with PipelineJS!
 
-* [Browse Examples &raquo;](./EXAMPLES.md)
-* [View API Documentation &raquo;](./REFERENCE.md)
 
+**PipelineJS is what YOU expect!**
+PipelineJS practically mimics the MongoDB aggregation syntax that you already
+know so there is nominal learning required to start writing cleaner aggregations
+today!
 
 ## Installation
 
@@ -22,6 +24,14 @@ _Add `mongodb-pipelinejs` to your MongoDB project:_
 With Yarn: `yarn add mongodb-pipelinejs`
 
 With NPM: `npm install mongodb-pipelinejs`
+
+## Documentation
+
+Aside from a few niceties, the documentation is mostly a replication of the
+official MongoDB documentation—with specific API/interface information and
+usage examples.
+
+**[Browse API Documentation &raquo;](https://speedytwenty.github.io/mongodb-pipelinejs/)**
 
 ## Usage
 
@@ -78,6 +88,18 @@ delimeter.
 For those who use it, PipelineJS can offer the advantage of _code completion_
 and similar inflection utilities, albeit, the user experience here likely needs
 some refinement to be as helpful as it can be.
+
+### Safe Operators
+
+Some operators, commonly _mathematical_ operators, will cause the database
+server to complain if input to the operator doesn't resolve to the expected
+type.
+
+PipelineJS's "Safe Operators" are simply shorts that ensure the operator input
+resolves to the correct type—often times avoiding a fatal error.
+
+Some safe operators are presently included for these circumstances
+
 
 ### Rounding
 

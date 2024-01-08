@@ -1,0 +1,25 @@
+{
+  "source": {
+    "includePattern": ".+\\.ts(doc|x)?$"
+  },
+  "plugins": [
+    "node_modules/better-docs/typescript",
+    "node_modules/better-docs/category"
+  ],
+  "opts": {
+    "template": "node_modules/better-docs",
+    "readme": "README.md"
+  },
+  "templates": {
+    "search": "true",
+    "better-docs": {
+      "title": "PipelineJS for MongoDB",
+      "name": "PipelineJS API Reference",
+      "navLinks": [{
+        "label": "Github",
+        "href": "https://github.com/speedytwenty/mongodb-pipelinejs"
+      }],
+      "hideGenerator": true
+    }
+  }
+}

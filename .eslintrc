@@ -12,6 +12,7 @@
   "root": true,
   "rules": {
     "@typescript-eslint/no-explicit-any": "off",
-    "max-classes-per-file": "off"
+    "max-classes-per-file": "off",
+    "jsdoc/check-tag-names": ["error", { "definedTags": ["category"] }]
   }
 }
