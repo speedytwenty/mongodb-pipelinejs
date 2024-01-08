@@ -1,0 +1,11 @@
+{
+  "source": {
+    "includePattern": ".+\\.ts(doc|x)?$"
+  },
+  "plugins": [
+    "node_modules/better-docs/typescript"
+  ],
+  "opts": {
+    "template": "node_modules/better-docs"
+  }
+}
