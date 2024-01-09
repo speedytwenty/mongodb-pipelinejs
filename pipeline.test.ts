@@ -100,6 +100,16 @@ describe('aggregation', () => {
         });
       });
     });
+    describe('$changeStream', () => {
+      it('exports expected vars', () => {
+        expect($.changeStream).toBeDefined();
+        expect($.$changeStream).toBeDefined();
+        expect($.changeStream).toStrictEqual($.$changeStream);
+      });
+      it('returns expected result', () => {
+        expect($.changeStream()).toEqual({ $changeStream: {} });
+      });
+    });
     describe('$count', () => {
       it('exports expected vars', () => {
         expect($.count).toBeDefined();
