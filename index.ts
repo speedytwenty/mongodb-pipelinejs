@@ -36,6 +36,14 @@ type ArrayExpression = ObjectExpression | Array<any>;
  */
 type StringExpression = ObjectExpression | Array<any>;
 
+/**
+ * @typedef {ObjectExpression | number} DateExpression
+ * @description A date or any valid expression that resolves to a date.
+ */
+type DateExpression = ObjectExpression | Date;
+
+type Timestamp = number;
+
 // always two
 const at = (ns: string) => (...args: any[]) => {
   if (args.length !== 2) {
@@ -139,6 +147,276 @@ type AddFieldsStage = { $addFields: ObjectExpression };
  */
 const $addFields = se('$addFields', validateFieldExpression);
 
+
+type BaseBucketExpression = {
+  groupBy: Expression,
+  output: ObjectExpression,
+};
+
+type BucketExpression = BaseBucketExpression & {
+  boundaries: Array<number>,
+  default: Expression,
+};
+
+class Bucket {
+  public $bucket: Partial<BucketExpression> = {};
+
+  constructor(
+    groupBy: Expression,
+    boundaries?: Array<number>,
+    defaultId?: Expression,
+    output?: ObjectExpression,
+  ) {
+    this.groupBy(groupBy);
+    if (boundaries) {
+      this.boundaries(...boundaries);
+    }
+    if (defaultId) {
+      this.default(defaultId);
+    }
+    if (output) {
+      this.output(output);
+    }
+  }
+
+  groupBy(value: Expression) {
+    this.$bucket.groupBy = value;
+    onlyOnce(this, 'groupBy');
+    return this;
+  }
+
+  output(document: ObjectExpression) {
+    this.$bucket.output = document;
+    onlyOnce(this, 'output');
+    return this;
+  }
+
+  default(value: Expression) {
+    this.$bucket.default = value;
+    onlyOnce(this, 'default');
+    return this;
+  }
+
+  boundaries(...args: Array<number>) {
+    this.$bucket.boundaries = args;
+    onlyOnce(this, 'boundaries');
+    return this;
+  }
+}
+
+/**
+ * Categorizes incoming documents into groups called buckets, based on a 
+ * specified expression and bucket boundaries.
+ * @category Stages
+ * @function
+ * @param {Expression} groupBy An expression to group documents by.
+ * @param {Array<number>} [boundaries] An array of values based on the groupBy
+ * expression that specify the boundaries for each bucket.
+ * @param {Expression} [defaultId] Optional. A literal that specifies the _id of
+ * an additional bucket that contains all documents that don't fall into a 
+ * bucket specified by boundaries.
+ * @param {ObjectExpression} output Optional. A document that specifies the
+ * fields to include.
+ * @returns {Bucket} A Bucket object populated according to argument input.
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/bucket/|MongoDB reference}
+ * for $bucket
+ * @example <caption>Static notation</caption>
+ * $bucket('$price', [0, 200, 400], 'Other');
+ * // outputs
+ * { $bucket: { groupBy: '$price', boundaries: [0, 200, 400], default: 'Other' } }
+ * @example <caption>Object notation</caption>
+ * $bucket('$price').boundaries(0, 200, 400).default('Other');
+ * // outputs
+ * { $bucket: { groupBy: '$price', boundaries: [0, 200, 400], default: 'Other' } }
+ */
+const $bucket = (
+  groupBy: Expression,
+  boundaries?: Array<number>,
+  defaultId?: Expression,
+  output?: ObjectExpression,
+) => new Bucket(groupBy, boundaries, defaultId, output);
+
+type BucketAutoExpression = BaseBucketExpression & {
+  buckets: number,
+  granularity: string,
+};
+
+class BucketAuto {
+  public $bucketAuto: Partial<BucketAutoExpression> = {};
+
+  constructor(
+    groupBy: Expression,
+    buckets?: number,
+    granularity?: string,
+    output?: ObjectExpression,
+  ) {
+    this.groupBy(groupBy);
+    if (buckets) {
+      this.buckets(buckets);
+    }
+    if (granularity) {
+      this.granularity(granularity);
+    }
+    if (output) {
+      this.output(output);
+    }
+  }
+
+  groupBy(value: Expression) {
+    this.$bucketAuto.groupBy = value;
+    onlyOnce(this, 'groupBy');
+    return this;
+  }
+
+  output(document: ObjectExpression) {
+    this.$bucketAuto.output = document;
+    onlyOnce(this, 'output');
+    return this;
+  }
+
+  buckets(value: number) {
+    this.$bucketAuto.buckets = value;
+    onlyOnce(this, 'buckets');
+    return this;
+  }
+
+  granularity(value: string) {
+    this.$bucketAuto.granularity = value;
+    onlyOnce(this, 'granularity');
+    return this;
+  }
+}
+
+/**
+ * Categorizes incoming documents into a specific number of groups, called
+ * buckets, based on a specified expression.
+ * @category Stages
+ * @function
+ * @param {Expression} groupBy An expression to group documents by.
+ * @param {number} [buckets] A positive number for the number of buckets into
+ * which input documents will be grouped.
+ * expression that specify the boundaries for each bucket.
+ * @param {string} [granularity] Optional. Specifies the preferred number series
+ * to use.
+ * @param {ObjectExpression} [output] Optional. A document that specifies the
+ * fields to include.
+ * @returns {Bucket} A Bucket object populated according to argument input.
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/bucketAuto/|MongoDB reference}
+ * for $bucketAuto
+ * @example <caption>Static notation</caption>
+ * $bucketAuto('$_id', 5);
+ * // returns
+ * { $bucketAuto: { groupBy: '$_id', buckets: 5 } }
+ * @example <caption>Object notation</caption>
+ * $bucketAuto('$_id').buckets(5).granularity('R5');
+ * // returns
+ * { $bucketAuto: { groupBy: '$_id', buckets: 5, granularity: 'R5' } }
+ */
+const $bucketAuto = (
+  groupBy: Expression, 
+  buckets?: number,
+  granularity?: string,
+  output?: ObjectExpression,
+) => new BucketAuto(groupBy, buckets, granularity, output);
+
+enum ChangeStreamFullDocument {
+  default,
+  required,
+  updateLookup,
+  whenAvailable,
+}
+
+enum ChangeStreamFullDocumentBeforeChange {
+  off,
+  whenAvailable,
+  required,
+}
+
+type ChangeStreamExpression = {
+  allChangesForCluster?: boolean,
+  fullDocument?: ChangeStreamFullDocument,
+  fullDocumentBeforeChange?: ChangeStreamFullDocumentBeforeChange,
+  resumeAfter?: number,
+  showExpandedEvents?: boolean,
+  startAfter?: ObjectExpression,
+  startAtOperationTime?: Timestamp,
+};
+
+class ChangeStream {
+  public $changeStream: ChangeStreamExpression = {};
+
+  constructor(opts: ChangeStreamExpression = {}) {
+    if (opts.allChangesForCluster) this.allChangesForCluster(opts.allChangesForCluster);
+    if (opts.fullDocument) this.fullDocument(opts.fullDocument);
+    if (opts.fullDocumentBeforeChange) this.fullDocumentBeforeChange(opts.fullDocumentBeforeChange);
+    if (opts.resumeAfter) this.resumeAfter(opts.resumeAfter);
+    if (opts.showExpandedEvents) this.showExpandedEvents(opts.showExpandedEvents);
+    if (opts.startAfter) this.startAfter(opts.startAfter);
+    if (opts.startAtOperationTime) this.startAtOperationTime(opts.startAtOperationTime);
+    // Object.entries(opts).forEach(([opt, val]) => this[opt as keyof ChangeStreamExpression](val));
+    // Object.entries(opts).forEach(([opt, val]) => this[opt as keyof ChangeStreamExpression](val));
+  }
+
+  allChangesForCluster(value: boolean) {
+    this.$changeStream.allChangesForCluster = value;
+    onlyOnce(this, 'allChangesForCluster');
+    return this;
+  }
+
+  fullDocument(value: ChangeStreamFullDocument) {
+    this.$changeStream.fullDocument = value;
+    onlyOnce(this, 'fullDocument');
+    return this;
+  }
+
+  fullDocumentBeforeChange(value: ChangeStreamFullDocumentBeforeChange) {
+    this.$changeStream.fullDocumentBeforeChange = value;
+    onlyOnce(this, 'fullDocument');
+    return this;
+  }
+
+  resumeAfter(value: number) {
+    this.$changeStream.resumeAfter = value;
+    onlyOnce(this, 'resumeAfter');
+    return this;
+  }
+
+  showExpandedEvents(value: boolean) {
+    this.$changeStream.showExpandedEvents = value;
+    onlyOnce(this, 'showExpandedEvents');
+    return this;
+  }
+
+  startAfter(value: ObjectExpression) {
+    this.$changeStream.startAfter = value;
+    onlyOnce(this, 'startAfter');
+    return this;
+  }
+
+  startAtOperationTime(value: Timestamp) {
+    this.$changeStream.startAtOperationTime = value;
+    onlyOnce(this, 'startAtOperationTime');
+    return this;
+  }
+}
+
+/**
+ * Returns a Change Stream cursor on a collection, a database, or an entire
+ * cluster. Must be the first stage in the pipeline.
+ * @category Stages
+ * @function
+ * @param {ChangeStreamExpression} [opts] Change stream options.
+ * @returns {ChangeStream} A ChangeStream instance populated according to
+ * argument input.
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/changeStream/|MongoDB reference}
+ * for $changeStream
+ * @example <caption>Basic example</caption>
+ * $changeStream();
+ * // returns
+ * { $changeStream: {} }
+ */
+const $changeStream = (opts?: ChangeStreamExpression) => new ChangeStream(opts)
+
 type CountOperator = {
   $count: string,
 };
@@ -163,6 +441,10 @@ type CountOperator = {
  * { $count: "count" }
  */
 const $count = (name = 'count') => ({ $count: name });
+
+type DocumentsOperator = {
+  $documents: ObjectExpression;
+};
 
 /**
  * Returns literal documents from input values.
@@ -467,6 +749,30 @@ class Merge {
  */
 const $merge = (into: MixedCollectionName, onExpr?: string | Array<string>) => new Merge(into, onExpr);
 
+type OutExpression =  string | DatabaseAndCollectionName;
+
+/**
+ * @category Stages
+ * @param {MixedCollectionName} collection The collection name or Collection object
+ * to output to.
+ * @param {string} [db] The output database name.
+ * @returns {OutExpression} An $out expression accoring to argument input.
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/out/|MongoDB reference}
+ * for $out
+ * @example <caption>Basic</caption>
+ * $out('myCollection');
+ * // returns
+ * { $out: 'myCollection' }
+ * @example <caption>With db</caption>
+ * $out('myCollection', 'myDb');
+ * // returns
+ * { $out: { coll: 'myCollection', db: 'myDb' } }
+ */
+const $out = (collection: MixedCollectionName, db?: string) => {
+  if (db) return { $out: { db, coll: getCollectionName(collection) } };
+  return { $out: collection };
+};
+
 type ProjectStage = {
   $project: ObjectExpression,
 };
@@ -663,6 +969,10 @@ type AcosOperator = {
  * @returns {AcosOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/acos/|MongoDB reference}
  * for $acos
+ * @example
+ * $radiansToDegrees($acos($divide('$side_b', '$hypotenuse')));
+ * // returns
+ * { $radiansToDegrees: { $acos: { $divide: ['$side_b', '$hypotenuse'] } } }
  */
 const $acos = se('$acos');
 
@@ -678,13 +988,40 @@ type AcoshOperator = {
  * @returns {AcoshOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/acosh/|MongoDB reference}
  * for $acosh
+ * @example
+ * $radiansToDegrees($acosh('$x'));
+ * // returns
+ * { $radiansToDegrees: { $acosh: '$x' } }
  */
 const $acosh = se('$acosh');
 
-// TODO
+type AddOperator = {
+  $add: Array<DateExpression|NumberExpression>,
+};
+
+/**
+ * Adds numbers together or adds numbers and a date.
+ * @category Operators
+ * @function
+ * @param {...NumberExpression|DateExpression} expression Number and/or date
+ * expressions to add.
+ * @returns {AddOperator}
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/add/|MongoDB reference}
+ * for $add
+ */
 const $add = pta('$add');
 
-// TODO
+/**
+ * Add safetely, ensuring all expressions resolve a number. Null values resolve
+ * to zero.
+ * @category Operators
+ * @function
+ * @param {...NumberExpression} expression Numbers or expressions to adds.
+ * @returns {AddOperator}
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/add/|MongoDB reference}
+ * for $add
+ * @see $add
+ */
 const $addSafe = safeNumberArgs($add);
 
 type AddToSetOperator = {
@@ -703,15 +1040,52 @@ type AddToSetOperator = {
  */
 const $addToSet = se('$addToSet');
 
-// TODO
-const $all = pta('$all');
-// TODO
+type AllElementsTrueOperator = {
+  $allElementsTrue: Array<Expression>,
+};
+
+/**
+ * Evaluates an array as a set and returns `true` if no element in the array is
+ * `false`. Otherwise, returns false. An empty array returns `true`.
+ * @category Operators
+ * @function
+ * @param {...Expression} expressions Any valid expressions.
+ * @returns {AllElementsTrueOperator}
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/allElementsTrue/|MongoDB reference}
+ * for $allElementsTrue
+ */
 const $allElementsTrue = pta('$allElementsTrue');
 
-// TODO
+type AndOperator = {
+  $and: Array<Expression>,
+};
+
+/**
+ * Evaluates one or more expressions and returns true if _all_ of the
+ * expressions are `true` or if run with no argument expressions.
+ * @category Operators
+ * @function
+ * @param {...Expression} expressions Any valid expressions.
+ * @returns {AndOperator}
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/and/|MongoDB reference}
+ * for $and
+ */
 const $and = pta('$and');
 
-// TODO
+type AnyElementTrueOperator = {
+  $anyElementTrue: Array<Expression>,
+};
+
+/**
+ * Evaluates an array as a set and returns `true` if any of the elements are 
+ * `true`. Returns `false` otherwise.
+ * @category Operators
+ * @function
+ * @param {...Expression} expressions Any valid expressions.
+ * @returns {AnyElementTrueOperator}
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/anyElementTrue/|MongoDB reference}
+ * for $anyElementTrue
+ */
 const $anyElementTrue = pta('$anyElementTrue');
 
 type ArrayElemAtExpression = [Array<any>, number];
@@ -904,11 +1278,39 @@ type CmpOperator = {
  */
 const $cmp = at('$cmp');
 
-// TODO
+type ConcatOperator = {
+  $concat: Array<StringExpression>,
+};
+
+/**
+ * Concatenates strings returning the result.
+ * @category Operators
+ * @function
+ * @param {...StringExpression} stringParts The string parts to concatenate.
+ * @returns {ConcatOperator}
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/concat/|MongoDB reference}
+ * for $concat
+ */
 const $concat = pta('$concat');
 
-// TODO
+// TODO $concatSafe
+
+type ConcatArraysOperator = {
+  $concatArrays: Array<ArrayExpression>,
+};
+
+/**
+ * Concatenates arrays.
+ * @category Operators
+ * @function
+ * @param {...ArrayExpression} arrays The arrays to concatenate.
+ * @returns {ConcatArraysOperator}
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/concatArrays/|MongoDB reference}
+ * for $concatArrays
+ */
 const $concatArrays = pta('$concatArrays');
+
+// TODO $concatArraysSafe
 
 type ConditionExpression = {
   if: Expression,
@@ -1074,15 +1476,40 @@ const $divideSafe = (dividend: number | string, divisor: number | string, defaul
 }).in($cond($eq('$$divisor', 0), defaultValue, $divide('$$dividend', '$$divisor')));
 // }).in($if($not($eq('$$divisor', 0))).then($divide('$$dividend', '$$divisor')).else(defaultValue));
 
-// TODO
-const $documentNumber = ne('$documentNumber');
-
-type DocumentsOperator = {
-  $documents: ObjectExpression;
+type DocumentNumberOperator = {
+  $documentNumber: ObjectExpression,
 };
 
-// TODO
-const $eq = taf('$eq');
+/**
+ * Returns the position of a document in the $setWindowFields stage.
+ * @category Operators
+ * @function
+ * @returns {DocumentNumberOperator}
+ * @example
+ * $addFields({ docNum: $documentNumber() });
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/documentNumber/|MongoDB reference}
+ * for $documentNumber
+ */
+const $documentNumber = ne('$documentNumber');
+
+type EqOperator = {
+  $eq: [Expression, Expression],
+};
+
+/**
+ * Compares two values and returns `true` when the values are equivalent and
+ * `false` otherwise.
+ * @category Operators
+ * @function
+ * @param {Expression} expression1 First expression.
+ * @param {Expression} expression2 Second expression.
+ * @returns {EqOperator}
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/eq/|MongoDB reference}
+ * for $eq
+ * @example
+ * $eq('$qty', 250);
+ */
+const $eq = at('$eq');
 
 type ExpOperator = {
   $exp: NumberExpression,
@@ -2214,8 +2641,6 @@ export = {
   addFields: $addFields,
   $addToSet,
   addToSet: $addToSet,
-  $all,
-  all: $all,
   $allElementsTrue,
   allElementsTrue: $allElementsTrue,
   $and,
@@ -2236,6 +2661,10 @@ export = {
   atanh: $atanh,
   $avg,
   avg: $avg,
+  $bucket,
+  bucket: $bucket,
+  $bucketAuto,
+  bucketAuto: $bucketAuto,
   $binarySize,
   binarySize: $binarySize,
   branch,
@@ -2244,6 +2673,8 @@ export = {
   case: branch,
   $ceil,
   ceil: $ceil,
+  $changeStream,
+  changeStream: $changeStream,
   $cmp,
   cmp: $cmp,
   $concat,
@@ -2354,6 +2785,8 @@ export = {
   not: $not,
   $or,
   or: $or,
+  $out,
+  out: $out,
   pipeline,
   $pow,
   pow: $pow,
@@ -2455,6 +2888,7 @@ export = {
   unwind: $unwind,
 
   // Enums
+  ChangeStreamFullDocument,
   MergeActionWhenMatched,
   MergeActionWhenNotMatched,
 };

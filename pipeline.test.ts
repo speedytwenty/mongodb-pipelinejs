@@ -16,6 +16,100 @@ describe('aggregation', () => {
         expect($.addFields({ x: 1 })).toEqual({ $addFields: { x: 1 } });
       });
     });
+    describe('$bucket', () => {
+      it('exports expected vars', () => {
+        expect($.bucket).toBeDefined();
+        expect($.$bucket).toBeDefined();
+        expect($.bucket).toStrictEqual($.$bucket);
+      });
+      const expected = {
+        $bucket: {
+          groupBy: '$price',
+          boundaries: [0, 200, 400],
+          default: 'Other',
+          output: {
+            count: { $sum: 1 },
+            artwork: { $push: { title: '$title', price: '$price' } },
+            averagePrice: { $avg: '$price' },
+          },
+        },
+      };
+      describe('static notation', () => {
+        it('returns expected result', () => {
+          const actual = $.bucket('$price', [0, 200, 400], 'Other', {
+            count: $.sum(1),
+            artwork: $.push({ title: '$title', price: '$price' }),
+            averagePrice: $.avg('$price'),
+          });
+          expect(actual).toEqual(expected);
+        });
+      });
+      describe('object notation', () => {
+        it('returns expected result', () => {
+          const actual = $.bucket('$price')
+            .boundaries(0, 200, 400)
+            .default('Other')
+            .output({
+              count: $.sum(1),
+              artwork: $.push({ title: '$title', price: '$price' }),
+              averagePrice: $.avg('$price'),
+            });
+          expect(actual).toEqual(expected);
+        });
+      });
+    });
+    describe('$bucketAuto', () => {
+      it('exports expected vars', () => {
+        expect($.bucketAuto).toBeDefined();
+        expect($.$bucketAuto).toBeDefined();
+        expect($.bucketAuto).toStrictEqual($.$bucketAuto);
+      });
+      const expected = {
+        $bucketAuto: {
+          groupBy: '$price',
+          buckets: 5,
+          granularity: 'R5',
+          output: {
+            count: { $sum: 1 },
+            artwork: { $push: { title: '$title', price: '$price' } },
+            averagePrice: { $avg: '$price' },
+          },
+        },
+      };
+      describe('static notation', () => {
+        it('returns expected result', () => {
+          const actual = $.bucketAuto('$price', 5, 'R5', {
+            count: $.sum(1),
+            artwork: $.push({ title: '$title', price: '$price' }),
+            averagePrice: $.avg('$price'),
+          });
+          expect(actual).toEqual(expected);
+        });
+      });
+      describe('object notation', () => {
+        it('returns expected result', () => {
+          const actual = $.bucketAuto('$price')
+            .buckets(5)
+            .granularity('R5')
+            .output({
+              count: $.sum(1),
+              artwork: $.push({ title: '$title', price: '$price' }),
+              averagePrice: $.avg('$price'),
+            });
+          expect(actual).toEqual(expected);
+        });
+      });
+    });
+    describe('$changeStream', () => {
+      it('exports expected vars', () => {
+        expect($.changeStream).toBeDefined();
+        expect($.$changeStream).toBeDefined();
+        expect($.changeStream).toStrictEqual($.$changeStream);
+      });
+      it('returns expected result', () => {
+        expect($.changeStream()).toEqual({ $changeStream: {} });
+      });
+    });
     describe('$count', () => {
       it('exports expected vars', () => {
         expect($.count).toBeDefined();
@@ -160,6 +254,17 @@ describe('aggregation', () => {
         expect(() => $.merge('colName').whenNotMatched($.MergeActionWhenNotMatched.Fail).whenNotMatched($.MergeActionWhenNotMatched.Fail)).toThrow();
       });
     });
+    describe('$out', () => {
+      it('exports expected vars', () => {
+        expect($.out).toBeDefined();
+        expect($.$out).toBeDefined();
+        expect($.out).toStrictEqual($.$out);
+      });
+      it('returns expected result', () => {
+        expect($.out('myCollection')).toEqual({ $out: 'myCollection' });
+        expect($.out('myCollection', 'myDb')).toEqual({ $out: { coll: 'myCollection', db: 'myDb' } });
+      });
+    });
     describe('$project', () => {
       it('exports expected vars', () => {
         expect($.project).toBeDefined();
@@ -272,6 +377,39 @@ describe('aggregation', () => {
     });
   });
   describe('operators', () => {
+    describe('$abs', () => {
+      it('exports expected vars', () => {
+        expect($.abs).toBeDefined();
+        expect($.$abs).toBeDefined();
+        expect($.abs).toStrictEqual($.$abs);
+      });
+      it('returns expected result', () => {
+        expect($.abs(-1)).toEqual({ $abs: -1 });
+        expect($.abs($.divide('$a', '$b'))).toEqual({ $abs: { $divide: ['$a', '$b'] } });
+      });
+    });
+    describe('$acos', () => {
+      it('exports expected vars', () => {
+        expect($.acos).toBeDefined();
+        expect($.$acos).toBeDefined();
+        expect($.acos).toStrictEqual($.$acos);
+      });
+      it('returns expected result', () => {
+        expect($.acos(-1)).toEqual({ $acos: -1 });
+        expect($.acos($.divide('$a', '$b'))).toEqual({ $acos: { $divide: ['$a', '$b'] } });
+      });
+    });
+    describe('$acosh', () => {
+      it('exports expected vars', () => {
+        expect($.acosh).toBeDefined();
+        expect($.$acosh).toBeDefined();
+        expect($.acosh).toStrictEqual($.$acosh);
+      });
+      it('returns expected result', () => {
+        expect($.acosh(-1)).toEqual({ $acosh: -1 });
+        expect($.acosh($.divide('$a', '$b'))).toEqual({ $acosh: { $divide: ['$a', '$b'] } });
+      });
+    });
     describe('$arrayElemAt', () => {
       it('exports expected vars', () => {
         expect($.arrayElemAt).toBeDefined();
@@ -286,7 +424,6 @@ describe('aggregation', () => {
         expect($.arrayElemAt('expression', 1)).toEqual({ $arrayElemAt: ['expression', 1] });
       });
     });
-
     describe('$cmp', () => {
       it('exports expected vars', () => {
         expect($.cmp).toBeDefined();
@@ -301,7 +438,6 @@ describe('aggregation', () => {
         expect($.cmp(1, 2)).toEqual({ $cmp: [1, 2] });
       });
     });
-
     describe('$cond', () => {
       it('exports expected vars', () => {
         expect($.cond).toBeDefined();
@@ -325,7 +461,6 @@ describe('aggregation', () => {
         });
       });
     });
-
     describe('$let', () => {
       it('exports expected vars', () => {
         expect($.let).toBeDefined();
@@ -366,7 +501,6 @@ describe('aggregation', () => {
       it('prevents redundant calls to methods', () => {
         expect(() => $.switch(1).default(2).default(3)).toThrow(/redundant/i);
       });
-
       describe('branch/case', () => {
         it('exports expected vars', () => {
           expect($.branch).toBeDefined();
