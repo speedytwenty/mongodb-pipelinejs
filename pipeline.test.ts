@@ -16,7 +16,51 @@ describe('aggregation', () => {
         expect($.addFields({ x: 1 })).toEqual({ $addFields: { x: 1 } });
       });
     });
-
+    describe('$count', () => {
+      it('exports expected vars', () => {
+        expect($.count).toBeDefined();
+        expect($.$count).toBeDefined();
+        expect($.count).toStrictEqual($.$count);
+      });
+      it('returns expected result', () => {
+        expect($.count()).toEqual({ $count: 'count' });
+        expect($.count('myCount')).toEqual({ $count: 'myCount' });
+      });
+    });
+    describe('$documents', () => {
+      it('exports expected vars', () => {
+        expect($.documents).toBeDefined();
+        expect($.$documents).toBeDefined();
+        expect($.documents).toStrictEqual($.$documents);
+      });
+      const expected = { $documents: [{ x: 1 }, { x: 2 }, { x: 3}] };
+      it('returns expected result', () => {
+        expect($.documents({ x: 1 }, { x: 2 }, { x: 3 })).toEqual(expected);
+      });
+      it('supports array input', () => {
+        expect($.documents([{ x: 1 }, { x: 2 }, { x: 3 }])).toEqual(expected);
+      });
+    });
+    describe('$group', () => {
+      it('exports expected vars', () => {
+        expect($.group).toBeDefined();
+        expect($.$group).toBeDefined();
+        expect($.group).toStrictEqual($.$group);
+      });
+      it('returns expected result', () => {
+        expect($.group({ _id: '$category', count: $.sum(1) })).toEqual({ $group: { _id: '$category', count: { $sum: 1 } } });
+      });
+    });
+    describe('$limit', () => {
+      it('exports expected vars', () => {
+        expect($.limit).toBeDefined();
+        expect($.$limit).toBeDefined();
+        expect($.limit).toStrictEqual($.$limit);
+      });
+      it('returns expected result', () => {
+        expect($.limit(10)).toEqual({ $limit: 10 });
+      });
+    });
     describe('$lookup', () => {
       it('exports expected vars', () => {
         expect($.lookup).toBeDefined();
@@ -46,6 +90,21 @@ describe('aggregation', () => {
         it('resolves collection name from collection object', () => {
           expect($.lookup({ s: { namespace: { collection: 'colName' } } }, 'asName')).toEqual({ $lookup: { from: 'colName', as: 'asName' } });
         });
+        it('supports $documents in pipeline', () => {
+          const actual = $.lookup([{ id: 1 }, { id: 2 }], 'subdocs')
+            .let({ docId: '$id' })
+            .pipeline($.match({ id: '$$docId' }));
+          expect(actual).toEqual({
+            $lookup: {
+              as: 'subdocs',
+              let: { docId: '$id' },
+              pipeline: [
+                { $documents: [{ id: 1 }, { id: 2 }] },
+                { $match: { id: '$$docId' } },
+              ],
+            },
+          });
+        });
       });
       describe('advanced lookup', () => {
         it('returns expected result', () => {
@@ -62,7 +121,16 @@ describe('aggregation', () => {
         });
       });
     });
-
+    describe('$match', () => {
+      it('exports expected vars', () => {
+        expect($.match).toBeDefined();
+        expect($.$match).toBeDefined();
+        expect($.match).toStrictEqual($.$match);
+      });
+      it('returns expected result', () => {
+        expect($.match({ x: 1 })).toEqual({ $match: { x: 1 } });
+      });
+    });
     describe('$merge', () => {
       it('exports expected vars', () => {
         expect($.merge).toBeDefined();
@@ -92,7 +160,56 @@ describe('aggregation', () => {
         expect(() => $.merge('colName').whenNotMatched($.MergeActionWhenNotMatched.Fail).whenNotMatched($.MergeActionWhenNotMatched.Fail)).toThrow();
       });
     });
-
+    describe('$project', () => {
+      it('exports expected vars', () => {
+        expect($.project).toBeDefined();
+        expect($.$project).toBeDefined();
+        expect($.project).toStrictEqual($.$project);
+      });
+      it('returns expected result', () => {
+        expect($.project({ x: '$y' })).toEqual({ $project: { x: '$y' } });
+      });
+    });
+    describe('$redact', () => {
+      it('exports expected vars', () => {
+        expect($.redact).toBeDefined();
+        expect($.$redact).toBeDefined();
+        expect($.redact).toStrictEqual($.$redact);
+      });
+      const expected = {
+        $redact: {
+          $cond: {
+            if: 1,
+            then: '$$PRUNE',
+            else: '$$KEEP',
+          },
+        },
+      };
+      describe('static notation', () => {
+        it('returns expected result', () => {
+          expect($.redact(1, '$$PRUNE', '$$KEEP')).toEqual(expected);
+        });
+      });
+      describe('object notation', () => {
+        it('returns expected result', () => {
+          expect($.redact(1).then('$$PRUNE').else('$$KEEP')).toEqual(expected);
+        });
+        it('prevents redundant calls to methods', () => {
+          expect(() => $.redact(1).then(2).then(3)).toThrow(/redundant/i);
+          expect(() => $.redact(1).else(2).else(3)).toThrow(/redundant/i);
+        });
+      });
+    });
+    describe('$replaceRoot', () => {
+      it('exports expected vars', () => {
+        expect($.replaceRoot).toBeDefined();
+        expect($.$replaceRoot).toBeDefined();
+        expect($.replaceRoot).toStrictEqual($.$replaceRoot);
+      });
+      it('returns expected result', () => {
+        expect($.replaceRoot('subdoc')).toEqual({ $replaceRoot: { newRoot: 'subdoc' } });
+      });
+    });
     describe('$set', () => { // alias of $addFields
       it('exports expects vars', () => {
         expect($.set).toBeDefined();
@@ -107,7 +224,26 @@ describe('aggregation', () => {
         expect($.set({ x: 1 })).toEqual({ $set: { x: 1 } });
       });
     });
-
+    describe('$skip', () => {
+      it('exports expected vars', () => {
+        expect($.skip).toBeDefined();
+        expect($.$skip).toBeDefined();
+        expect($.skip).toStrictEqual($.$skip);
+      });
+      it('returns expected result', () => {
+        expect($.skip(10)).toEqual({ $skip: 10 });
+      });
+    });
+    describe('$sort', () => {
+      it('exports expected vars', () => {
+        expect($.sort).toBeDefined();
+        expect($.$sort).toBeDefined();
+        expect($.sort).toStrictEqual($.$sort);
+      });
+      it('returns expected result', () => {
+        expect($.sort({ created: 1 })).toEqual({ $sort: { created: 1 } });
+      });
+    });
     describe('$unwind', () => {
       it('exports expected vars', () => {
         expect($.unwind).toBeDefined();
@@ -206,38 +342,6 @@ describe('aggregation', () => {
         expect(() => $.let().in({ x: 1 }).in({ y: 2 })).toThrow();
       });
     });
-
-    describe('$redact', () => {
-      it('exports expected vars', () => {
-        expect($.redact).toBeDefined();
-        expect($.$redact).toBeDefined();
-        expect($.redact).toStrictEqual($.$redact);
-      });
-      const expected = {
-        $redact: {
-          $cond: {
-            if: 1,
-            then: '$$PRUNE',
-            else: '$$KEEP',
-          },
-        },
-      };
-      describe('static notation', () => {
-        it('returns expected result', () => {
-          expect($.redact(1, '$$PRUNE', '$$KEEP')).toEqual(expected);
-        });
-      });
-      describe('object notation', () => {
-        it('returns expected result', () => {
-          expect($.redact(1).then('$$PRUNE').else('$$KEEP')).toEqual(expected);
-        });
-        it('prevents redundant calls to methods', () => {
-          expect(() => $.redact(1).then(2).then(3)).toThrow(/redundant/i);
-          expect(() => $.redact(1).else(2).else(3)).toThrow(/redundant/i);
-        });
-      });
-    });
-
     describe('$switch', () => {
       it('exports expected vars', () => {
         expect($.switch).toBeDefined();

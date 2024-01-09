@@ -129,16 +129,63 @@ type AddFieldsStage = { $addFields: ObjectExpression };
  * @param {ObjectExpression} expression Specify the name of each field to add
  * and set its value to an aggregation expression or an empty object.
  * @returns {AddFieldsStage} 
- * @example
- * $addFields({ fullName: $.concat('$firstName', ' ', '$lastName') });
- * // returns { $addFields: { fullName: { $concat: ['$firstName', ' ', '$lastName'] } } }
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/addFields/|MongoDB reference}
  * for $addFields
+ * @example
+ * $addFields({ fullName: $.concat('$firstName', ' ', '$lastName') });
+ * // returns
+ * { $addFields: { fullName: { $concat: ['$firstName', ' ', '$lastName'] } } }
  */
 const $addFields = se('$addFields', validateFieldExpression);
 
-// TODO
-const $count = (v = {}) => ({ $count: v });
+type CountOperator = {
+  $count: string,
+};
+
+/**
+ * Passes a document to the next stage that contains a count of the number of
+ * documents input to the stage.
+ * @category Stages
+ * @param {string} [name=count] The name of the output field for the count value.
+ * Must be a non-empty string, must not start with `$` nor contain `.`.
+ * @returns {CountOperator} A $count operator expression.
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/addFields/|MongoDB reference}
+ * for $addFields
+ * @example
+ * $count('myCount');
+ * // returns
+ * { $count: 'myCount' }
+ * @example <caption>Use default name "count"</caption>
+ * $count();
+ * // returns
+ * { $count: "count" }
+ */
+const $count = (name = 'count') => ({ $count: name });
+
+/**
+ * Returns literal documents from input values.
+ * @category Stages
+ * @param {ObjectExpression | Array<ObjectExpression>} mixed The first document
+ * or an array of documents.
+ * @param {...ObjectExpression[]} [args] Additional documents to input into the
+ * pipeline.
+ * @returns {DocumentsOperator} Returns a $document operator based on input.
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/documents/|MongoDB reference}
+ * for $documents
+ * @example
+ * $documents({ x: 10 }, { x: 2 }, { x: 5 });
+ * // returns
+ * { $documents: [{ x: 10 }, { x: 2 }, { x: 5 }
+ */
+const $documents = (mixed: ObjectExpression | Array<ObjectExpression>, ...args: ObjectExpression[]) => {
+  let documents;
+  if (Array.isArray(mixed)) {
+    documents = mixed as Array<ObjectExpression>;
+  } else {
+    documents = args.length ? [mixed, ...args] : [mixed];
+  }
+  return { $documents: documents };
+};
 
 type GroupStage = {
   $group: ObjectExpression,
@@ -151,6 +198,10 @@ type GroupStage = {
  * @returns {GroupStage}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/group/|MongoDB reference}
  * for $group
+ * @example
+ * $group({ _id: '$userId', total: $sum(1)) });
+ * // returns
+ * { $group: { _id: '$userId', total: { $sum: 1 } } };
  */
 const $group = se('$group');
 
@@ -165,6 +216,10 @@ type LimitStage = {
  * @returns {LimitStage}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/limit/|MongoDB reference}
  * for $limit
+ * @example
+ * $limit(10);
+ * // returns
+ * { $limit: 10 }
  */
 const $limit = se('$limit');
 
@@ -180,8 +235,18 @@ type LookupExpression = {
 class Lookup {
   public $lookup: Partial<LookupExpression> = {};
 
-  public constructor(from: MixedCollectionName, as: string, localField?: string, foreignField?: string) {
-    this.from(from);
+  public constructor(
+    from: MixedCollectionName | Array<ObjectExpression>,
+    as: string,
+    localField?: string,
+    foreignField?: string
+  ) {
+    if (Array.isArray(from)) {
+      this.$lookup.pipeline = [$documents(...from as [ObjectExpression, ...ObjectExpression[]])];
+    } else {
+      this.from(from);
+    }
+
     this.as(as);
     if (localField) this.localField(localField);
     if (foreignField) this.foreignField(foreignField);
@@ -218,19 +283,65 @@ class Lookup {
   }
 
   pipeline(...args: PipelineStage[]) {
+    let stages;
     if (args.length === 1 && Array.isArray(args[0])) {
-      [this.$lookup.pipeline] = args;
+      [stages] = args;
     } else {
-      this.$lookup.pipeline = args;
+      stages = args;
     }
+    if (this.$lookup.pipeline === undefined) {
+      this.$lookup.pipeline = stages as PipelineStage[];
+    } else {
+      this.$lookup.pipeline.push(...stages as PipelineStage[]);
+    }
+    console.log(this.$lookup.pipeline);
     onlyOnce(this, 'pipeline');
     return this;
   }
 }
-const $lookup = (from: MixedCollectionName, as: string, localField?: string, foreignField?: string) => new Lookup(from, as, localField, foreignField);
 
-// TODO
-const $map = (inputExpr: Expression, asExpr: string, inExpr: Expression) => ({ $map: { input: inputExpr, as: asExpr, in: inExpr } });
+/**
+ * Performs a left outer join to a collection in the same database adding a new
+ * array field to each input document.
+ * @category Stages
+ * @param {MixedCollectionName | Array<ObjectExpression>} from Specifies the collection in the same
+ * database to perform the join with. Can be either the collection name or the
+ * Collection object.
+ * @param {string} [asName] Specifies the name of the new array field to add to
+ * the input documents where the results of the lookup will be.
+ * @param {string} [localField] Specifies the field from the documents input to 
+ * the lookup stage.
+ * @param {string} [foreignField] Specifies the field in the from collection the documents input to 
+ * the lookup stage.
+ * @returns {Lookup} A Lookup instance populated based on argument input that
+ * contains the relevant methods for otherwise configuring a $lookup stage.
+ * @example <caption>Common lookup</caption>
+ * $lookup('myCollection', 'myVar', 'localId', 'foreignId');
+ * // returns a Lookup object populated like:
+ * { $lookup: { from: 'myCollection', as: 'myVar', localField: 'localId', foreignField: 'foreignId' } }
+ * @example <caption>Lookup with $documents in pipeline</caption>
+ * // Pass the documents as an array using the "from" argument
+ * $lookup([{ k: 1 }, { k: 2 }], 'subdocs')
+ *   .let({ key: '$docKey' })
+ *   .pipeline($.match({ k: '$$key' }));
+ * // returns a Lookup object populated as follows:
+ * {
+ *   $lookup: {
+ *     as: 'subdocs',
+ *     let: { localField: '$docKey' },
+ *     pipeline: [
+ *       { $documents: [{ k: 1 }, { k: 2 }] },
+ *       { $match: { k: '$$localField' } },
+ *     ],
+ *   },
+ * }
+ */
+const $lookup = (
+  from: MixedCollectionName | Array<ObjectExpression>,
+  asName: string,
+  localField?: string,
+  foreignField?: string,
+) => new Lookup(from, asName, localField, foreignField);
 
 type MatchStage = {
   $match: ObjectExpression,
@@ -244,8 +355,17 @@ type MatchStage = {
  * @returns {MatchStage}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/match/|MongoDB reference}
  * for $match
+ * @example
+ * $match({ x: 1 });
+ * // returns 
+ * { $match: { x: 1 } },
  */
 const $match = se('$match');
+
+type DatabaseAndCollectionName = {
+  db: string,
+  coll: MixedCollectionName,
+};
 
 /**
  * @typedef {string} MergeActionWhenMatched
@@ -272,7 +392,7 @@ enum MergeActionWhenNotMatched {
 }
 
 type MergeExpression = {
-  into: string,
+  into: string | DatabaseAndCollectionName,
   let?: Expression,
   on?: Expression,
   whenMatched?: MergeActionWhenMatched,
@@ -311,8 +431,33 @@ class Merge {
     return this;
   }
 }
-// TODO
-const $merge = (into: MixedCollectionName, onExpr?: Expression) => new Merge(into, onExpr);
+
+/**
+ * Writes the results of the pipeline to a specified location. Must be the last
+ * stage in the pipeline.
+ * @category Stages
+ * @param {MixedCollectionName | DatabaseAndCollectionName} into The collectionName or Collection object to
+ * merge into.
+ * @param {string|Array<string>} [onExpr] Field or fields that act as a unique
+ * identifier for the document.
+ * @returns {Merge} Returns a Merge object populated according to the provided
+ * arguments.
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/project/|MongoDB reference}
+ * for $project
+ * @example <caption>On single-field</caption>
+ * $merge('myCollection', 'key');
+ * // returns
+ * { $merge: { into: 'myCollection', on: 'key' } }
+ * @example <caption>On multiple fields</caption>
+ * $merge('myCollection', ['key1', 'key2']);
+ * { $merge: { into: 'myCollection', on: ['key1', 'key2'] } }
+ * @example <caption>Full example</caption>
+ * $merge('myCollection', ['key1', 'key2'])
+ *   .whenMatched('replace')
+ *   .whenNotMatched('discard');
+ * @todo Add support for accepting a pipleine for whenMatched.
+ */
+const $merge = (into: MixedCollectionName, onExpr?: string | Array<string>) => new Merge(into, onExpr);
 
 type ProjectStage = {
   $project: ObjectExpression,
@@ -326,6 +471,10 @@ type ProjectStage = {
  * @returns {ProjectStage}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/project/|MongoDB reference}
  * for $project
+ * @example
+ * $project({ x: '$y' });
+ * // returns
+ * { $project: { x: '$y' } }
  */
 const $project = se('$project');
 
@@ -370,8 +519,25 @@ class Redaction {
  */
 const $redact = (ifExpr: Expression, thenExpr?: Expression, elseExpr?: Expression) => new Redaction(ifExpr, thenExpr, elseExpr);
 
-// TODO
-const $replaceRoot = (newRoot: string) => ({ $replaceRoot: { newRoot } });
+type ReplaceRootStage = {
+  $replaceRoot: {
+    newRoot: string | ObjectExpression,
+  },
+};
+
+/**
+ * Replaces the input document with the specified document.
+ * @category Stages
+ * @param {string | ObjectExpression} newRoot The replacement document can be any valid express
+ * @returns {ReplaceRootStage} Returns a $replaceRoot operator stage.
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/replaceRoot/|MongoDB reference}
+ * for $replaceRoot
+ * @example
+ * $replaceRoot('$subpath');
+ * // returns
+ * { $replaceRoot: { newRoot: '$subpath' } }
+ */
+const $replaceRoot = (newRoot: string | ObjectExpression) => ({ $replaceRoot: { newRoot } });
 
 type SetStage = { $set: ObjectExpression };
 
@@ -381,10 +547,11 @@ type SetStage = { $set: ObjectExpression };
  * @param {ObjectExpression} expression Specify the name of each field to add
  * and set its value to an aggregation expression or an empty object.
  * @returns {SetStage} 
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/set/|MongoDB reference}
+ * for $set
  * @example
  * $set({ fullName: $.concat('$firstName', ' ', '$lastName') });
  * // returns { $set: { fullName: { $concat: ['$firstName', ' ', '$lastName'] } } }
- * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/set/|MongoDB reference}
  */
 const $set = se('$set', validateFieldExpression);
 
@@ -400,6 +567,10 @@ type SkipStage = {
  * @returns {SkipStage}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/skip/|MongoDB reference}
  * for $skip
+ * @example
+ * $skip(10);
+ * // returns
+ * { $skip: 10 }
  */
 const $skip = se('$skip');
 
@@ -414,6 +585,10 @@ type SortStage = {
  * @returns {SortStage}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/sort/|MongoDB reference}
  * for $sort
+ * @example
+ * $sort({ x: 1 });
+ * // returns
+ * { $sort: { x: 1 } }
  */
 const $sort = se('$sort');
 
@@ -865,6 +1040,10 @@ const $divideSafe = (dividend: number | string, divisor: number | string, defaul
 // TODO
 const $documentNumber = ne('$documentNumber');
 
+type DocumentsOperator = {
+  $documents: ObjectExpression;
+};
+
 // TODO
 const $eq = taf('$eq');
 
@@ -1128,6 +1307,9 @@ const $lt = taf('$lt');
 
 // TODO
 const $lte = taf('$lte');
+
+// TODO
+const $map = (inputExpr: Expression, asExpr: string, inExpr: Expression) => ({ $map: { input: inputExpr, as: asExpr, in: inExpr } });
 
 // TODO
 const $max = taf('$max');
@@ -2002,6 +2184,8 @@ export = {
   divideSafe: $divideSafe,
   $documentNumber,
   documentNumber: $documentNumber,
+  $documents,
+  documents: $documents,
   $each,
   each: $each,
   $elemMatch,
