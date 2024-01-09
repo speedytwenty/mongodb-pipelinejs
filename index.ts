@@ -139,6 +139,92 @@ type AddFieldsStage = { $addFields: ObjectExpression };
  */
 const $addFields = se('$addFields', validateFieldExpression);
 
+
+type BucketExpression = {
+  groupBy: string | Expression,
+  boundaries: Array<number>,
+  default: Expression,
+  output: ObjectExpression,
+};
+
+class Bucket {
+  public $bucket: Partial<BucketExpression> = {};
+  
+  constructor(
+    groupBy: Expression,
+    boundaries?: Array<number>,
+    defaultId?: Expression,
+    output?: ObjectExpression,
+  ) {
+    this.groupBy(groupBy);
+    if (boundaries) {
+      this.boundaries(...boundaries);
+    }
+    if (defaultId) {
+      this.default(defaultId);
+    }
+    if (output) {
+      this.output(output);
+    }
+  }
+
+  groupBy(value: Expression) {
+    this.$bucket.groupBy = value;
+    onlyOnce(this, 'groupBy');
+    return this;
+  }
+
+  boundaries(...args: Array<number>) {
+    this.$bucket.boundaries = args;
+    onlyOnce(this, 'boundaries');
+    return this;
+  }
+
+  default(value: Expression) {
+    this.$bucket.default = value;
+    onlyOnce(this, 'default');
+    return this;
+  }
+
+  output(document: ObjectExpression) {
+    this.$bucket.output = document;
+    onlyOnce(this, 'output');
+    return this;
+  }
+}
+
+/**
+ * Categorizes incoming documents into groups called buckets, based on a 
+ * specified expression and bucket boundaries.
+ * @category Stages
+ * @function
+ * @param {Expression} groupBy An expression to group documents by.
+ * @param {Array<number>} [boundaries] An array of values based on the groupBy
+ * expression that specify the boundaries for each bucket.
+ * @param {Expression} [defaultId] Optional. A literal that specifies the _id of
+ * an additional bucket that contains all documents that don't fall into a 
+ * bucket specified by boundaries.
+ * @param {ObjectExpression} output Optional. A document that specifies the
+ * fields to include.
+ * @returns {Bucket} A Bucket object populated according to argument input.
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/addFields/|MongoDB reference}
+ * for $addFields
+ * @example <caption>Static notation</caption>
+ * $bucket('$price', [0, 200, 400], 'Other');
+ * // outputs
+ * { $bucket: { groupBy: '$price', boundaries: [0, 200, 400], default: 'Other' } }
+ * @example <caption>Object notation</caption>
+ * $bucket('$price').boundaries(0, 200, 400).default('Other');
+ * // outputs
+ * { $bucket: { groupBy: '$price', boundaries: [0, 200, 400], default: 'Other' } }
+ */
+const $bucket = (
+  groupBy: Expression,
+  boundaries?: Array<number>,
+  defaultId?: Expression,
+  output?: ObjectExpression,
+) => new Bucket(groupBy, boundaries, defaultId, output);
+
 type CountOperator = {
   $count: string,
 };
@@ -2236,6 +2322,8 @@ export = {
   atanh: $atanh,
   $avg,
   avg: $avg,
+  $bucket,
+  bucket: $bucket,
   $binarySize,
   binarySize: $binarySize,
   branch,
