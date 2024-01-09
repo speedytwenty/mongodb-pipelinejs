@@ -126,8 +126,6 @@ type AddFieldsStage = { $addFields: ObjectExpression };
 /**
  * Adds new fields to documents.
  * @category Stages
- * @static
- * @function
  * @param {ObjectExpression} expression Specify the name of each field to add
  * and set its value to an aggregation expression or an empty object.
  * @returns {AddFieldsStage} 
@@ -149,8 +147,6 @@ type GroupStage = {
 /**
  * Separates documents into groups according to a "group key".
  * @category Stages
- * @static
- * @function
  * @param {ObjectExpression} expression Refer to documentation.
  * @returns {GroupStage}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/group/|MongoDB reference}
@@ -165,8 +161,6 @@ type LimitStage = {
 /**
  * Limits the number of documents passed to the next stage in the pipeline.
  * @category Stages
- * @static
- * @function
  * @param {number} value A positive 64bit integer.
  * @returns {LimitStage}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/limit/|MongoDB reference}
@@ -246,8 +240,6 @@ type MatchStage = {
  * Filters the documents to pass only the documents that match the specified
  * conditions(s) to the next pipeline stage.
  * @category Stages
- * @static
- * @function
  * @param {ObjectExpression} fieldExpression
  * @returns {MatchStage}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/match/|MongoDB reference}
@@ -330,8 +322,6 @@ type ProjectStage = {
  * Passes along the documents with the specified fields to the next stage in
  * the pipeline.
  * @category Stages
- * @static
- * @function
  * @param {ObjectExpression} expression Refer to documentation.
  * @returns {ProjectStage}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/project/|MongoDB reference}
@@ -361,8 +351,6 @@ class Redaction {
  * Restricts entire documents or content within documents from being outputted
  * based on information stored in the documents themselves.
  * @category Stages
- * @static
- * @function
  * @param {Expression} ifExpr Any valid expression as long as it resolves to
  * a boolean.
  * @param {Expression} thenExpr Any valid expression as long as it resolves to
@@ -390,8 +378,6 @@ type SetStage = { $set: ObjectExpression };
 /**
  * Adds new fields to documents. (alias of $addFields)
  * @category Stages
- * @static
- * @function
  * @param {ObjectExpression} expression Specify the name of each field to add
  * and set its value to an aggregation expression or an empty object.
  * @returns {SetStage} 
@@ -410,8 +396,6 @@ type SkipStage = {
  * Skips over the specified number of documents that pass into the stage and
  * passes the remaining documents to the next stage in the pipeline.
  * @category Stages
- * @static
- * @function
  * @param {number} value The number of documents to skip.
  * @returns {SkipStage}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/skip/|MongoDB reference}
@@ -426,8 +410,6 @@ type SortStage = {
 /**
  * Sorts all input documents and returns them to the pipeline in sorted order.
  * @category Stages
- * @static
- * @function
  * @param {Expression} expression Refer to documentation.
  * @returns {SortStage}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/sort/|MongoDB reference}
@@ -439,8 +421,6 @@ const $sort = se('$sort');
  * Deconstructs an array field from the input documents to output a document
  * for each element.
  * @category Stages
- * @static
- * @function
  * @param {string} path Field path to an array field.
  * @param {boolean | undefined} [preserveNullAndEmptyArrays] Keep or prune documents that
  * don't have at least one value in the array field.
@@ -471,8 +451,6 @@ type AbsOperator = {
 /**
  * Returns the absolute value of a number.
  * @category Operators
- * @static
- * @function
  * @param {NumberExpression} numberOrExpression A number or an expresison that
  * resolves to a number.
  * @returns {AbsOperator}
@@ -488,8 +466,6 @@ type AcosOperator = {
 /**
  * Returns the inverse cosine (arc cosine) of a value.
  * @category Operators
- * @static
- * @function
  * @param {NumberExpression} numberOrExpression A number or an expression that
  * resolves to a number.
  * @returns {AcosOperator}
@@ -505,8 +481,6 @@ type AcoshOperator = {
 /**
  * Returns the inverse hyperbolic cosine (hyperbolic arc cosine) of a value.
  * @category Operators
- * @static
- * @function
  * @param {NumberExpression} numberOrExpression A number or an expression that
  * @returns {AcoshOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/acosh/|MongoDB reference}
@@ -528,8 +502,6 @@ type AddToSetOperator = {
  * Returns an array of all unique values that results from applying an
  * expression to each document in a group.
  * @category Operators
- * @static
- * @function
  * @param {Expression} expression A valid expression.
  * @returns {AddToSetOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/addToSet/|MongoDB reference}
@@ -557,8 +529,6 @@ type ArrayElemAtOperator = {
 /**
  * Returns the element at the specified array index.
  * @category Operators
- * @static
- * @function
  * @param {ArrayExpression} arrayExpression An array or a valid expression that
  * resolves to an array.
  * @param {NumberExpression} index A number of any valid expression that
@@ -583,8 +553,6 @@ type ArrayToObjectOperator = {
 /**
  * Converts an array into a single document.
  * @category Operators
- * @static
- * @function
  * @param {ArrayToObjectExpression} expression An array of two-element arrays
  * where the first element is the field name, and the second element is the
  * field value OR An array of documents that contains two fields, k and v where
@@ -602,8 +570,6 @@ type AsinOperator = {
 /**
  * Returns the inverse sine (arc sine) of a value.
  * @category Operators
- * @static
- * @function
  * @param {NumberExpression} numberExpression Any valid expression that resolves
  * to a number between -1 and 1.
  * @returns {AsinOperator}
@@ -619,8 +585,6 @@ type AsinhOperator = {
 /**
  * Returns the inverse hyperbolic sine (hyperbolic arc sine) of a value.
  * @category Operators
- * @static
- * @function
  * @param {NumberExpression} numberExpression Any valid expression that resolves
  * to a number.
  * @returns {AsinhOperator}
@@ -636,8 +600,6 @@ type AtanOperator = {
 /**
  * Returns the inverse tangent (arc tangent) of a value.
  * @category Operators
- * @static
- * @function
  * @param {NumberExpression} numberExpression Any valid expression that resolves
  * to a number.
  * @returns {AtanOperator}
@@ -653,8 +615,6 @@ type AtanhOperator = {
 /**
  * Returns the inverse hyperbolic tangent (hyperbolic arc tangent) of a value.
  * @category Operators
- * @static
- * @function
  * @param {NumberExpression} numberExpression Any valid expression that resolves
  * to a number between -1 and 1.
  * @returns {AtanhOperator}
@@ -671,8 +631,6 @@ type AverageOperator = {
 /**
  * Returns the average value of the numeric values ignoring non-numeric values.
  * @category Operators
- * @static
- * @function
  * @param {AverageExpression} expression Varies based on the stage it is being
  * used in. See documentation.
  * @returns {AverageOperator}
@@ -688,8 +646,6 @@ type BinarySizeOperator = {
 /**
  * Returns the size of a given string or binary data value's content in bytes.
  * @category Operators
- * @static
- * @function
  * @param {string | Binary | null} mixedInput Refer to documentation for
  * details.
  * @returns {BinarySizeOperator}
@@ -705,8 +661,6 @@ type BsonSizeOperator = {
 /**
  * Returns the size in bytes of a given document when encoded as BSON.
  * @category Operators
- * @static
- * @function
  * @param {ObjectExpression | null} expression Any valid expression that
  * resolves an object or null.
  * @returns {BsonSizeOperator}
@@ -722,8 +676,6 @@ type CeilOperator = {
 /**
  * Returns the smallest integer greater than or equal to the specified number.
  * @category Operators
- * @static
- * @function
  * @param {NumberExpression} numberExpression Any valid expression that resolves
  * to a number.
  * @returns {CeilOperator}
@@ -739,8 +691,6 @@ type CmpOperator = {
 /**
  * Compares two values.
  * @category Operators
- * @static
- * @function
  * @param {Expression} expression1 Any valid expression.
  * @param {Expression} expression2 Any valid expression.
  * @returns {CmpOperator}
@@ -787,8 +737,6 @@ class Condition {
  * Evaluates a boolean expression to return one of the two specified return
  * expressions.
  * @category Operators
- * @static
- * @function
  * @param {Expression} ifExpr A boolean expression.
  * @param {Expression} [thenExpr] The true case.
  * @param {Expression} [elseExpr] The false case.
@@ -813,8 +761,6 @@ type CosOperator = {
 /**
  * Returns the cosine of a value that is measured in radians.
  * @category Operators
- * @static
- * @function
  * @param {NumberExpression} numberExpression Any valid expression that resolves
  * to a number.
  * @returns {CosOperator}
@@ -830,8 +776,6 @@ type CoshOperator = {
 /**
  * Returns the hyperbolic cosine of a value that is measured in radians.
  * @category Operators
- * @static
- * @function
  * @param {NumberExpression} numberExpression Any valid expression that resolves
  * to a number.
  * @returns {CoshOperator}
@@ -848,8 +792,6 @@ type CovariancePopOperator = {
  * Returns the population covariance of two numeric expressions that are
  * evaluated using documents in the $setWindowFields stage window.
  * @category Operators
- * @static
- * @function
  * @param {NumberExpression} expression1 A number of any valid expression that
  * resolves to a number.
  * @param {NumberExpression} expression2 A number of any valid expression that
@@ -869,8 +811,6 @@ type CovarianceSampOperator = {
  * using documents in the $setWindowFields stage window.
  * Non-numeric, null and missing fields are ignored.
  * @category Operators
- * @static
- * @function
  * @param {NumberExpression} expression1 A number of any valid expression that
  * resolves to a number.
  * @param {NumberExpression} expression2 A number of any valid expression that
@@ -888,8 +828,6 @@ type DegreesToRadiansOperator = {
 /**
  * Converts the input value measured in degrees to radians.
  * @category Operators
- * @static
- * @function
  * @param {NumberExpression} numberExpression Any valid expression that resolves
  * to a number.
  * @returns {DegreesToRadiansOperator}
@@ -907,8 +845,6 @@ type DivideOperator = {
 /**
  * Divides one number by another and returns the result.
  * @category Operators
- * @static
- * @function
  * @param {NumberExpression} expression1 A number of any valid expression that
  * resolves to a number.
  * @param {NumberExpression} expression2 A number of any valid expression that
@@ -939,8 +875,6 @@ type ExpOperator = {
 /**
  * Raises Euler's number to the specified exponent and returns the result.
  * @category Operators
- * @static
- * @function
  * @param {NumberExpression} numberExpression Any valid expression that resolves
  * to a number.
  * @returns {ExpOperator}
@@ -968,8 +902,6 @@ type FloorOperator = {
 /**
  * Returns the largest integer less than or equal to the specified number.
  * @category Operators
- * @static
- * @function
  * @param {NumberExpression} numberExpression Any valid expression that resolves
  * to a number.
  * @returns {FloorOperator}
@@ -990,8 +922,6 @@ const $gte = taf('$gte');
 /**
  * Shortcut object-notation for the $cond operation (if/then/else).
  * @category Operators
- * @static
- * @function
  * @param {Expression} ifExpr A boolean expression.
  * @returns {Condition} A Condition object that resembles the $cond operation
  * whose then and else case should be set using the corresponding methods.
@@ -1010,8 +940,6 @@ type IfNullOperator = {
  * value.
  * TODO - Should support more than two args.
  * @category Operators
- * @static
- * @function
  * @param {Expression} input Input value.
  * @param {Expression} replacement Replacement value.
  * @returns {IfNullOperator}
@@ -1042,8 +970,6 @@ type IsNumberOperator = {
 /**
  * Checks if the specified expression resolves to a numeric BSON type.
  * @category Operators
- * @static
- * @function
  * @param {Expression} expression Any valid expression.
  * @returns {IsNumberOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/isNumber/|MongoDB reference}
@@ -1059,8 +985,6 @@ type LastOperator = {
  * Returns the result of an expression of the last document in a group of 
  * documents. Only meaningful when documents are in a defined order.
  * @category Operators
- * @static
- * @function
  * @param {Expression} expression Any valid expression.
  * @returns {LastOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/last/|MongoDB reference}
@@ -1099,8 +1023,6 @@ class LetVarsIn {
  * Binds variables for use in the specified expression and returns the result of
  * the expression.
  * @category Operators
- * @static
- * @function
  * @param {Expression} varsExpr Assign for the variables accessible in the in
  * expression.
  * @param {Expression} [inExpr] The expression to evaluate.
@@ -1130,8 +1052,6 @@ type LinearFillOperator = {
  * surrounding field values.
  * Only available in the $setWindowFields stage.
  * @category Operators
- * @static
- * @function
  * @param {Expression} expression A valid expression.
  * @returns {LinearFillOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/linearFill/|MongoDB reference}
@@ -1147,8 +1067,6 @@ type LiteralOperator = {
  * Returns a value without parsing. Use for values that the aggregation pipeline
  * may interpret as an expression.
  * @category Operators
- * @static
- * @function
  * @param {any} value Any value
  * @returns {LiteralOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/literal/|MongoDB reference}
@@ -1165,8 +1083,6 @@ type LocfOperator = {
  * a window to the last non-null value for the field.
  * Only available in the $setWindowFields stage.
  * @category Operators
- * @static
- * @function
  * @param {Expression} expression A valid expression.
  * @returns {LocfOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/locf/|MongoDB reference}
@@ -1182,8 +1098,6 @@ type LogOperator = {
  * Calculates the log of a number in the specified base and returns the result
  * as a double.
  * @category Operators
- * @static
- * @function
  * @param {NumberExpression} expression1 A number of any valid expression that
  * resolves to a non-negative number.
  * @param {NumberExpression} expression2 A number of any valid expression that
@@ -1201,8 +1115,6 @@ type Log10Operator = {
 /**
  * Calculates the log base 10 of a number and returns the result as a double.
  * @category Operators
- * @static
- * @function
  * @param {NumberExpression} numberOrExpression A number or an expresison that
  * resolves to a number.
  * @returns {Log10Operator}
@@ -1235,8 +1147,6 @@ type MetaOperator = {
 /**
  * Returns the metadata associated with a document when performing a search.
  * @category Operators
- * @static
- * @function
  * @param {MetaDataKeyword} metaDataKeyword
  * @returns {MetaOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/meta/|MongoDB reference}
@@ -1254,8 +1164,6 @@ type ModOperator = {
 /**
  * Divides one number by another and returns the remainder.
  * @category Operators
- * @static
- * @function
  * @param {NumberExpression} expression1 A number of any valid expression that
  * resolves to a number.
  * @param {NumberExpression} expression2 A number of any valid expression that
@@ -1283,8 +1191,6 @@ type NeOperator = {
  * Compares two values and returns true when the values are not equivalent and
  * false when the values are equivalent.
  * @category Operators
- * @static
- * @function
  * @param {Expression} expression1 Any valid expression.
  * @param {Expression} expression2 Any valid expression.
  * @returns {NeOperator}
@@ -1300,8 +1206,6 @@ type NotOperator = {
 /**
  * Evalutes a boolean and returns the opposite boolean value.
  * @category Operators
- * @static
- * @function
  * @param {Expression} expression Any valid expression.
  * @returns {NotOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/not/|MongoDB reference}
@@ -1316,8 +1220,6 @@ type ObjectToArrayOperator = {
 /**
  * Converts a document to an array.
  * @category Operators
- * @static
- * @function
  * @param {ObjectExpression} object Any valid expression that evaluates to an
  * expression.
  * @returns {ObjectToArrayOperator}
@@ -1336,8 +1238,6 @@ type PowOperator = {
 /**
  * Raises a number to the specified exponent and retuns the result.
  * @category Operators
- * @static
- * @function
  * @param {NumberExpression} expression1 A number of any valid expression that
  * resolves to a number.
  * @param {NumberExpression} expression2 A number of any valid expression that
@@ -1356,8 +1256,6 @@ type PushOperator = {
  * Returns an array of all values that result from applying an expression to
  * documents.
  * @category Operators
- * @static
- * @function
  * @param expression Expression
  * @param {Expression} expression A valid expression.
  * @returns {PushOperator}
@@ -1373,8 +1271,6 @@ type RadiansToDegreesOperator = {
 /**
  * Converts an input value measured in radians to degrees.
  * @category Operators
- * @static
- * @function
  * @param {NumberExpression} numberOrExpression A number or an expresison that
  * resolves to a number.
  * @returns {RadiansToDegreesOperator}
@@ -1396,8 +1292,6 @@ type RoundOperator = {
 /**
  * Rounds a number to a whole integer or to a specified decimal place.
  * @category Operators
- * @static
- * @function
  * @param {NumberExpression} expression1 A number of any valid expression that
  * resolves to a number.
  * @param {NumberExpression} expression2 A number of any valid expression that
@@ -1439,8 +1333,6 @@ type SampleRateOperator = {
 /**
  * Matches a random selection of input documents.
  * @category Operators
- * @static
- * @function
  * @param {number} value A floating point number between 0 and 1.
  * @returns {SampleRateOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/sampleRate/|MongoDB reference}
@@ -1456,8 +1348,6 @@ type SetDifferenceOperator = {
  * Takes two sets and returns an array containing the elements that only exist
  * in the first set.
  * @category Operators
- * @static
- * @function
  * @param {ArrayExpression} expression1 An array or a valid expression that
  * resolves to an array.
  * @param {ArrayExpression} expression2 An array or a valid expression that
@@ -1483,8 +1373,6 @@ type SetIsSubsetOperator = {
  * second, including when the first array equals the second array, and false
  * otherwise.
  * @category Operators
- * @static
- * @function
  * @param {ArrayExpression} expression1 An array or a valid expression that
  * resolves to an array.
  * @param {ArrayExpression} expression2 An array or a valid expression that
@@ -1505,8 +1393,6 @@ type SinOperator = {
 /**
  * Returns the sine of a value that is measured in radians.
  * @category Operators
- * @static
- * @function
  * @param {NumberExpression} numberOrExpression A number or an expresison that
  * resolves to a number.
  * @returns {SinOperator}
@@ -1522,8 +1408,6 @@ type SinhOperator = {
 /**
  * Returns the hyperbolic sine of a value that is measured in radians.
  * @category Operators
- * @static
- * @function
  * @param {NumberExpression} numberOrExpression A number or an expresison that
  * resolves to a number.
  * @returns {SinhOperator}
@@ -1539,8 +1423,6 @@ type SizeOperator = {
 /**
  * Counts and returns the total number of items in an array.
  * @category Operators
- * @static
- * @function
  * @param {ArrayExpression} arrayExpression An array or a valid expression that
  * resolves to an array.
  * @returns {SizeOperator}
@@ -1556,8 +1438,6 @@ type SplitOperator = {
 /**
  * Divides a string into an array of substrings based on a delimeter.
  * @category Operators
- * @static
- * @function
  * @param {StringExpression} value The string to be split.
  * @param {StringExpression} delimeter The delimeter to use.
  * @returns {SplitOperator}
@@ -1570,8 +1450,6 @@ const $split = at('$split');
  * Calculates the square root of a positive number and returns the result as a
  * double.
  * @category Operators
- * @static
- * @function
  * @param {NumberExpression} numberOrExpression A number or an expresison that
  * resolves to a number.
  * @returns {SortStage}
@@ -1587,8 +1465,6 @@ type StrLenBytesOperator = {
 /**
  * Returns the number of UTF-9 encoded bytes in the specified string.
  * @category Operators
- * @static
- * @function
  * @param {StringExpression} expression A string or a valid expression that
  * resolves to a string.
  * @returns {StrLenBytesOperator}
@@ -1604,8 +1480,6 @@ type StrLenCpOperator = {
 /**
  * Returns the number of UTF-8 code pints in the specified string.
  * @category Operators
- * @static
- * @function
  * @param {StringExpression} expression A string or a valid expression that
  * resolves to a string.
  * @returns {StrLenCpOperator}
@@ -1621,8 +1495,6 @@ type StrcasecmpOperator = {
 /**
  * Performs case-insensitive comparison of two strings.
  * @category Operators
- * @static
- * @function
  * @param {StringExpression} exression1 A string or any valid expression that
  * resolves to a string.
  * @param {StringExpression} exression2 A string or any valid expression that
@@ -1642,8 +1514,6 @@ type SubtractOperator = {
  * difference in milliseconds, or a date and a number in milliseconds to return
  * the resulting date.
  * @category Operators
- * @static
- * @function
  * @param {NumberExpression} expression1 A number of any valid expression that
  * resolves to a number.
  * @param {NumberExpression} expression2 A number of any valid expression that
@@ -1665,8 +1535,6 @@ type SumOperator = {
  * Calculates and returns the collective sum of numeric values. Non-numeric
  * values are ignored.
  * @category Operators
- * @static
- * @function
  * @param {Expression} expression Refer to documentation.
  * @returns {SumOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/sum/|MongoDB reference}
@@ -1741,8 +1609,6 @@ class Switch {
  * evaluates to true, $switch executes a specified expression and breaks out of
  * the control flow.
  * @category Operators
- * @static
- * @function
  * @param {DefaultOrBranches} [arg1] Default path or array of branches.
  * @param {DefaultOrBranches} [arg2] Default path or array of branches.
  * @returns {Switch} Returns a Switch object that resembles the $switch operator
@@ -1790,8 +1656,6 @@ type TanOperator = {
 /**
  * Returns the tangent of a value that is measured in radians.
  * @category Operators
- * @static
- * @function
  * @param {NumberExpression} numberOrExpression A number or an expresison that
  * resolves to a number.
  * @returns {TanOperator}
@@ -1807,8 +1671,6 @@ type TanhOperator = {
 /**
  * Returns the hyperbolic tangent of a value that is measured in radians.
  * @category Operators
- * @static
- * @function
  * @param {NumberExpression} numberOrExpression A number or an expresison that
  * resolves to a number.
  * @returns {TanhOperator}
@@ -1824,8 +1686,6 @@ type ToBoolOperator = {
 /**
  * Converts a value to a boolean.
  * @category Operators
- * @static
- * @function
  * @param {Expression} expression Any valid expression.
  * @returns {ToBoolOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/toBool/|MongoDB reference}
@@ -1840,8 +1700,6 @@ type ToDateOperator = {
  * Converts a value to a date. Will produce an error if the value cannot be
  * converted.
  * @category Operators
- * @static
- * @function
  * @param {Expression} expression Any valid expression.
  * @returns {ToDateOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/toDate/|MongoDB reference}
@@ -1857,8 +1715,6 @@ type ToDecimalOperator = {
  * Converts a value to a decimal. Throws an error if the value cannot be
  * converted.
  * @category Operators
- * @static
- * @function
  * @param {Expression} expression Any valid expression.
  * @returns {ToDecimalOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/toDecimal/|MongoDB reference}
@@ -1874,8 +1730,6 @@ type ToDoubleOperator = {
  * Converts a value to a double. Throws an error if the value cannot be
  * converted.
  * @category Operators
- * @static
- * @function
  * @param {Expression} expression Any valid expression.
  * @returns {ToDoubleOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/toDouble/|MongoDB reference}
@@ -1891,8 +1745,6 @@ type ToIntOperator = {
  * Converts a value to an integer. Throws an error if the value cannot be
  * converted.
  * @category Operators
- * @static
- * @function
  * @param {Expression} expression Any valid expression.
  * @returns {ToIntOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/toInt/|MongoDB reference}
@@ -1906,8 +1758,6 @@ type ToLongOperator = {
 /**
  * Converts a value to a long. Throws an error if the value cannot be converted.
  * @category Operators
- * @static
- * @function
  * @param {Expression} expression Any valid expression.
  * @returns {ToLongOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/toLong/|MongoDB reference}
@@ -1923,8 +1773,6 @@ type ToObjectIdOperator = {
  * Converts a value to an ObjectId. Throws an error if the value cannot be
  * converted.
  * @category Operators
- * @static
- * @function
  * @param {Expression} expression Any valid expression.
  * @returns {ToObjectIdOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/toObjectId/|MongoDB reference}
@@ -1940,8 +1788,6 @@ type ToStringOperator = {
  * Converts a value to a string. Throws an error if the value cannot be
  * converted.
  * @category Operators
- * @static
- * @function
  * @param {Expression} expression Any valid expression.
  * @returns {ToStringOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/toString/|MongoDB reference}
@@ -1956,8 +1802,6 @@ type ToUpperOperator = {
 /**
  * Returns a string converts to uppercase.
  * @category Operators
- * @static
- * @function
  * @param {StringExpression} expression A string or a valid expression that
  * resolves to a string.
  * @returns {ToUpperOperator}
@@ -1973,8 +1817,6 @@ type ToLowerOperator = {
 /**
  * Returns a string converted to lowercase.
  * @category Operators
- * @static
- * @function
  * @param {StringExpression} expression A string or a valid expression that
  * resolves to a string.
  * @returns {ToLowerOperator}
@@ -1990,8 +1832,6 @@ type TruncOperator = {
 /**
  * Truncates a number to a whole integer or to a specified decimal place.
  * @category Operators
- * @static
- * @function
  * @param {NumberExpression} expression1 A number of any valid expression that
  * resolves to a number.
  * @param {NumberExpression} expression2 A number of any valid expression that
@@ -2009,8 +1849,6 @@ type TsIncrementOperator = {
 /**
  * Returns the incrementing ordinal from a timestamp as a long.
  * @category Operators
- * @static
- * @function
  * @param {Expression} expression Any valid expression that resolves to a
  * timestamp.
  * @returns {TsIncrementOperator}
@@ -2026,8 +1864,6 @@ type TsSecondOperator = {
 /**
  * Returns the seconds from a timestamp as a long.
  * @category Operators
- * @static
- * @function
  * @param {Expression} expression Any valid expression that resolves to a
  * timestamp.
  * @returns {TsSecondOperator}
@@ -2043,8 +1879,6 @@ type TypeOperator = {
 /**
  * Returns a string that specifies the BSON type of the argument.
  * @category Operators
- * @static
- * @function
  * @param {Expression} Any valid expression.
  * @returns {TypeOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/type/|MongoDB reference}
