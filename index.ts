@@ -2641,8 +2641,6 @@ export = {
   addFields: $addFields,
   $addToSet,
   addToSet: $addToSet,
-  $all,
-  all: $all,
   $allElementsTrue,
   allElementsTrue: $allElementsTrue,
   $and,
