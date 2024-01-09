@@ -146,16 +146,19 @@ type AddFieldsStage = { $addFields: ObjectExpression };
 const $addFields = se('$addFields', validateFieldExpression);
 
 
-type BucketExpression = {
-  groupBy: string | Expression,
+type BaseBucketExpression = {
+  groupBy: Expression,
+  output: ObjectExpression,
+};
+
+type BucketExpression = BaseBucketExpression & {
   boundaries: Array<number>,
   default: Expression,
-  output: ObjectExpression,
 };
 
 class Bucket {
   public $bucket: Partial<BucketExpression> = {};
-  
+
   constructor(
     groupBy: Expression,
     boundaries?: Array<number>,
@@ -180,9 +183,9 @@ class Bucket {
     return this;
   }
 
-  boundaries(...args: Array<number>) {
-    this.$bucket.boundaries = args;
-    onlyOnce(this, 'boundaries');
+  output(document: ObjectExpression) {
+    this.$bucket.output = document;
+    onlyOnce(this, 'output');
     return this;
   }
 
@@ -192,9 +195,9 @@ class Bucket {
     return this;
   }
 
-  output(document: ObjectExpression) {
-    this.$bucket.output = document;
-    onlyOnce(this, 'output');
+  boundaries(...args: Array<number>) {
+    this.$bucket.boundaries = args;
+    onlyOnce(this, 'boundaries');
     return this;
   }
 }
@@ -213,8 +216,8 @@ class Bucket {
  * @param {ObjectExpression} output Optional. A document that specifies the
  * fields to include.
  * @returns {Bucket} A Bucket object populated according to argument input.
- * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/addFields/|MongoDB reference}
- * for $addFields
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/bucket/|MongoDB reference}
+ * for $bucket
  * @example <caption>Static notation</caption>
  * $bucket('$price', [0, 200, 400], 'Other');
  * // outputs
@@ -230,6 +233,89 @@ const $bucket = (
   defaultId?: Expression,
   output?: ObjectExpression,
 ) => new Bucket(groupBy, boundaries, defaultId, output);
+
+type BucketAutoExpression = BaseBucketExpression & {
+  buckets: number,
+  granularity: string,
+};
+
+class BucketAuto {
+  public $bucketAuto: Partial<BucketAutoExpression> = {};
+
+  constructor(
+    groupBy: Expression,
+    buckets?: number,
+    granularity?: string,
+    output?: ObjectExpression,
+  ) {
+    this.groupBy(groupBy);
+    if (buckets) {
+      this.buckets(buckets);
+    }
+    if (granularity) {
+      this.granularity(granularity);
+    }
+    if (output) {
+      this.output(output);
+    }
+  }
+
+  groupBy(value: Expression) {
+    this.$bucketAuto.groupBy = value;
+    onlyOnce(this, 'groupBy');
+    return this;
+  }
+
+  output(document: ObjectExpression) {
+    this.$bucketAuto.output = document;
+    onlyOnce(this, 'output');
+    return this;
+  }
+
+  buckets(value: number) {
+    this.$bucketAuto.buckets = value;
+    onlyOnce(this, 'buckets');
+    return this;
+  }
+
+  granularity(value: string) {
+    this.$bucketAuto.granularity = value;
+    onlyOnce(this, 'granularity');
+    return this;
+  }
+}
+
+/**
+ * Categorizes incoming documents into a specific number of groups, called
+ * buckets, based on a specified expression.
+ * @category Stages
+ * @function
+ * @param {Expression} groupBy An expression to group documents by.
+ * @param {number} [buckets] A positive number for the number of buckets into
+ * which input documents will be grouped.
+ * expression that specify the boundaries for each bucket.
+ * @param {string} [granularity] Optional. Specifies the preferred number series
+ * to use.
+ * @param {ObjectExpression} [output] Optional. A document that specifies the
+ * fields to include.
+ * @returns {Bucket} A Bucket object populated according to argument input.
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/bucketAuto/|MongoDB reference}
+ * for $bucketAuto
+ * @example <caption>Static notation</caption>
+ * $bucketAuto('$_id', 5);
+ * // returns
+ * { $bucketAuto: { groupBy: '$_id', buckets: 5 } }
+ * @example <caption>Object notation</caption>
+ * $bucketAuto('$_id').buckets(5).granularity('R5');
+ * // returns
+ * { $bucketAuto: { groupBy: '$_id', buckets: 5, granularity: 'R5' } }
+ */
+const $bucketAuto = (
+  groupBy: Expression, 
+  buckets?: number,
+  granularity?: string,
+  output?: ObjectExpression,
+) => new BucketAuto(groupBy, buckets, granularity, output);
 
 type CountOperator = {
   $count: string,
@@ -2455,6 +2541,8 @@ export = {
   avg: $avg,
   $bucket,
   bucket: $bucket,
+  $bucketAuto,
+  bucketAuto: $bucketAuto,
   $binarySize,
   binarySize: $binarySize,
   branch,

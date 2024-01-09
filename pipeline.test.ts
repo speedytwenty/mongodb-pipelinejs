@@ -58,6 +58,48 @@ describe('aggregation', () => {
         });
       });
     });
+    describe('$bucketAuto', () => {
+      it('exports expected vars', () => {
+        expect($.bucketAuto).toBeDefined();
+        expect($.$bucketAuto).toBeDefined();
+        expect($.bucketAuto).toStrictEqual($.$bucketAuto);
+      });
+      const expected = {
+        $bucketAuto: {
+          groupBy: '$price',
+          buckets: 5,
+          granularity: 'R5',
+          output: {
+            count: { $sum: 1 },
+            artwork: { $push: { title: '$title', price: '$price' } },
+            averagePrice: { $avg: '$price' },
+          },
+        },
+      };
+      describe('static notation', () => {
+        it('returns expected result', () => {
+          const actual = $.bucketAuto('$price', 5, 'R5', {
+            count: $.sum(1),
+            artwork: $.push({ title: '$title', price: '$price' }),
+            averagePrice: $.avg('$price'),
+          });
+          expect(actual).toEqual(expected);
+        });
+      });
+      describe('object notation', () => {
+        it('returns expected result', () => {
+          const actual = $.bucketAuto('$price')
+            .buckets(5)
+            .granularity('R5')
+            .output({
+              count: $.sum(1),
+              artwork: $.push({ title: '$title', price: '$price' }),
+              averagePrice: $.avg('$price'),
+            });
+          expect(actual).toEqual(expected);
+        });
+      });
+    });
     describe('$count', () => {
       it('exports expected vars', () => {
         expect($.count).toBeDefined();
