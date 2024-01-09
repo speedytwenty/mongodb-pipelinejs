@@ -42,6 +42,8 @@ type StringExpression = ObjectExpression | Array<any>;
  */
 type DateExpression = ObjectExpression | Date;
 
+type Timestamp = number;
+
 // always two
 const at = (ns: string) => (...args: any[]) => {
   if (args.length !== 2) {
@@ -316,6 +318,104 @@ const $bucketAuto = (
   granularity?: string,
   output?: ObjectExpression,
 ) => new BucketAuto(groupBy, buckets, granularity, output);
+
+enum ChangeStreamFullDocument {
+  default,
+  required,
+  updateLookup,
+  whenAvailable,
+}
+
+enum ChangeStreamFullDocumentBeforeChange {
+  off,
+  whenAvailable,
+  required,
+}
+
+type ChangeStreamExpression = {
+  allChangesForCluster?: boolean,
+  fullDocument?: ChangeStreamFullDocument,
+  fullDocumentBeforeChange?: ChangeStreamFullDocumentBeforeChange,
+  resumeAfter?: number,
+  showExpandedEvents?: boolean,
+  startAfter?: ObjectExpression,
+  startAtOperationTime?: Timestamp,
+};
+
+class ChangeStream {
+  public $changeStream: ChangeStreamExpression = {};
+
+  constructor(opts: ChangeStreamExpression = {}) {
+    if (opts.allChangesForCluster) this.allChangesForCluster(opts.allChangesForCluster);
+    if (opts.fullDocument) this.fullDocument(opts.fullDocument);
+    if (opts.fullDocumentBeforeChange) this.fullDocumentBeforeChange(opts.fullDocumentBeforeChange);
+    if (opts.resumeAfter) this.resumeAfter(opts.resumeAfter);
+    if (opts.showExpandedEvents) this.showExpandedEvents(opts.showExpandedEvents);
+    if (opts.startAfter) this.startAfter(opts.startAfter);
+    if (opts.startAtOperationTime) this.startAtOperationTime(opts.startAtOperationTime);
+    // Object.entries(opts).forEach(([opt, val]) => this[opt as keyof ChangeStreamExpression](val));
+    // Object.entries(opts).forEach(([opt, val]) => this[opt as keyof ChangeStreamExpression](val));
+  }
+
+  allChangesForCluster(value: boolean) {
+    this.$changeStream.allChangesForCluster = value;
+    onlyOnce(this, 'allChangesForCluster');
+    return this;
+  }
+
+  fullDocument(value: ChangeStreamFullDocument) {
+    this.$changeStream.fullDocument = value;
+    onlyOnce(this, 'fullDocument');
+    return this;
+  }
+
+  fullDocumentBeforeChange(value: ChangeStreamFullDocumentBeforeChange) {
+    this.$changeStream.fullDocumentBeforeChange = value;
+    onlyOnce(this, 'fullDocument');
+    return this;
+  }
+
+  resumeAfter(value: number) {
+    this.$changeStream.resumeAfter = value;
+    onlyOnce(this, 'resumeAfter');
+    return this;
+  }
+
+  showExpandedEvents(value: boolean) {
+    this.$changeStream.showExpandedEvents = value;
+    onlyOnce(this, 'showExpandedEvents');
+    return this;
+  }
+
+  startAfter(value: ObjectExpression) {
+    this.$changeStream.startAfter = value;
+    onlyOnce(this, 'startAfter');
+    return this;
+  }
+
+  startAtOperationTime(value: Timestamp) {
+    this.$changeStream.startAtOperationTime = value;
+    onlyOnce(this, 'startAtOperationTime');
+    return this;
+  }
+}
+
+/**
+ * Returns a Change Stream cursor on a collection, a database, or an entire
+ * cluster. Must be the first stage in the pipeline.
+ * @category Stages
+ * @function
+ * @param {ChangeStreamExpression} [opts] Change stream options.
+ * @returns {ChangeStream} A ChangeStream instance populated according to
+ * argument input.
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/changeStream/|MongoDB reference}
+ * for $changeStream
+ * @example <caption>Basic example</caption>
+ * $changeStream();
+ * // returns
+ * { $changeStream: {} }
+ */
+const $changeStream = (opts?: ChangeStreamExpression) => new ChangeStream(opts)
 
 type CountOperator = {
   $count: string,
@@ -2551,6 +2651,8 @@ export = {
   case: branch,
   $ceil,
   ceil: $ceil,
+  $changeStream,
+  changeStream: $changeStream,
   $cmp,
   cmp: $cmp,
   $concat,
@@ -2762,6 +2864,7 @@ export = {
   unwind: $unwind,
 
   // Enums
+  ChangeStreamFullDocument,
   MergeActionWhenMatched,
   MergeActionWhenNotMatched,
 };
