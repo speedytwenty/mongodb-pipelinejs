@@ -254,6 +254,17 @@ describe('aggregation', () => {
         expect(() => $.merge('colName').whenNotMatched($.MergeActionWhenNotMatched.Fail).whenNotMatched($.MergeActionWhenNotMatched.Fail)).toThrow();
       });
     });
+    describe('$out', () => {
+      it('exports expected vars', () => {
+        expect($.out).toBeDefined();
+        expect($.$out).toBeDefined();
+        expect($.out).toStrictEqual($.$out);
+      });
+      it('returns expected result', () => {
+        expect($.out('myCollection')).toEqual({ $out: 'myCollection' });
+        expect($.out('myCollection', 'myDb')).toEqual({ $out: { coll: 'myCollection', db: 'myDb' } });
+      });
+    });
     describe('$project', () => {
       it('exports expected vars', () => {
         expect($.project).toBeDefined();

@@ -749,6 +749,30 @@ class Merge {
  */
 const $merge = (into: MixedCollectionName, onExpr?: string | Array<string>) => new Merge(into, onExpr);
 
+type OutExpression =  string | DatabaseAndCollectionName;
+
+/**
+ * @category Stages
+ * @param {MixedCollectionName} collection The collection name or Collection object
+ * to output to.
+ * @param {string} [db] The output database name.
+ * @returns {OutExpression} An $out expression accoring to argument input.
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/out/|MongoDB reference}
+ * for $out
+ * @example <caption>Basic</caption>
+ * $out('myCollection');
+ * // returns
+ * { $out: 'myCollection' }
+ * @example <caption>With db</caption>
+ * $out('myCollection', 'myDb');
+ * // returns
+ * { $out: { coll: 'myCollection', db: 'myDb' } }
+ */
+const $out = (collection: MixedCollectionName, db?: string) => {
+  if (db) return { $out: { db, coll: getCollectionName(collection) } };
+  return { $out: collection };
+};
+
 type ProjectStage = {
   $project: ObjectExpression,
 };
@@ -2763,6 +2787,8 @@ export = {
   not: $not,
   $or,
   or: $or,
+  $out,
+  out: $out,
   pipeline,
   $pow,
   pow: $pow,
