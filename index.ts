@@ -36,6 +36,12 @@ type ArrayExpression = ObjectExpression | Array<any>;
  */
 type StringExpression = ObjectExpression | Array<any>;
 
+/**
+ * @typedef {ObjectExpression | number} DateExpression
+ * @description A date or any valid expression that resolves to a date.
+ */
+type DateExpression = ObjectExpression | Date;
+
 // always two
 const at = (ns: string) => (...args: any[]) => {
   if (args.length !== 2) {
@@ -163,6 +169,10 @@ type CountOperator = {
  * { $count: "count" }
  */
 const $count = (name = 'count') => ({ $count: name });
+
+type DocumentsOperator = {
+  $documents: ObjectExpression;
+};
 
 /**
  * Returns literal documents from input values.
@@ -663,6 +673,10 @@ type AcosOperator = {
  * @returns {AcosOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/acos/|MongoDB reference}
  * for $acos
+ * @example
+ * $radiansToDegrees($acos($divide('$side_b', '$hypotenuse')));
+ * // returns
+ * { $radiansToDegrees: { $acos: { $divide: ['$side_b', '$hypotenuse'] } } }
  */
 const $acos = se('$acos');
 
@@ -678,13 +692,40 @@ type AcoshOperator = {
  * @returns {AcoshOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/acosh/|MongoDB reference}
  * for $acosh
+ * @example
+ * $radiansToDegrees($acosh('$x'));
+ * // returns
+ * { $radiansToDegrees: { $acosh: '$x' } }
  */
 const $acosh = se('$acosh');
 
-// TODO
+type AddOperator = {
+  $add: Array<DateExpression|NumberExpression>,
+};
+
+/**
+ * Adds numbers together or adds numbers and a date.
+ * @category Operators
+ * @function
+ * @param {...NumberExpression|DateExpression} expression Number and/or date
+ * expressions to add.
+ * @returns {AddOperator}
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/add/|MongoDB reference}
+ * for $add
+ */
 const $add = pta('$add');
 
-// TODO
+/**
+ * Add safetely, ensuring all expressions resolve a number. Null values resolve
+ * to zero.
+ * @category Operators
+ * @function
+ * @param {...NumberExpression} expression Numbers or expressions to adds.
+ * @returns {AddOperator}
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/add/|MongoDB reference}
+ * for $add
+ * @see $add
+ */
 const $addSafe = safeNumberArgs($add);
 
 type AddToSetOperator = {
@@ -703,15 +744,52 @@ type AddToSetOperator = {
  */
 const $addToSet = se('$addToSet');
 
-// TODO
-const $all = pta('$all');
-// TODO
+type AllElementsTrueOperator = {
+  $allElementsTrue: Array<Expression>,
+};
+
+/**
+ * Evaluates an array as a set and returns `true` if no element in the array is
+ * `false`. Otherwise, returns false. An empty array returns `true`.
+ * @category Operators
+ * @function
+ * @param {...Expression} expressions Any valid expressions.
+ * @returns {AllElementsTrueOperator}
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/allElementsTrue/|MongoDB reference}
+ * for $allElementsTrue
+ */
 const $allElementsTrue = pta('$allElementsTrue');
 
-// TODO
+type AndOperator = {
+  $and: Array<Expression>,
+};
+
+/**
+ * Evaluates one or more expressions and returns true if _all_ of the
+ * expressions are `true` or if run with no argument expressions.
+ * @category Operators
+ * @function
+ * @param {...Expression} expressions Any valid expressions.
+ * @returns {AndOperator}
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/and/|MongoDB reference}
+ * for $and
+ */
 const $and = pta('$and');
 
-// TODO
+type AnyElementTrueOperator = {
+  $anyElementTrue: Array<Expression>,
+};
+
+/**
+ * Evaluates an array as a set and returns `true` if any of the elements are 
+ * `true`. Returns `false` otherwise.
+ * @category Operators
+ * @function
+ * @param {...Expression} expressions Any valid expressions.
+ * @returns {AnyElementTrueOperator}
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/anyElementTrue/|MongoDB reference}
+ * for $anyElementTrue
+ */
 const $anyElementTrue = pta('$anyElementTrue');
 
 type ArrayElemAtExpression = [Array<any>, number];
@@ -904,11 +982,39 @@ type CmpOperator = {
  */
 const $cmp = at('$cmp');
 
-// TODO
+type ConcatOperator = {
+  $concat: Array<StringExpression>,
+};
+
+/**
+ * Concatenates strings returning the result.
+ * @category Operators
+ * @function
+ * @param {...StringExpression} stringParts The string parts to concatenate.
+ * @returns {ConcatOperator}
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/concat/|MongoDB reference}
+ * for $concat
+ */
 const $concat = pta('$concat');
 
-// TODO
+// TODO $concatSafe
+
+type ConcatArraysOperator = {
+  $concatArrays: Array<ArrayExpression>,
+};
+
+/**
+ * Concatenates arrays.
+ * @category Operators
+ * @function
+ * @param {...ArrayExpression} arrays The arrays to concatenate.
+ * @returns {ConcatArraysOperator}
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/concatArrays/|MongoDB reference}
+ * for $concatArrays
+ */
 const $concatArrays = pta('$concatArrays');
+
+// TODO $concatArraysSafe
 
 type ConditionExpression = {
   if: Expression,
@@ -1074,15 +1180,40 @@ const $divideSafe = (dividend: number | string, divisor: number | string, defaul
 }).in($cond($eq('$$divisor', 0), defaultValue, $divide('$$dividend', '$$divisor')));
 // }).in($if($not($eq('$$divisor', 0))).then($divide('$$dividend', '$$divisor')).else(defaultValue));
 
-// TODO
-const $documentNumber = ne('$documentNumber');
-
-type DocumentsOperator = {
-  $documents: ObjectExpression;
+type DocumentNumberOperator = {
+  $documentNumber: ObjectExpression,
 };
 
-// TODO
-const $eq = taf('$eq');
+/**
+ * Returns the position of a document in the $setWindowFields stage.
+ * @category Operators
+ * @function
+ * @returns {DocumentNumberOperator}
+ * @example
+ * $addFields({ docNum: $documentNumber() });
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/documentNumber/|MongoDB reference}
+ * for $documentNumber
+ */
+const $documentNumber = ne('$documentNumber');
+
+type EqOperator = {
+  $eq: [Expression, Expression],
+};
+
+/**
+ * Compares two values and returns `true` when the values are equivalent and
+ * `false` otherwise.
+ * @category Operators
+ * @function
+ * @param {Expression} expression1 First expression.
+ * @param {Expression} expression2 Second expression.
+ * @returns {EqOperator}
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/eq/|MongoDB reference}
+ * for $eq
+ * @example
+ * $eq('$qty', 250);
+ */
+const $eq = at('$eq');
 
 type ExpOperator = {
   $exp: NumberExpression,

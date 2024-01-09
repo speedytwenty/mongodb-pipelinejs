@@ -272,6 +272,39 @@ describe('aggregation', () => {
     });
   });
   describe('operators', () => {
+    describe('$abs', () => {
+      it('exports expected vars', () => {
+        expect($.abs).toBeDefined();
+        expect($.$abs).toBeDefined();
+        expect($.abs).toStrictEqual($.$abs);
+      });
+      it('returns expected result', () => {
+        expect($.abs(-1)).toEqual({ $abs: -1 });
+        expect($.abs($.divide('$a', '$b'))).toEqual({ $abs: { $divide: ['$a', '$b'] } });
+      });
+    });
+    describe('$acos', () => {
+      it('exports expected vars', () => {
+        expect($.acos).toBeDefined();
+        expect($.$acos).toBeDefined();
+        expect($.acos).toStrictEqual($.$acos);
+      });
+      it('returns expected result', () => {
+        expect($.acos(-1)).toEqual({ $acos: -1 });
+        expect($.acos($.divide('$a', '$b'))).toEqual({ $acos: { $divide: ['$a', '$b'] } });
+      });
+    });
+    describe('$acosh', () => {
+      it('exports expected vars', () => {
+        expect($.acosh).toBeDefined();
+        expect($.$acosh).toBeDefined();
+        expect($.acosh).toStrictEqual($.$acosh);
+      });
+      it('returns expected result', () => {
+        expect($.acosh(-1)).toEqual({ $acosh: -1 });
+        expect($.acosh($.divide('$a', '$b'))).toEqual({ $acosh: { $divide: ['$a', '$b'] } });
+      });
+    });
     describe('$arrayElemAt', () => {
       it('exports expected vars', () => {
         expect($.arrayElemAt).toBeDefined();
@@ -286,7 +319,6 @@ describe('aggregation', () => {
         expect($.arrayElemAt('expression', 1)).toEqual({ $arrayElemAt: ['expression', 1] });
       });
     });
-
     describe('$cmp', () => {
       it('exports expected vars', () => {
         expect($.cmp).toBeDefined();
@@ -301,7 +333,6 @@ describe('aggregation', () => {
         expect($.cmp(1, 2)).toEqual({ $cmp: [1, 2] });
       });
     });
-
     describe('$cond', () => {
       it('exports expected vars', () => {
         expect($.cond).toBeDefined();
@@ -325,7 +356,6 @@ describe('aggregation', () => {
         });
       });
     });
-
     describe('$let', () => {
       it('exports expected vars', () => {
         expect($.let).toBeDefined();
@@ -366,7 +396,6 @@ describe('aggregation', () => {
       it('prevents redundant calls to methods', () => {
         expect(() => $.switch(1).default(2).default(3)).toThrow(/redundant/i);
       });
-
       describe('branch/case', () => {
         it('exports expected vars', () => {
           expect($.branch).toBeDefined();
