@@ -1095,8 +1095,15 @@ type AndOperator = {
  * @returns {AndOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/and/|MongoDB reference}
  * for $and
+ * @example
+ * $and($or('$a', '$b'), '$c');
+ * // returns
+ * { $and: [{ $or: ['$a', '$b'], '$c'] }
+ * @example <caption>First argument array</caption>
+ * $and([$or('$a', '$b'), '$c']);
+ * // returns same as above
  */
-const $and = pta('$and');
+const $and = ptafaa('$and');
 
 type AnyElementTrueOperator = {
   $anyElementTrue: Array<Expression>,
@@ -1112,7 +1119,7 @@ type AnyElementTrueOperator = {
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/anyElementTrue/|MongoDB reference}
  * for $anyElementTrue
  */
-const $anyElementTrue = pta('$anyElementTrue');
+const $anyElementTrue = ptafaa('$anyElementTrue');
 
 type ArrayElemAtExpression = [Array<any>, number];
 
@@ -1317,7 +1324,7 @@ type ConcatOperator = {
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/concat/|MongoDB reference}
  * for $concat
  */
-const $concat = pta('$concat');
+const $concat = ptafaa('$concat');
 
 // TODO $concatSafe
 
@@ -1817,7 +1824,7 @@ const $map = (inputExpr: Expression, asExpr: string, inExpr: Expression) => ({ $
 const $max = taf('$max');
 
 // TODO - $mergeObjects accepts only one arg when used an accumulator
-const $mergeObjects = pta('$mergeObjects');
+const $mergeObjects = ptafaa('$mergeObjects');
 
 enum MetaDataKeyword {
   textScore,
@@ -1864,7 +1871,7 @@ const $mod = at('$mod');
 const $mul = se('$mul');
 
 // TODO
-const $multiply = pta('$multiply');
+const $multiply = ptafaa('$multiply');
 
 // TODO
 const $multiplySafe = safeNumberArgs($multiply);
@@ -1918,7 +1925,7 @@ type ObjectToArrayOperator = {
 const $objectToArray = se('$objectToArray');
 
 // TODO
-const $or = pta('$or');
+const $or = ptafaa('$or');
 
 type PowOperator = {
   $pow: [NumberExpression, NumberExpression],

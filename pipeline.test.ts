@@ -438,6 +438,19 @@ describe('aggregation', () => {
         expect($.addSafe([1, 2, '$myVar'])).toEqual({ $add: [1, 2, { $ifNull: ['$myVar', 0] }] });
       });
     });
+    describe('$and', () => {
+      it('exports expected vars', () => {
+        expect($.and).toBeDefined();
+        expect($.$and).toBeDefined();
+        expect($.and).toStrictEqual($.$and);
+      });
+      it('returns expected result', () => {
+        expect($.and($.or('$a', '$b'), '$c')).toEqual({ $and: [{ $or: ['$a', '$b'] }, '$c'], });
+      });
+      it('accepts array as first arg', () => {
+        expect($.and([$.or('$a', '$b'), '$c'])).toEqual({ $and: [{ $or: ['$a', '$b'] }, '$c'], });
+      });
+    });
     describe('$arrayElemAt', () => {
       it('exports expected vars', () => {
         expect($.arrayElemAt).toBeDefined();
