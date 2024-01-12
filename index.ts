@@ -1150,6 +1150,10 @@ type ArrayElemAtOperator = {
  * @returns {ArrayElemAtOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/arrayElemAt/|MongoDB reference}
  * for $arrayElemAt
+ * @example
+ * $arrayElemAt('$favorites', 0);
+ * // returns
+ * { $arrayElemAt: ['$favorites', 0] }
  */
 const $arrayElemAt = at('$arrayElemAt');
 
