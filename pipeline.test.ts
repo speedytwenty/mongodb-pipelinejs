@@ -762,6 +762,16 @@ describe('aggregation', () => {
         });
       });
     });
+    describe('$first', () => {
+      it('exports expected vars', () => {
+        expect($.first).toBeDefined();
+        expect($.$first).toBeDefined();
+        expect($.first).toStrictEqual($.$first);
+      });
+      it('returns expected result', () => {
+        expect($.first('$value')).toEqual({ $first: '$value' });
+      });
+    });
     describe('$floor', () => {
       it('exports expected vars', () => {
         expect($.floor).toBeDefined();
@@ -770,6 +780,26 @@ describe('aggregation', () => {
       });
       it('returns expected result', () => {
         expect($.floor('$value')).toEqual({ $floor: '$value' });
+      });
+    });
+    describe('$gt', () => {
+      it('exports expected vars', () => {
+        expect($.gt).toBeDefined();
+        expect($.$gt).toBeDefined();
+        expect($.gt).toStrictEqual($.$gt);
+      });
+      it('returns expected result', () => {
+        expect($.gt('$value', 1)).toEqual({ $gt: ['$value', 1] });
+      });
+    });
+    describe('$gte', () => {
+      it('exports expected vars', () => {
+        expect($.gte).toBeDefined();
+        expect($.$gte).toBeDefined();
+        expect($.gte).toStrictEqual($.$gte);
+      });
+      it('returns expected result', () => {
+        expect($.gte(['$value', 1])).toEqual({ $gte: ['$value', 1] });
       });
     });
     describe('$if', () => {
@@ -1051,7 +1081,6 @@ describe('aggregation', () => {
         expect($.radiansToDegrees('$value')).toEqual({ $radiansToDegrees: '$value' });
       });
     });
-    // TODO $round
     describe('$round', () => {
       it('exports expected vars', () => {
         expect($.round).toBeDefined();
@@ -1095,7 +1124,18 @@ describe('aggregation', () => {
         expect($.setIsSubset('$value', [1, 2, 3])).toEqual({ $setIsSubset: ['$value', [1, 2, 3]] });
       });
     });
-    // TODO $in
+    describe('$in', () => {
+      it('exports expected vars', () => {
+        expect($.in).toBeDefined();
+        expect($.$in).toBeDefined();
+        expect($.in).toStrictEqual($.$in);
+      });
+      it('returns expected result', () => {
+        expect($.in('$myArray')).toEqual({ $in: '$myArray' });
+        expect($.in([1, 3, 5])).toEqual({ $in: [1, 3, 5] });
+        expect($.in('$val', '$myArray')).toEqual({ $in: ['$val', '$myArray'] });
+      });
+    });
     describe('$size', () => {
       it('exports expected vars', () => {
         expect($.size).toBeDefined();

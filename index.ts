@@ -1009,6 +1009,8 @@ type AbsOperator = {
  */
 const $abs = se('$abs');
 
+// TODO $accumulator (object notation required)
+
 type AcosOperator = {
   $acos: NumberExpression,
 };
@@ -1410,6 +1412,10 @@ type CmpOperator = {
  * @returns {CmpOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/cmp/|MongoDB reference}
  * for $cmp
+ * @example
+ * $cmp('$qty', 250);
+ * // returns
+ * { $cmp: ['$qty', 250] }
  */
 const $cmp = at('$cmp');
 
@@ -1541,6 +1547,10 @@ type CoshOperator = {
  * @returns {CoshOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/cosh/|MongoDB reference}
  * for $cosh
+ * @example
+ * $cosh($degreesToRadians('$angle'));
+ * // returns
+ * { $cosh: { $degreesToRadians: '$angle' } }
  */
 const $cosh = se('$cosh');
 
@@ -1647,8 +1657,6 @@ type DocumentNumberOperator = {
  * @category Operators
  * @function
  * @returns {DocumentNumberOperator}
- * @example
- * $addFields({ docNum: $documentNumber() });
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/documentNumber/|MongoDB reference}
  * for $documentNumber
  * @example
@@ -1765,6 +1773,15 @@ class FilterOperator {
  * @param {number} [limit] Optional. A number expression that restricts the
  * number of matching array elements to return.
  * @returns {FilterOperator} A FilterOperator
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/filter/|MongoDB reference}
+ * for $filter
+ * @example <caption>Static notation</caption>
+ * $filter('$myArray', 'item', '$$item.sold', 10);
+ * // returns
+ * { $filter: { input: '$myArray', as: 'item', cond: '$$item.sold', limit: 10 } }
+ * @example <caption>Object notation</caption>
+ * $filter('$myArray').as('item').cond('$$item.sold').limit(10);
+ * // returns same as above
  */
 const $filter = (
   inputExpr: ArrayExpression,
@@ -1772,6 +1789,26 @@ const $filter = (
   condExpr?: Expression,
   limit?: number,
 ) => new FilterOperator(inputExpr, asName, condExpr, limit);
+
+type FirstOperator = {
+  $first: Expression,
+};
+
+/**
+ * Returns the result of an expression for the first document in a group of
+ * documents.
+ * @category Operators
+ * @param {Expression} expression Expression that resolves a value from the 
+ * document.
+ * @returns {FirstOperator}
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/first/|MongoDB reference}
+ * for $first
+ * @example
+ * $first('$date');
+ * // returns
+ * { $first: '$date' }
+ */
+const $first = se('$first');
 
 type FloorOperator = {
   $floor: NumberExpression,
@@ -1830,6 +1867,10 @@ type IfNullOperator = {
  * @returns {IfNullOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/ifNull/|MongoDB reference}
  * for $ifNull
+ * @example
+ * $ifNull('$myArray', []);
+ * // returns
+ * { $ifNull: ['$myArray', []] }
  */
 const $ifNull = at('$ifNull');
 
@@ -3057,6 +3098,8 @@ export = {
   expr: $expr,
   $filter,
   filter: $filter,
+  $first,
+  first: $first,
   $floor,
   floor: $floor,
   $group,
