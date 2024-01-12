@@ -1756,7 +1756,7 @@ class FilterOperator {
  * match the condition.
  * @category Operators
  * @param {ArrayExpression} inputExpr An expression that resolves to an array.
- * @param {string} [asExpr] Optional. A name for the value that represents each
+ * @param {string} [asName] Optional. A name for the value that represents each
  * element of the input array. If no name is specified, the variable name
  * defaults to `this`.
  * @param {Expression} [condExpr] An expression that resolves to boolean and can
@@ -1768,10 +1768,10 @@ class FilterOperator {
  */
 const $filter = (
   inputExpr: ArrayExpression,
-  asExpr?: string,
+  asName?: string,
   condExpr?: Expression,
   limit?: number,
-) => new FilterOperator(inputExpr, asExpr, condExpr, limit);
+) => new FilterOperator(inputExpr, asName, condExpr, limit);
 
 type FloorOperator = {
   $floor: NumberExpression,
@@ -2069,8 +2069,56 @@ const $lt = taf('$lt');
 // TODO
 const $lte = taf('$lte');
 
-// TODO
-const $map = (inputExpr: Expression, asExpr: string, inExpr: Expression) => ({ $map: { input: inputExpr, as: asExpr, in: inExpr } });
+type MapExpression = {
+  input: ArrayExpression,
+  as: string,
+  in: Expression,
+};
+
+class MapOperator {
+  $map: Partial<MapExpression> = {};
+  constructor(inputExpr: ArrayExpression, asName?: string, inExpr?: Expression) {
+    this.input(inputExpr);
+    if (asName) this.as(asName);
+    if (inExpr) this.in(inExpr);
+  }
+
+  input(inputExpr: ArrayExpression) {
+    this.$map.input = inputExpr;
+    onlyOnce(this, 'input');
+    return this;
+  }
+
+  as(name: string) {
+    this.$map.as = name;
+    onlyOnce(this, 'as');
+    return this;
+  }
+
+  in(expression: Expression) {
+    this.$map.in = expression;
+    onlyOnce(this, 'in');
+    return this;
+  }
+}
+
+/**
+ * Applies an expression to each item in an array and returns an array with the
+ * results.
+ * @param {ArrayExpression} inputExpr An expression that resolves to an array.
+ * @param {string} [asName] A name for the variable that represents each
+ * individual element of the input array.
+ * @param {Expression} [inExpr] An expression that is applied to each element of
+ * the input array.
+ * @returns {MapOperator} A MapOperator object populated based on input.
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/map/|MongoDB reference}
+ * for $map
+ * @example <caption>Static notation</caption>
+ * $map('$myArray', 'item', '$$item.name');
+ * // returns
+ * { $map: { input: '$myArray', as: 'item', in: '$$item.name' } }
+ */
+const $map = (inputExpr: ArrayExpression, asName?: string, inExpr?: Expression) => new MapOperator(inputExpr, asName, inExpr);
 
 // TODO
 const $max = taf('$max');

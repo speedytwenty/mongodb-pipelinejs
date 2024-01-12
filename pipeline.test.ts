@@ -913,7 +913,25 @@ describe('aggregation', () => {
         expect($.lte(['$value', 1])).toEqual({ $lte: ['$value', 1] });
       });
     });
-    // TODO $map
+    describe('$map', () => {
+      it('exports expected vars', () => {
+        expect($.map).toBeDefined();
+        expect($.$map).toBeDefined();
+        expect($.map).toStrictEqual($.$map);
+      });
+      describe('static notation', () => {
+        it('returns expected result', () => {
+          expect($.map('$myArray', 'item', '$$item.name'))
+            .toEqual({ $map: { input: '$myArray', as: 'item', in: '$$item.name' } });
+        });
+      });
+      describe('object notation', () => {
+        it('returns expected result', () => {
+          expect($.map('$myArray').as('item').in('$$item.name'))
+            .toEqual({ $map: { input: '$myArray', as: 'item', in: '$$item.name' } });
+        });
+      });
+    });
     describe('$max', () => {
       it('exports expected vars', () => {
         expect($.max).toBeDefined();
