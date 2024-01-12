@@ -22,25 +22,25 @@ type Expression = ObjectExpression | string | number | boolean;
  * @typedef {ObjectExpression | number} NumberExpression
  * @description A number or any valid expression that resolves to a number.
  */
-type NumberExpression = ObjectExpression | number;
+type NumberExpression = ObjectExpression | number | string;
 
 /**
  * @typedef {ObjectExpression | Array<any>} ArrayExpression
  * @description An array or any valid expression that resolves to an array.
  */
-type ArrayExpression = ObjectExpression | Array<any>;
+type ArrayExpression = ObjectExpression | Array<any> | string;
 
 /**
  * @typedef {ObjectExpression | string} StringExpression
  * @description A string or any valid expression that resolves to a string.
  */
-type StringExpression = ObjectExpression | Array<any>;
+type StringExpression = ObjectExpression | Array<any> | string;
 
 /**
  * @typedef {ObjectExpression | number} DateExpression
  * @description A date or any valid expression that resolves to a date.
  */
-type DateExpression = ObjectExpression | Date;
+type DateExpression = ObjectExpression | Date | string;
 
 type Timestamp = number;
 
@@ -1709,7 +1709,69 @@ const $elemMatch = se('$elemMatch');
 const $expr = se('$expr');
 
 // TODO
-const $filter = (inputExpr: Expression, asExpr: Expression, condExpr: Expression) => ({ $filter: { input: inputExpr, as: asExpr, cond: condExpr } });
+type FilterExpression = {
+  input: ArrayExpression,
+  cond: Expression,
+  as?: string,
+  limit?: number,
+};
+
+class FilterOperator {
+  $filter: Partial<FilterExpression> = {};
+  constructor(
+    inputExpr: ArrayExpression,
+    asExpr?: string,
+    cond?: Expression,
+    limit?: number,
+  ) {
+    this.input(inputExpr);
+    if (asExpr) this.as(asExpr);
+    if (cond) this.cond(cond);
+    if (limit !== undefined) this.limit(limit);
+  }
+
+  input(value: ArrayExpression) {
+    this.$filter.input = value;
+    return this;
+  }
+
+  as(name: string) {
+    this.$filter.as = name;
+    return this;
+  }
+
+  cond(expression: Expression) {
+    this.$filter.cond = expression;
+    return this;
+  }
+
+  limit(value: number) {
+    this.$filter.limit = value;
+    return this;
+  }
+}
+
+/**
+ * Filters an array based on the specified condition returning the items that
+ * match the condition.
+ * @category Operators
+ * @param {ArrayExpression} inputExpr An expression that resolves to an array.
+ * @param {string} [asExpr] Optional. A name for the value that represents each
+ * element of the input array. If no name is specified, the variable name
+ * defaults to `this`.
+ * @param {Expression} [condExpr] An expression that resolves to boolean and can
+ * references each elements of the input array with the variable name specified
+ * in as().
+ * @param {number} [limit] Optional. A number expression that restricts the
+ * number of matching array elements to return.
+ * @returns {FilterOperator} A FilterOperator
+ */
+const $filter = (
+  inputExpr: ArrayExpression,
+  asExpr?: string,
+  condExpr?: Expression,
+  limit?: number,
+) => new FilterOperator(inputExpr, asExpr, condExpr, limit);
 
 type FloorOperator = {
   $floor: NumberExpression,

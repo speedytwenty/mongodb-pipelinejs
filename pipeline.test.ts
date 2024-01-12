@@ -741,7 +741,27 @@ describe('aggregation', () => {
         expect($.exp('$value')).toEqual({ $exp: '$value' });
       });
     });
-    // TODO $filter
+    describe('$filter', () => {
+      it('exports expected vars', () => {
+        expect($.filter).toBeDefined();
+        expect($.$filter).toBeDefined();
+        expect($.filter).toStrictEqual($.$filter);
+      });
+      describe('static notation', () => {
+        it('returns expected result', () => {
+          expect($.filter('$myArray', 'item', '$$item.sold'))
+            .toEqual({ $filter: { input: '$myArray', as: 'item', cond: '$$item.sold' } });
+          expect($.filter('$myArray', 'item', '$$item.sold', 10))
+            .toEqual({ $filter: { input: '$myArray', as: 'item', cond: '$$item.sold', limit: 10 } });
+        });
+      });
+      describe('object notation', () => {
+        it('returns expected result', () => {
+          expect($.filter('$myArray').as('item').cond('$$item.sold').limit(10))
+            .toEqual({ $filter: { input: '$myArray', as: 'item', cond: '$$item.sold', limit: 10 } });
+        });
+      });
+    });
     describe('$floor', () => {
       it('exports expected vars', () => {
         expect($.floor).toBeDefined();
@@ -752,7 +772,21 @@ describe('aggregation', () => {
         expect($.floor('$value')).toEqual({ $floor: '$value' });
       });
     });
-    // TODO $if
+    describe('$if', () => {
+      it('exports expected vars', () => {
+        expect($.if).toBeDefined();
+        expect($.$if).toBeDefined();
+        expect($.if).toStrictEqual($.$if);
+      });
+      it('returns expected result', () => {
+        const expected = { $cond: { if: 1, then: 2, else: 3 } };
+        expect($.if(1).then(2).else(3)).toEqual(expected);
+      });
+      it('prevents redundant calls to methods', () => {
+        expect(() => $.if(1).then(2).then(3)).toThrow(/redundant/i);
+        expect(() => $.if(1).else(2).else(3)).toThrow(/redundant/i);
+      });
+    });
     describe('ifNull', () => {
       it('exports expected vars', () => {
         expect($.ifNull).toBeDefined();
