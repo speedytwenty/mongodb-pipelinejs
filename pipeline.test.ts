@@ -516,6 +516,26 @@ describe('aggregation', () => {
         });
       });
     });
+    describe('$asin', () => {
+      it('exports expected vars', () => {
+        expect($.asin).toBeDefined();
+        expect($.$asin).toBeDefined();
+        expect($.asin).toStrictEqual($.$asin);
+      });
+      it('returns expected result', () => {
+        expect($.asin($.divide('$side_a', '$hypotenuse'))).toEqual({ $asin: { $divide: ['$side_a', '$hypotenuse'] } });
+      });
+    });
+    describe('$asinh', () => {
+      it('exports expected vars', () => {
+        expect($.asinh).toBeDefined();
+        expect($.$asinh).toBeDefined();
+        expect($.asinh).toStrictEqual($.$asinh);
+      });
+      it('returns expected result', () => {
+        expect($.asinh('$x-coordinate')).toEqual({ $asinh: '$x-coordinate' });
+      });
+    });
     describe('$cmp', () => {
       it('exports expected vars', () => {
         expect($.cmp).toBeDefined();

@@ -1206,6 +1206,10 @@ type AsinOperator = {
  * @returns {AsinOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/asin/|MongoDB reference}
  * for $asin
+ * @example
+ * $asin($divide('$side_a', '$hyoptenuse'));
+ * // returns
+ * { $asin: { $divide: ['$side_a', '$hypotenuse'] } }
  */
 const $asin = se('$asin');
 
@@ -1222,6 +1226,10 @@ type AsinhOperator = {
  * @returns {AsinhOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/asinh/|MongoDB reference}
  * for $asinh
+ * @example
+ * $asinh('$x-coordinate');
+ * // returns
+ * { $asinh: '$x-coordinate' }
  */
 const $asinh = se('$asinh');
 
