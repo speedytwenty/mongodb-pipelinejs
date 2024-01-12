@@ -1366,6 +1366,13 @@ type ConcatOperator = {
  * @returns {ConcatOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/concat/|MongoDB reference}
  * for $concat
+ * @example <caption>String parts as arguments</caption>
+ * $concat('$item', ' - ', '$description');
+ * // returns
+ * { $concat: ['$item', ' - ', '$description'] }
+ * @example <caption>First argument array</caption>
+ * $concat(['$item', ' - ', '$description']);
+ * // returns same as above
  */
 const $concat = ptafaa('$concat');
 

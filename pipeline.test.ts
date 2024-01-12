@@ -574,7 +574,19 @@ describe('aggregation', () => {
         expect($.cmp(1, 2)).toEqual({ $cmp: [1, 2] });
       });
     });
-    // TODO $concat
+    describe('$concat', () => {
+      it('exports expected vars', () => {
+        expect($.concat).toBeDefined();
+        expect($.$concat).toBeDefined();
+        expect($.concat).toStrictEqual($.$concat);
+      });
+      it('returns expected result', () => {
+        expect($.concat('$item', ' - ', '$description')).toEqual({ $concat: ['$item', ' - ', '$description'] });
+      });
+      it('supports array input as first argument', () => {
+        expect($.concat(['$item', ' - ', '$description'])).toEqual({ $concat: ['$item', ' - ', '$description'] });
+      });
+    });
     // TODO $concatArrays
     describe('$cond', () => {
       it('exports expected vars', () => {
