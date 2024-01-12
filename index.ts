@@ -1126,8 +1126,12 @@ type AnyElementTrueOperator = {
  * @returns {AnyElementTrueOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/anyElementTrue/|MongoDB reference}
  * for $anyElementTrue
+ * @example
+ * $anyElementsTrue('$a', '$b', ['$c', '$d']);
+ * // returns
+ * { $anyElementsTrue: ['$a', '$b', ['$c', '$d']] }
  */
-const $anyElementTrue = ptafaa('$anyElementTrue');
+const $anyElementTrue = pta('$anyElementTrue');
 
 type ArrayElemAtExpression = [Array<any>, number];
 

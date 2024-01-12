@@ -472,6 +472,17 @@ describe('aggregation', () => {
         expect($.and([$.or('$a', '$b'), '$c'])).toEqual({ $and: [{ $or: ['$a', '$b'] }, '$c'], });
       });
     });
+    describe('$anyElementTrue', () => {
+      it('exports expected vars', () => {
+        expect($.anyElementTrue).toBeDefined();
+        expect($.$anyElementTrue).toBeDefined();
+        expect($.anyElementTrue).toStrictEqual($.$anyElementTrue);
+      });
+      it('returns expected result', () => {
+        expect($.anyElementTrue('$a', '$b', ['$c', '$d'])).toEqual({ $anyElementTrue: ['$a', '$b', ['$c', '$d']] });
+        expect($.anyElementTrue(['$a', '$b', '$c'])).toEqual({ $anyElementTrue: [['$a', '$b', '$c']] });
+      });
+    });
     describe('$arrayElemAt', () => {
       it('exports expected vars', () => {
         expect($.arrayElemAt).toBeDefined();
