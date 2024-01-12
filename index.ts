@@ -1031,7 +1031,7 @@ const $add = ptafaa('$add');
 /**
  * Add safetely, ensuring all expressions resolve a number. Null values resolve
  * to zero.
- * @category Operators
+ * @category Safe Operators
  * @function
  * @param {...NumberExpression} expression Numbers or expressions to adds.
  * @returns {AddOperator}
@@ -1083,6 +1083,10 @@ type AllElementsTrueOperator = {
  * @returns {AllElementsTrueOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/allElementsTrue/|MongoDB reference}
  * for $allElementsTrue
+ * @example
+ * $allElementsTrue('$a', '$b', ['$c', '$d']);
+ * // returns
+ * { $allElementsTrue: ['$a', '$b', ['$c', '$d']] }
  */
 const $allElementsTrue = pta('$allElementsTrue');
 

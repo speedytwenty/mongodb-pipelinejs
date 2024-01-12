@@ -448,6 +448,17 @@ describe('aggregation', () => {
         expect($.addToSet('$myVar')).toEqual({ $addToSet: '$myVar' });
       });
     });
+    describe('$allElementsTrue', () => {
+      it('exports expected vars', () => {
+        expect($.allElementsTrue).toBeDefined();
+        expect($.$allElementsTrue).toBeDefined();
+        expect($.allElementsTrue).toStrictEqual($.$allElementsTrue);
+      });
+      it('returns expected result', () => {
+        expect($.allElementsTrue('$a', '$b', ['$c', '$d'])).toEqual({ $allElementsTrue: ['$a', '$b', ['$c', '$d']] });
+        expect($.allElementsTrue(['$a', '$b', '$c'])).toEqual({ $allElementsTrue: [['$a', '$b', '$c']] });
+      });
+    });
     describe('$and', () => {
       it('exports expected vars', () => {
         expect($.and).toBeDefined();
