@@ -55,6 +55,8 @@ const at = (ns: string) => (...args: any[]) => {
 
 // pass thru args (as array)
 const pta = (ns: string) => (...args: any[]) => ({ [ns]: args });
+// pass thru args (or first arg as array)
+const ptafaa = (ns: string) => (...args: any[]) => ({ [ns]: args.length === 1 && Array.isArray(args) ? args[0] : args });
 // no expression
 const ne = (ns: string) => () => ({ [ns]: {} });
 // single expression
@@ -114,9 +116,13 @@ const getCollectionName = (v: MixedCollectionName) => {
 
 type OperatorFn = (...args: any[]) => ObjectExpression;
 
-const safeNumberArgs = (fn: OperatorFn) => (...args: any[]) => fn(...args.map((arg) => {
-  return typeof arg === 'number' ? arg : $ifNull(arg, 0);
-}));
+const safeNumberArgs = (fn: OperatorFn) => (...args: any[]) => {
+  const nums = args.length === 1 && Array.isArray(args[0]) ? args[0] : args;
+  console.log('NUMS', nums);
+  return fn(...nums.map((arg) => {
+    return typeof arg === 'number' ? arg : $ifNull(arg, 0);
+  }));
+};
 
 type PipelineStage = Expression;
 
@@ -953,6 +959,10 @@ type AbsOperator = {
  * @returns {AbsOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/abs/|MongoDB reference}
  * for $abs
+ * @example
+ * $abs(-1);
+ * // returns
+ * { $abs: -1 }
  */
 const $abs = se('$abs');
 
@@ -1008,8 +1018,15 @@ type AddOperator = {
  * @returns {AddOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/add/|MongoDB reference}
  * for $add
+ * @example <caption>Addends as arguments</caption>
+ * $add(1, 2, 3);
+ * // returns
+ * { $add: [1, 2, 3] }
+ * @example <caption>Addends as array</caption>
+ * $add([1, 2, 3]);
+ * // returns same as above
  */
-const $add = pta('$add');
+const $add = ptafaa('$add');
 
 /**
  * Add safetely, ensuring all expressions resolve a number. Null values resolve
@@ -1021,6 +1038,15 @@ const $add = pta('$add');
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/add/|MongoDB reference}
  * for $add
  * @see $add
+ * @example <caption>Non literal numbers input</caption>
+ * $addSafe(1, 2, '$myVar');
+ * // returns
+ * { $add: [1, 2, { $ifNull: ['$myVar', 0] }] }
+ * @example <caption>All literal numbers input</caption>
+ * $addSafe(1, 2, 3);
+ * // returns
+ * { $add: [1, 2, 3] }
+ * @todo Protect from non-null & non-numeric values.
  */
 const $addSafe = safeNumberArgs($add);
 

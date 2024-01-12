@@ -410,6 +410,34 @@ describe('aggregation', () => {
         expect($.acosh($.divide('$a', '$b'))).toEqual({ $acosh: { $divide: ['$a', '$b'] } });
       });
     });
+    describe('$add', () => {
+      it('exports expected vars', () => {
+        expect($.add).toBeDefined();
+        expect($.$add).toBeDefined();
+        expect($.add).toStrictEqual($.$add);
+      });
+      it('returns expected result', () => {
+        expect($.add(1, 2, 3)).toEqual({ $add: [1, 2, 3] });
+      });
+      it('accepts array as first arg', () => {
+        expect($.add([1, 2, 3])).toEqual({ $add: [1, 2, 3] });
+      });
+    });
+    describe('$addSafe', () => {
+      it('exports expected vars', () => {
+        expect($.addSafe).toBeDefined();
+        expect($.$addSafe).toBeDefined();
+        expect($.addSafe).toStrictEqual($.$addSafe);
+      });
+      it('returns expected result', () => {
+        expect($.addSafe(1, 2, 3)).toEqual({ $add: [1, 2, 3] });
+        expect($.addSafe(1, 2, '$myVar')).toEqual({ $add: [1, 2, { $ifNull: ['$myVar', 0] }] });
+      });
+      it('accepts array as first arg', () => {
+        expect($.addSafe([1, 2, 3])).toEqual({ $add: [1, 2, 3] });
+        expect($.addSafe([1, 2, '$myVar'])).toEqual({ $add: [1, 2, { $ifNull: ['$myVar', 0] }] });
+      });
+    });
     describe('$arrayElemAt', () => {
       it('exports expected vars', () => {
         expect($.arrayElemAt).toBeDefined();
