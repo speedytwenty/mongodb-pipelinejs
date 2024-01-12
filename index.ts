@@ -1331,6 +1331,10 @@ type CeilOperator = {
  * @returns {CeilOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/ceil/|MongoDB reference}
  * for $ceil
+ * @example
+ * $ceil('$value');
+ * // returns
+ * { $ceil: '$value' }
  */
 const $ceil = se('$ceil');
 

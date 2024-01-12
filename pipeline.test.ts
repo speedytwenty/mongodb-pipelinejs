@@ -550,7 +550,16 @@ describe('aggregation', () => {
     });
     // TODO $binarySize
     // TODO $bsonSize
-    // TODO $ceil
+    describe('$ceil', () => {
+      it('exports expected vars', () => {
+        expect($.ceil).toBeDefined();
+        expect($.$ceil).toBeDefined();
+        expect($.ceil).toStrictEqual($.$ceil);
+      });
+      it('returns expected result', () => {
+        expect($.ceil('$value')).toEqual({ $ceil: '$value' });
+      });
+    });
     describe('$cmp', () => {
       it('exports expected vars', () => {
         expect($.cmp).toBeDefined();
