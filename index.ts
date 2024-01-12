@@ -1063,6 +1063,10 @@ type AddToSetOperator = {
  * @returns {AddToSetOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/addToSet/|MongoDB reference}
  * for $addToSet
+ * @example
+ * $addToSet('$item');
+ * // returns
+ * { $addToSet: '$item' }
  */
 const $addToSet = se('$addToSet');
 
