@@ -1172,13 +1172,24 @@ type ArrayToObjectOperator = {
  * Converts an array into a single document.
  * @category Operators
  * @function
- * @param {ArrayToObjectExpression} expression An array of two-element arrays
+ * @param {ArrayToObjectExpression} arrayInput An array of two-element arrays
  * where the first element is the field name, and the second element is the
  * field value OR An array of documents that contains two fields, k and v where
  * k contains the field name and v contains the value of the field.
- * @returns {ArrayToObjectOperator}
+ * @returns {ArrayToObjectOperator} Returns an $arrayToObject operator populated
+ * based on input.
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/arrayToObject/|MongoDB reference}
  * for $arrayToObject
+ * @example <caption>Key-value object</caption>
+ * $arrayToObject([
+ *   { k: 'item', v: 'abc123' },
+ *   { k: 'qty', v: '$qty' },
+ * ]);
+ * @example <caption>Key-value pair</caption>
+ * $arrayToObject([
+ *   ['item', 'abc123'],
+ *   ['qty', '$qty'],
+ * ]);
  */
 const $arrayToObject = se('$arrayToObject');
 

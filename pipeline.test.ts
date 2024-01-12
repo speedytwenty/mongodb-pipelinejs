@@ -497,6 +497,25 @@ describe('aggregation', () => {
         expect($.arrayElemAt('expression', 1)).toEqual({ $arrayElemAt: ['expression', 1] });
       });
     });
+    describe('$arrayToObject', () => {
+      it('exports expected vars', () => {
+        expect($.arrayToObject).toBeDefined();
+        expect($.$arrayToObject).toBeDefined();
+        expect($.arrayToObject).toStrictEqual($.$arrayToObject);
+      });
+      describe('key-value object input', () => {
+        it('returns expected result', () => {
+          expect($.arrayToObject([{ k: 'item', v: 'abc123' }, { k: 'qty', v: '$qty' }]))
+            .toEqual({ $arrayToObject: [{ k: 'item', v: 'abc123' }, { k: 'qty', v: '$qty' }]});
+        });
+      });
+      describe('key-value pair input', () => {
+        it('returns expected result', () => {
+          expect($.arrayToObject([['item', 'abc123'], ['qty', '$qty']]))
+            .toEqual({ $arrayToObject: [['item', 'abc123'], ['qty', '$qty']]});
+        });
+      });
+    });
     describe('$cmp', () => {
       it('exports expected vars', () => {
         expect($.cmp).toBeDefined();
