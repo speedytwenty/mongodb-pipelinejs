@@ -1279,6 +1279,10 @@ type AverageOperator = {
  * @returns {AverageOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/avg/|MongoDB reference}
  * for $avg
+ * @example
+ * $avg('$quantity');
+ * // returns
+ * { $avg: '$quantity' }
  */
 const $avg = se('$avg');
 

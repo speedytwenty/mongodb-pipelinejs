@@ -538,7 +538,16 @@ describe('aggregation', () => {
     });
     // TODO $atan
     // TODO $atanh
-    // TODO $avg
+    describe('$avg', () => {
+      it('exports expected vars', () => {
+        expect($.avg).toBeDefined();
+        expect($.$avg).toBeDefined();
+        expect($.avg).toStrictEqual($.$avg);
+      });
+      it('returns expected result', () => {
+        expect($.avg('$quantity')).toEqual({ $avg: '$quantity' });
+      });
+    });
     // TODO $binarySize
     // TODO $bsonSize
     // TODO $ceil
