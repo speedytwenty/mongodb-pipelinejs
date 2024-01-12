@@ -1390,6 +1390,10 @@ type ConcatArraysOperator = {
  * @returns {ConcatArraysOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/concatArrays/|MongoDB reference}
  * for $concatArrays
+ * @example
+ * $concatArrays('$myArray', [1, 2]);
+ * // returns
+ * { $concatArrays: ['$myArray', [1, 2]] }
  */
 const $concatArrays = pta('$concatArrays');
 
@@ -1591,6 +1595,8 @@ type EqOperator = {
  * for $eq
  * @example
  * $eq('$qty', 250);
+ * // returns
+ * { $eq: ['$qty', 250] }
  */
 const $eq = at('$eq');
 

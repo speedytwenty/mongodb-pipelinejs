@@ -587,7 +587,17 @@ describe('aggregation', () => {
         expect($.concat(['$item', ' - ', '$description'])).toEqual({ $concat: ['$item', ' - ', '$description'] });
       });
     });
-    // TODO $concatArrays
+    describe('$concatArrays', () => {
+      it('exports expected vars', () => {
+        expect($.concatArrays).toBeDefined();
+        expect($.$concatArrays).toBeDefined();
+        expect($.concatArrays).toStrictEqual($.$concatArrays);
+      });
+      it('returns expected result', () => {
+        expect($.concatArrays('$myArr', [1, 2])).toEqual({ $concatArrays: ['$myArr', [1, 2]] });
+        expect($.concatArrays([1, 2], '$myArr', [3])).toEqual({ $concatArrays: [[1, 2], '$myArr', [3]] });
+      });
+    });
     describe('$cond', () => {
       it('exports expected vars', () => {
         expect($.cond).toBeDefined();
@@ -617,8 +627,19 @@ describe('aggregation', () => {
     // TODO $covarianceSamp
     // TODO $degreesToRadians
     // TODO $divide
+    // TODO $divideSafe
     // TODO $documentNumber
-    // TODO $eq
+    describe('$eq', () => {
+      it('exports expected vars', () => {
+        expect($.eq).toBeDefined();
+        expect($.$eq).toBeDefined();
+        expect($.eq).toStrictEqual($.$eq);
+      });
+      it('returns expected result', () => {
+        expect($.eq('$value', 1)).toEqual({ $eq: ['$value', 1] });
+        expect($.eq(['$value'], 1)).toEqual({ $eq: [['$value'], 1] });
+      });
+    });
     // TODO $exp
     // TODO $filter
     // TODO $floor
