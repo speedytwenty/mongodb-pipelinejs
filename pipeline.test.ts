@@ -536,6 +536,12 @@ describe('aggregation', () => {
         expect($.asinh('$x-coordinate')).toEqual({ $asinh: '$x-coordinate' });
       });
     });
+    // TODO $atan
+    // TODO $atanh
+    // TODO $avg
+    // TODO $binarySize
+    // TODO $bsonSize
+    // TODO $ceil
     describe('$cmp', () => {
       it('exports expected vars', () => {
         expect($.cmp).toBeDefined();
@@ -550,6 +556,8 @@ describe('aggregation', () => {
         expect($.cmp(1, 2)).toEqual({ $cmp: [1, 2] });
       });
     });
+    // TODO $concat
+    // TODO $concatArrays
     describe('$cond', () => {
       it('exports expected vars', () => {
         expect($.cond).toBeDefined();
@@ -573,6 +581,22 @@ describe('aggregation', () => {
         });
       });
     });
+    // TODO $cos
+    // TODO $cosh
+    // TODO $covariancePop
+    // TODO $covarianceSamp
+    // TODO $degreesToRadians
+    // TODO $divide
+    // TODO $documentNumber
+    // TODO $eq
+    // TODO $exp
+    // TODO $filter
+    // TODO $floor
+    // TODO $if
+    // TODO $ifNull
+    // TODO isArray
+    // TODO $isNumber
+    // TODO $last
     describe('$let', () => {
       it('exports expected vars', () => {
         expect($.let).toBeDefined();
@@ -589,6 +613,33 @@ describe('aggregation', () => {
         expect(() => $.let().in({ x: 1 }).in({ y: 2 })).toThrow();
       });
     });
+    // TODO $linearFill
+    // TODO $literal
+    // TODO $locf
+    // TODO $log
+    // TODO $log10
+    // TODO $map
+    // TODO $meta
+    // TODO $mod
+    // TODO $ne
+    // TODO $not
+    // TODO $objectToArray
+    // TODO $pow
+    // TODO $push
+    // TODO $radiansToDegrees
+    // TODO $round
+    // TODO $sampleRate
+    // TODO $setDifference
+    // TODO $setIsSubset
+    // TODO $in
+    // TODO $size
+    // TODO $split
+    // TODO $sqrt
+    // TODO $strcasecmp
+    // TODO $strLenBytes
+    // TODO $strLenCP
+    // TODO $subtract
+    // TODO $sum
     describe('$switch', () => {
       it('exports expected vars', () => {
         expect($.switch).toBeDefined();
@@ -628,5 +679,21 @@ describe('aggregation', () => {
         });
       });
     });
+    // TODO $tan
+    // TODO $tanh
+    // TODO $toBool
+    // TODO $toDate
+    // TODO $toDecimal
+    // TODO $toDouble
+    // TODO $toInt
+    // TODO $toLong
+    // TODO $toLower
+    // TODO $toObjectId
+    // TODO $toString
+    // TODO $toUpper
+    // TODO $trunc
+    // TODO $tsIncrement
+    // TODO $tsSecond
+    // TODO $type
   });
 });
