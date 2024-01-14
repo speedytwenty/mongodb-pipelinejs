@@ -3,3 +3,4 @@ index.d.ts
 yarn-error.log
 node_modules
 docs
+coverage

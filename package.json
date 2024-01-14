@@ -33,6 +33,7 @@
     "docs": "jsdoc -c jsdoc.json -d docs index.ts",
     "lint": "eslint --fix --ext .ts .",
     "test": "jest",
+    "test:coverage": "jest --coverage",
     "watch": "nodemon -w index.ts -x yarn docs"
   },
   "files": [
