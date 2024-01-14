@@ -22,25 +22,25 @@ type Expression = ObjectExpression | string | number | boolean;
  * @typedef {ObjectExpression | number} NumberExpression
  * @description A number or any valid expression that resolves to a number.
  */
-type NumberExpression = ObjectExpression | number;
+type NumberExpression = ObjectExpression | number | string;
 
 /**
  * @typedef {ObjectExpression | Array<any>} ArrayExpression
  * @description An array or any valid expression that resolves to an array.
  */
-type ArrayExpression = ObjectExpression | Array<any>;
+type ArrayExpression = ObjectExpression | Array<any> | string;
 
 /**
  * @typedef {ObjectExpression | string} StringExpression
  * @description A string or any valid expression that resolves to a string.
  */
-type StringExpression = ObjectExpression | Array<any>;
+type StringExpression = ObjectExpression | Array<any> | string;
 
 /**
  * @typedef {ObjectExpression | number} DateExpression
  * @description A date or any valid expression that resolves to a date.
  */
-type DateExpression = ObjectExpression | Date;
+type DateExpression = ObjectExpression | Date | string;
 
 type Timestamp = number;
 
@@ -55,6 +55,8 @@ const at = (ns: string) => (...args: any[]) => {
 
 // pass thru args (as array)
 const pta = (ns: string) => (...args: any[]) => ({ [ns]: args });
+// pass thru args (or first arg as array)
+const ptafaa = (ns: string) => (...args: any[]) => ({ [ns]: args.length === 1 && Array.isArray(args) ? args[0] : args });
 // no expression
 const ne = (ns: string) => () => ({ [ns]: {} });
 // single expression
@@ -114,9 +116,13 @@ const getCollectionName = (v: MixedCollectionName) => {
 
 type OperatorFn = (...args: any[]) => ObjectExpression;
 
-const safeNumberArgs = (fn: OperatorFn) => (...args: any[]) => fn(...args.map((arg) => {
-  return typeof arg === 'number' ? arg : $ifNull(arg, 0);
-}));
+const safeNumberArgs = (fn: OperatorFn) => (...args: any[]) => {
+  const nums = args.length === 1 && Array.isArray(args[0]) ? args[0] : args;
+  console.log('NUMS', nums);
+  return fn(...nums.map((arg) => {
+    return typeof arg === 'number' ? arg : $ifNull(arg, 0);
+  }));
+};
 
 type PipelineStage = Expression;
 
@@ -912,6 +918,49 @@ type SortStage = {
  */
 const $sort = se('$sort');
 
+type UnwindExpression = {
+  path: string;
+  preserveNullAndEmptyArrays?: boolean;
+  includeArrayIndex?: string;
+};
+
+class Unwind {
+  @nonenumerable
+  params: UnwindExpression;
+
+  get path() {
+    return this.params.path;
+  }
+
+  constructor(path: string, arg2: boolean | undefined) {
+    this.params = { path };
+    if (arg2 !== undefined) {
+      this.preserveNullAndEmptyArrays(arg2);
+    }
+    Object.defineProperty(this, '$unwind', {
+      get: () => {
+        if (this.params.preserveNullAndEmptyArrays !== undefined || this.params.includeArrayIndex !== undefined) {
+          return this.params;
+        }
+        return this.path;
+      },
+      enumerable: true,
+    });
+  }
+
+  preserveNullAndEmptyArrays(value: boolean) {
+    this.params.preserveNullAndEmptyArrays = value;
+    onlyOnce(this, 'preserveNullAndEmptyArrays');
+    return this;
+  }
+
+  includeArrayIndex(value: string) {
+    this.params.includeArrayIndex = value;
+    onlyOnce(this, 'includeArrayIndex');
+    return this;
+  }
+}
+
 /**
  * Deconstructs an array field from the input documents to output a document
  * for each element.
@@ -953,8 +1002,14 @@ type AbsOperator = {
  * @returns {AbsOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/abs/|MongoDB reference}
  * for $abs
+ * @example
+ * $abs(-1);
+ * // returns
+ * { $abs: -1 }
  */
 const $abs = se('$abs');
+
+// TODO $accumulator (object notation required)
 
 type AcosOperator = {
   $acos: NumberExpression,
@@ -1008,19 +1063,35 @@ type AddOperator = {
  * @returns {AddOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/add/|MongoDB reference}
  * for $add
+ * @example <caption>Addends as arguments</caption>
+ * $add(1, 2, 3);
+ * // returns
+ * { $add: [1, 2, 3] }
+ * @example <caption>Addends as array</caption>
+ * $add([1, 2, 3]);
+ * // returns same as above
  */
-const $add = pta('$add');
+const $add = ptafaa('$add');
 
 /**
  * Add safetely, ensuring all expressions resolve a number. Null values resolve
  * to zero.
- * @category Operators
+ * @category Safe Operators
  * @function
  * @param {...NumberExpression} expression Numbers or expressions to adds.
  * @returns {AddOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/add/|MongoDB reference}
  * for $add
  * @see $add
+ * @example <caption>Non literal numbers input</caption>
+ * $addSafe(1, 2, '$myVar');
+ * // returns
+ * { $add: [1, 2, { $ifNull: ['$myVar', 0] }] }
+ * @example <caption>All literal numbers input</caption>
+ * $addSafe(1, 2, 3);
+ * // returns
+ * { $add: [1, 2, 3] }
+ * @todo Protect from non-null & non-numeric values.
  */
 const $addSafe = safeNumberArgs($add);
 
@@ -1037,6 +1108,10 @@ type AddToSetOperator = {
  * @returns {AddToSetOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/addToSet/|MongoDB reference}
  * for $addToSet
+ * @example
+ * $addToSet('$item');
+ * // returns
+ * { $addToSet: '$item' }
  */
 const $addToSet = se('$addToSet');
 
@@ -1053,6 +1128,10 @@ type AllElementsTrueOperator = {
  * @returns {AllElementsTrueOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/allElementsTrue/|MongoDB reference}
  * for $allElementsTrue
+ * @example
+ * $allElementsTrue('$a', '$b', ['$c', '$d']);
+ * // returns
+ * { $allElementsTrue: ['$a', '$b', ['$c', '$d']] }
  */
 const $allElementsTrue = pta('$allElementsTrue');
 
@@ -1069,8 +1148,15 @@ type AndOperator = {
  * @returns {AndOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/and/|MongoDB reference}
  * for $and
+ * @example
+ * $and($or('$a', '$b'), '$c');
+ * // returns
+ * { $and: [{ $or: ['$a', '$b'], '$c'] }
+ * @example <caption>First argument array</caption>
+ * $and([$or('$a', '$b'), '$c']);
+ * // returns same as above
  */
-const $and = pta('$and');
+const $and = ptafaa('$and');
 
 type AnyElementTrueOperator = {
   $anyElementTrue: Array<Expression>,
@@ -1085,6 +1171,10 @@ type AnyElementTrueOperator = {
  * @returns {AnyElementTrueOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/anyElementTrue/|MongoDB reference}
  * for $anyElementTrue
+ * @example
+ * $anyElementsTrue('$a', '$b', ['$c', '$d']);
+ * // returns
+ * { $anyElementsTrue: ['$a', '$b', ['$c', '$d']] }
  */
 const $anyElementTrue = pta('$anyElementTrue');
 
@@ -1105,6 +1195,10 @@ type ArrayElemAtOperator = {
  * @returns {ArrayElemAtOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/arrayElemAt/|MongoDB reference}
  * for $arrayElemAt
+ * @example
+ * $arrayElemAt('$favorites', 0);
+ * // returns
+ * { $arrayElemAt: ['$favorites', 0] }
  */
 const $arrayElemAt = at('$arrayElemAt');
 
@@ -1123,13 +1217,24 @@ type ArrayToObjectOperator = {
  * Converts an array into a single document.
  * @category Operators
  * @function
- * @param {ArrayToObjectExpression} expression An array of two-element arrays
+ * @param {ArrayToObjectExpression} arrayInput An array of two-element arrays
  * where the first element is the field name, and the second element is the
  * field value OR An array of documents that contains two fields, k and v where
  * k contains the field name and v contains the value of the field.
- * @returns {ArrayToObjectOperator}
+ * @returns {ArrayToObjectOperator} Returns an $arrayToObject operator populated
+ * based on input.
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/arrayToObject/|MongoDB reference}
  * for $arrayToObject
+ * @example <caption>Key-value object</caption>
+ * $arrayToObject([
+ *   { k: 'item', v: 'abc123' },
+ *   { k: 'qty', v: '$qty' },
+ * ]);
+ * @example <caption>Key-value pair</caption>
+ * $arrayToObject([
+ *   ['item', 'abc123'],
+ *   ['qty', '$qty'],
+ * ]);
  */
 const $arrayToObject = se('$arrayToObject');
 
@@ -1146,6 +1251,10 @@ type AsinOperator = {
  * @returns {AsinOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/asin/|MongoDB reference}
  * for $asin
+ * @example
+ * $asin($divide('$side_a', '$hyoptenuse'));
+ * // returns
+ * { $asin: { $divide: ['$side_a', '$hypotenuse'] } }
  */
 const $asin = se('$asin');
 
@@ -1162,6 +1271,10 @@ type AsinhOperator = {
  * @returns {AsinhOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/asinh/|MongoDB reference}
  * for $asinh
+ * @example
+ * $asinh('$x-coordinate');
+ * // returns
+ * { $asinh: '$x-coordinate' }
  */
 const $asinh = se('$asinh');
 
@@ -1178,6 +1291,10 @@ type AtanOperator = {
  * @returns {AtanOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/atan/|MongoDB reference}
  * for $atan
+ * @example
+ * $atan($divide('$side_b', '$side_a'));
+ * // returns
+ * { $atan: { $divide: ['$side_b', '$side_a'] } }
  */
 const $atan = se('$atan');
 
@@ -1194,6 +1311,10 @@ type AtanhOperator = {
  * @returns {AtanhOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/atanh/|MongoDB reference}
  * for $atanh
+ * @example
+ * $atanh('$x-coordinate');
+ * // returns
+ * { $atanh: '$x-coordinate' }
  */
 const $atanh = se('$atanh');
 
@@ -1211,6 +1332,10 @@ type AverageOperator = {
  * @returns {AverageOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/avg/|MongoDB reference}
  * for $avg
+ * @example
+ * $avg('$quantity');
+ * // returns
+ * { $avg: '$quantity' }
  */
 const $avg = se('$avg');
 
@@ -1227,6 +1352,10 @@ type BinarySizeOperator = {
  * @returns {BinarySizeOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/binarySize/|MongoDB reference}
  * for $binarySize
+ * @example
+ * $binarySize('$binary');
+ * // returns
+ * { $binarySize: '$binary' }
  */
 const $binarySize = se('$binarySize');
 
@@ -1243,6 +1372,10 @@ type BsonSizeOperator = {
  * @returns {BsonSizeOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/bsonSize/|MongoDB reference}
  * for $bsonSize
+ * @example
+ * $bsonSize('$$ROOT');
+ * // returns
+ * { $bsonSize: '$$ROOT' }
  */
 const $bsonSize = se('$bsonSize');
 
@@ -1259,6 +1392,10 @@ type CeilOperator = {
  * @returns {CeilOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/ceil/|MongoDB reference}
  * for $ceil
+ * @example
+ * $ceil('$value');
+ * // returns
+ * { $ceil: '$value' }
  */
 const $ceil = se('$ceil');
 
@@ -1275,6 +1412,10 @@ type CmpOperator = {
  * @returns {CmpOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/cmp/|MongoDB reference}
  * for $cmp
+ * @example
+ * $cmp('$qty', 250);
+ * // returns
+ * { $cmp: ['$qty', 250] }
  */
 const $cmp = at('$cmp');
 
@@ -1290,8 +1431,15 @@ type ConcatOperator = {
  * @returns {ConcatOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/concat/|MongoDB reference}
  * for $concat
+ * @example <caption>String parts as arguments</caption>
+ * $concat('$item', ' - ', '$description');
+ * // returns
+ * { $concat: ['$item', ' - ', '$description'] }
+ * @example <caption>First argument array</caption>
+ * $concat(['$item', ' - ', '$description']);
+ * // returns same as above
  */
-const $concat = pta('$concat');
+const $concat = ptafaa('$concat');
 
 // TODO $concatSafe
 
@@ -1307,6 +1455,10 @@ type ConcatArraysOperator = {
  * @returns {ConcatArraysOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/concatArrays/|MongoDB reference}
  * for $concatArrays
+ * @example
+ * $concatArrays('$myArray', [1, 2]);
+ * // returns
+ * { $concatArrays: ['$myArray', [1, 2]] }
  */
 const $concatArrays = pta('$concatArrays');
 
@@ -1375,6 +1527,10 @@ type CosOperator = {
  * @returns {CosOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/cos/|MongoDB reference}
  * for $cos
+ * @example
+ * $cos($degreesToRadians('$angle_a'));
+ * // returns
+ * { $cos: { $degreesToRadians: '$angle_a' } }
  */
 const $cos = se('$cos');
 
@@ -1391,6 +1547,10 @@ type CoshOperator = {
  * @returns {CoshOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/cosh/|MongoDB reference}
  * for $cosh
+ * @example
+ * $cosh($degreesToRadians('$angle'));
+ * // returns
+ * { $cosh: { $degreesToRadians: '$angle' } }
  */
 const $cosh = se('$cosh');
 
@@ -1410,6 +1570,10 @@ type CovariancePopOperator = {
  * @returns {CovariancePopOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/covariancePop/|MongoDB reference}
  * for $covariancePop
+ * @example
+ * $covariancePop($year('$orderDate'), '$quantity');
+ * // returns
+ * { $covariancePop: [{ $year: '$orderDate' }, '$quantity'] }
  */
 const $covariancePop = at('$covariancePop');
 
@@ -1430,6 +1594,10 @@ type CovarianceSampOperator = {
  * @returns {CovarianceSampOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/covarianceSamp/|MongoDB reference}
  * for $covarianceSamp
+ * @example
+ * $covarianceSamp($year('$orderDate'), '$quantity');
+ * // returns
+ * { $covarianceSamp: [{ $year: '$orderDate' }, '$quantity'] }
  */
 const $covarianceSamp = at('$covarianceSamp');
 
@@ -1446,6 +1614,10 @@ type DegreesToRadiansOperator = {
  * @returns {DegreesToRadiansOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/degreesToRadians/|MongoDB reference}
  * for $degreesToRadians
+ * @example
+ * $degreesToRadians('$angle_a');
+ * // returns
+ * { $degreesToRadians: '$angle_a' }
  */
 const $degreesToRadians = se('$degreesToRadians');
 
@@ -1485,10 +1657,12 @@ type DocumentNumberOperator = {
  * @category Operators
  * @function
  * @returns {DocumentNumberOperator}
- * @example
- * $addFields({ docNum: $documentNumber() });
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/documentNumber/|MongoDB reference}
  * for $documentNumber
+ * @example
+ * $documentNumber();
+ * // returns
+ * { $documentNumber: {} }
  */
 const $documentNumber = ne('$documentNumber');
 
@@ -1508,6 +1682,8 @@ type EqOperator = {
  * for $eq
  * @example
  * $eq('$qty', 250);
+ * // returns
+ * { $eq: ['$qty', 250] }
  */
 const $eq = at('$eq');
 
@@ -1524,6 +1700,10 @@ type ExpOperator = {
  * @returns {ExpOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/exp/|MongoDB reference}
  * for $exp
+ * @example
+ * $exp('$interestRate');
+ * // returns
+ * { $exp: '$interestRate' }
  */
 const $exp = se('$exp');
 
@@ -1537,7 +1717,98 @@ const $elemMatch = se('$elemMatch');
 const $expr = se('$expr');
 
 // TODO
-const $filter = (inputExpr: Expression, asExpr: Expression, condExpr: Expression) => ({ $filter: { input: inputExpr, as: asExpr, cond: condExpr } });
+type FilterExpression = {
+  input: ArrayExpression,
+  cond: Expression,
+  as?: string,
+  limit?: number,
+};
+
+class FilterOperator {
+  $filter: Partial<FilterExpression> = {};
+  constructor(
+    inputExpr: ArrayExpression,
+    asExpr?: string,
+    cond?: Expression,
+    limit?: number,
+  ) {
+    this.input(inputExpr);
+    if (asExpr) this.as(asExpr);
+    if (cond) this.cond(cond);
+    if (limit !== undefined) this.limit(limit);
+  }
+
+  input(value: ArrayExpression) {
+    this.$filter.input = value;
+    return this;
+  }
+
+  as(name: string) {
+    this.$filter.as = name;
+    return this;
+  }
+
+  cond(expression: Expression) {
+    this.$filter.cond = expression;
+    return this;
+  }
+
+  limit(value: number) {
+    this.$filter.limit = value;
+    return this;
+  }
+}
+
+/**
+ * Filters an array based on the specified condition returning the items that
+ * match the condition.
+ * @category Operators
+ * @param {ArrayExpression} inputExpr An expression that resolves to an array.
+ * @param {string} [asName] Optional. A name for the value that represents each
+ * element of the input array. If no name is specified, the variable name
+ * defaults to `this`.
+ * @param {Expression} [condExpr] An expression that resolves to boolean and can
+ * references each elements of the input array with the variable name specified
+ * in as().
+ * @param {number} [limit] Optional. A number expression that restricts the
+ * number of matching array elements to return.
+ * @returns {FilterOperator} A FilterOperator
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/filter/|MongoDB reference}
+ * for $filter
+ * @example <caption>Static notation</caption>
+ * $filter('$myArray', 'item', '$$item.sold', 10);
+ * // returns
+ * { $filter: { input: '$myArray', as: 'item', cond: '$$item.sold', limit: 10 } }
+ * @example <caption>Object notation</caption>
+ * $filter('$myArray').as('item').cond('$$item.sold').limit(10);
+ * // returns same as above
+ */
+const $filter = (
+  inputExpr: ArrayExpression,
+  asName?: string,
+  condExpr?: Expression,
+  limit?: number,
+) => new FilterOperator(inputExpr, asName, condExpr, limit);
+
+type FirstOperator = {
+  $first: Expression,
+};
+
+/**
+ * Returns the result of an expression for the first document in a group of
+ * documents.
+ * @category Operators
+ * @param {Expression} expression Expression that resolves a value from the 
+ * document.
+ * @returns {FirstOperator}
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/first/|MongoDB reference}
+ * for $first
+ * @example
+ * $first('$date');
+ * // returns
+ * { $first: '$date' }
+ */
+const $first = se('$first');
 
 type FloorOperator = {
   $floor: NumberExpression,
@@ -1552,6 +1823,10 @@ type FloorOperator = {
  * @returns {FloorOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/floor/|MongoDB reference}
  * for $floor
+ * @example
+ * $floor('$value');
+ * // returns
+ * { $floor: '$value' }
  */
 const $floor = se('$floor');
 
@@ -1592,6 +1867,10 @@ type IfNullOperator = {
  * @returns {IfNullOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/ifNull/|MongoDB reference}
  * for $ifNull
+ * @example
+ * $ifNull('$myArray', []);
+ * // returns
+ * { $ifNull: ['$myArray', []] }
  */
 const $ifNull = at('$ifNull');
 
@@ -1610,6 +1889,25 @@ const $inSafe = (...args: any[]) => {
 // TODO
 // const $function
 
+type IsArrayOperator = {
+  $isArray: Expression,
+};
+
+/**
+ * Determines if the operand is an array.
+ * @category Operators
+ * @function
+ * @param {Expression} expression Any valid expression.
+ * @returns {IsArrayOperator}
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/isArray/|MongoDB reference}
+ * for $isArray
+ * @example
+ * $isArray('$value');
+ * // returns
+ * { $isArray: '$value' }
+ */
+const $isArray = se('$isArray');
+
 type IsNumberOperator = {
   $isNumber: Expression,
 };
@@ -1622,6 +1920,10 @@ type IsNumberOperator = {
  * @returns {IsNumberOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/isNumber/|MongoDB reference}
  * for $isNumber
+ * @example
+ * $isNumber('$value');
+ * // returns
+ * { $isNumber: '$value' }
  */
 const $isNumber = se('$isNumber');
 
@@ -1638,6 +1940,10 @@ type LastOperator = {
  * @returns {LastOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/last/|MongoDB reference}
  * for $last
+ * @example
+ * $last('$myArr');
+ * // return
+ * { $last: '$myArray' }
  */
 const $last = se('$last');
 
@@ -1707,6 +2013,10 @@ type LinearFillOperator = {
  * @returns {LinearFillOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/linearFill/|MongoDB reference}
  * for $linearFill
+ * @example
+ * $linearFill('$price');
+ * // returns
+ * { $linearFill: '$price' }
  */
 const $linearFill = se('$linearFill');
 
@@ -1723,6 +2033,10 @@ type LiteralOperator = {
  * @returns {LiteralOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/literal/|MongoDB reference}
  * for $literal
+ * @example
+ * $literal(1);
+ * // returns
+ * { $literal: 1 }
  */
 const $literal = se('$literal');
 
@@ -1740,6 +2054,10 @@ type LocfOperator = {
  * @returns {LocfOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/locf/|MongoDB reference}
  * for $locf
+ * @example
+ * $locf('$price');
+ * // returns
+ * { $locf: '$price' }
  */
 const $locf = se('$locf');
 
@@ -1759,6 +2077,10 @@ type LogOperator = {
  * @returns {LogOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/log/|MongoDB reference}
  * for $log
+ * @example
+ * $log('$int', 2);
+ * // returns
+ * { $log: ['$int', 2] }
  */
 const $log = at('$log');
 
@@ -1775,6 +2097,10 @@ type Log10Operator = {
  * @returns {Log10Operator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/log10/|MongoDB reference}
  * for $log10
+ * @example
+ * $log10('$H30');
+ * // returns
+ * { $log10: '$H30' }
  */
 const $log10 = se('$log10');
 
@@ -1784,14 +2110,62 @@ const $lt = taf('$lt');
 // TODO
 const $lte = taf('$lte');
 
-// TODO
-const $map = (inputExpr: Expression, asExpr: string, inExpr: Expression) => ({ $map: { input: inputExpr, as: asExpr, in: inExpr } });
+type MapExpression = {
+  input: ArrayExpression,
+  as: string,
+  in: Expression,
+};
+
+class MapOperator {
+  $map: Partial<MapExpression> = {};
+  constructor(inputExpr: ArrayExpression, asName?: string, inExpr?: Expression) {
+    this.input(inputExpr);
+    if (asName) this.as(asName);
+    if (inExpr) this.in(inExpr);
+  }
+
+  input(inputExpr: ArrayExpression) {
+    this.$map.input = inputExpr;
+    onlyOnce(this, 'input');
+    return this;
+  }
+
+  as(name: string) {
+    this.$map.as = name;
+    onlyOnce(this, 'as');
+    return this;
+  }
+
+  in(expression: Expression) {
+    this.$map.in = expression;
+    onlyOnce(this, 'in');
+    return this;
+  }
+}
+
+/**
+ * Applies an expression to each item in an array and returns an array with the
+ * results.
+ * @param {ArrayExpression} inputExpr An expression that resolves to an array.
+ * @param {string} [asName] A name for the variable that represents each
+ * individual element of the input array.
+ * @param {Expression} [inExpr] An expression that is applied to each element of
+ * the input array.
+ * @returns {MapOperator} A MapOperator object populated based on input.
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/map/|MongoDB reference}
+ * for $map
+ * @example <caption>Static notation</caption>
+ * $map('$myArray', 'item', '$$item.name');
+ * // returns
+ * { $map: { input: '$myArray', as: 'item', in: '$$item.name' } }
+ */
+const $map = (inputExpr: ArrayExpression, asName?: string, inExpr?: Expression) => new MapOperator(inputExpr, asName, inExpr);
 
 // TODO
 const $max = taf('$max');
 
 // TODO - $mergeObjects accepts only one arg when used an accumulator
-const $mergeObjects = pta('$mergeObjects');
+const $mergeObjects = ptafaa('$mergeObjects');
 
 enum MetaDataKeyword {
   textScore,
@@ -1810,6 +2184,10 @@ type MetaOperator = {
  * @returns {MetaOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/meta/|MongoDB reference}
  * for $meta
+ * @example
+ * $meta('textScore');
+ * // returns
+ * { $meta: 'textScore' }
  */
 const $meta = se('$meta');
 
@@ -1831,6 +2209,10 @@ type ModOperator = {
  * @returns {ModOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/mod/|MongoDB reference}
  * for $mod
+ * @example
+ * $mod('$hours', '$tasks');
+ * // returns
+ * { $mod: ['$hours', '$tasks'] }
  */
 const $mod = at('$mod');
 
@@ -1838,7 +2220,7 @@ const $mod = at('$mod');
 const $mul = se('$mul');
 
 // TODO
-const $multiply = pta('$multiply');
+const $multiply = ptafaa('$multiply');
 
 // TODO
 const $multiplySafe = safeNumberArgs($multiply);
@@ -1857,6 +2239,10 @@ type NeOperator = {
  * @returns {NeOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/ne/|MongoDB reference}
  * for $ne
+ * @example
+ * $ne('$qty', 250);
+ * // returns
+ * { $ne: ['$qty', 250] }
  */
 const $ne = at('$ne');
 
@@ -1872,6 +2258,10 @@ type NotOperator = {
  * @returns {NotOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/not/|MongoDB reference}
  * for $not
+ * @example
+ * $not('$myVar');
+ * // returns
+ * { $not: '$myVar' }
  */
 const $not = se('$not');
 
@@ -1892,7 +2282,7 @@ type ObjectToArrayOperator = {
 const $objectToArray = se('$objectToArray');
 
 // TODO
-const $or = pta('$or');
+const $or = ptafaa('$or');
 
 type PowOperator = {
   $pow: [NumberExpression, NumberExpression],
@@ -2101,6 +2491,10 @@ type SizeOperator = {
  * @returns {SizeOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/size/|MongoDB reference}
  * for $size
+ * @example
+ * $size('$myArray');
+ * // returns
+ * { $size: '$myArray' }
  */
 const $size = se('$size');
 
@@ -2117,6 +2511,10 @@ type SplitOperator = {
  * @returns {SplitOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/split/|MongoDB reference}
  * for $split
+ * @example
+ * $split('June-15-2013', '-');
+ * // returns
+ * { $split: ['June-15-2013', '-'] }
  */
 const $split = at('$split');
 
@@ -2133,6 +2531,28 @@ const $split = at('$split');
  */
 const $sqrt = se('$sqrt');
 
+type StrcasecmpOperator = {
+  $strcasecmp: [StringExpression, StringExpression],
+};
+
+/**
+ * Performs case-insensitive comparison of two strings.
+ * @category Operators
+ * @function
+ * @param {StringExpression} exression1 A string or any valid expression that
+ * resolves to a string.
+ * @param {StringExpression} exression2 A string or any valid expression that
+ * resolves to a string.
+ * @returns {StrcasecmpOperator}
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/strcasecmp/|MongoDB reference}
+ * for $strcasecmp
+ * @example
+ * $strcasecmp('$quarter', '13q4');
+ * // returns
+ * { $strcasecmp: ['$quarter', '13q4'] }
+ */
+const $strcasecmp = at('$strcasecmp');
+
 type StrLenBytesOperator = {
   $strLenBytes: StringExpression,
 };
@@ -2146,6 +2566,10 @@ type StrLenBytesOperator = {
  * @returns {StrLenBytesOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/strLenBytes/|MongoDB reference}
  * for $strLenBytes
+ * @example
+ * $strLenBytes('cafeteria');
+ * // returns
+ * { $strLenBytes: 'cafeteria' }
  */
 const $strLenBytes = se('$strLenBytes');
 
@@ -2162,26 +2586,12 @@ type StrLenCpOperator = {
  * @returns {StrLenCpOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/strLenCP/|MongoDB reference}
  * for $strLenCP
+ * @example
+ * $strLenCP('cafeteria');
+ * // returns
+ * { $strLenCP: 'cafeteria' }
  */
 const $strLenCP = se('$strLenCP');
-
-type StrcasecmpOperator = {
-  $strcasecmp: [StringExpression, StringExpression],
-};
-
-/**
- * Performs case-insensitive comparison of two strings.
- * @category Operators
- * @function
- * @param {StringExpression} exression1 A string or any valid expression that
- * resolves to a string.
- * @param {StringExpression} exression2 A string or any valid expression that
- * resolves to a string.
- * @returns {StrcasecmpOperator}
- * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/strcasecmp/|MongoDB reference}
- * for $strcasecmp
- */
-const $strcasecmp = at('$strcasecmp');
 
 type SubtractOperator = {
   $subtract: [NumberExpression, NumberExpression],
@@ -2200,6 +2610,10 @@ type SubtractOperator = {
  * @returns {SubtractOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/subtract/|MongoDB reference}
  * for $subtract
+ * @example
+ * $subtract('$price', '$discount');
+ * // returns
+ * { $subtract: ['$price', '$discount'] }
  */
 const $subtract = at('$subtract');
 
@@ -2219,6 +2633,11 @@ type SumOperator = {
  * @returns {SumOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/sum/|MongoDB reference}
  * for $sum
+ * @example <caption>Single operand</caption>
+ * $sum('$value');
+ * // returns
+ * { $sum: '$value' }
+ * @todo Support array operands
  */
 const $sum = se('$sum');
 
@@ -2583,48 +3002,8 @@ type TypeOperator = {
  */
 const $type = se('$type');
 
-type UnwindExpression = {
-  path: string;
-  preserveNullAndEmptyArrays?: boolean;
-  includeArrayIndex?: string;
-};
-
-class Unwind {
-  @nonenumerable
-  params: UnwindExpression;
-
-  get path() {
-    return this.params.path;
-  }
-
-  constructor(path: string, arg2: boolean | undefined) {
-    this.params = { path };
-    if (arg2 !== undefined) {
-      this.preserveNullAndEmptyArrays(arg2);
-    }
-    Object.defineProperty(this, '$unwind', {
-      get: () => {
-        if (this.params.preserveNullAndEmptyArrays !== undefined || this.params.includeArrayIndex !== undefined) {
-          return this.params;
-        }
-        return this.path;
-      },
-      enumerable: true,
-    });
-  }
-
-  preserveNullAndEmptyArrays(value: boolean) {
-    this.params.preserveNullAndEmptyArrays = value;
-    onlyOnce(this, 'preserveNullAndEmptyArrays');
-    return this;
-  }
-
-  includeArrayIndex(value: string) {
-    this.params.includeArrayIndex = value;
-    onlyOnce(this, 'includeArrayIndex');
-    return this;
-  }
-}
+// TODO
+const $year = se('$year');
 
 export = {
   $abs,
@@ -2692,7 +3071,9 @@ export = {
   $count,
   count: $count,
   $covariancePop,
+  covariancePop: $covariancePop,
   $covarianceSamp,
+  covarianceSamp: $covarianceSamp,
   $degreesToRadians,
   degreesToRadians: $degreesToRadians,
   $denseRank,
@@ -2717,6 +3098,8 @@ export = {
   expr: $expr,
   $filter,
   filter: $filter,
+  $first,
+  first: $first,
   $floor,
   floor: $floor,
   $group,
@@ -2733,6 +3116,8 @@ export = {
   in: $in,
   $inSafe,
   inSafe: $inSafe,
+  $isArray,
+  isArray: $isArray,
   $isNumber,
   isNumber: $isNumber,
   $last,
@@ -2869,7 +3254,7 @@ export = {
   $toLong,
   toLong: $toLong,
   $toObjectId,
-  toObject: $toObjectId,
+  toObjectId: $toObjectId,
   $toString,
   toString: $toString,
   $toUpper,
@@ -2886,6 +3271,8 @@ export = {
   type: $type,
   $unwind,
   unwind: $unwind,
+  $year,
+  year: $year,
 
   // Enums
   ChangeStreamFullDocument,

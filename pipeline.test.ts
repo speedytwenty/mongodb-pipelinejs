@@ -410,6 +410,79 @@ describe('aggregation', () => {
         expect($.acosh($.divide('$a', '$b'))).toEqual({ $acosh: { $divide: ['$a', '$b'] } });
       });
     });
+    describe('$add', () => {
+      it('exports expected vars', () => {
+        expect($.add).toBeDefined();
+        expect($.$add).toBeDefined();
+        expect($.add).toStrictEqual($.$add);
+      });
+      it('returns expected result', () => {
+        expect($.add(1, 2, 3)).toEqual({ $add: [1, 2, 3] });
+      });
+      it('accepts array as first arg', () => {
+        expect($.add([1, 2, 3])).toEqual({ $add: [1, 2, 3] });
+      });
+    });
+    describe('$addSafe', () => {
+      it('exports expected vars', () => {
+        expect($.addSafe).toBeDefined();
+        expect($.$addSafe).toBeDefined();
+        expect($.addSafe).toStrictEqual($.$addSafe);
+      });
+      it('returns expected result', () => {
+        expect($.addSafe(1, 2, 3)).toEqual({ $add: [1, 2, 3] });
+        expect($.addSafe(1, 2, '$myVar')).toEqual({ $add: [1, 2, { $ifNull: ['$myVar', 0] }] });
+      });
+      it('accepts array as first arg', () => {
+        expect($.addSafe([1, 2, 3])).toEqual({ $add: [1, 2, 3] });
+        expect($.addSafe([1, 2, '$myVar'])).toEqual({ $add: [1, 2, { $ifNull: ['$myVar', 0] }] });
+      });
+    });
+    describe('$addToSet', () => {
+      it('exports expected vars', () => {
+        expect($.addToSet).toBeDefined();
+        expect($.$addToSet).toBeDefined();
+        expect($.addToSet).toStrictEqual($.$addToSet);
+      });
+      it('returns expected result', () => {
+        expect($.addToSet('$myVar')).toEqual({ $addToSet: '$myVar' });
+      });
+    });
+    describe('$allElementsTrue', () => {
+      it('exports expected vars', () => {
+        expect($.allElementsTrue).toBeDefined();
+        expect($.$allElementsTrue).toBeDefined();
+        expect($.allElementsTrue).toStrictEqual($.$allElementsTrue);
+      });
+      it('returns expected result', () => {
+        expect($.allElementsTrue('$a', '$b', ['$c', '$d'])).toEqual({ $allElementsTrue: ['$a', '$b', ['$c', '$d']] });
+        expect($.allElementsTrue(['$a', '$b', '$c'])).toEqual({ $allElementsTrue: [['$a', '$b', '$c']] });
+      });
+    });
+    describe('$and', () => {
+      it('exports expected vars', () => {
+        expect($.and).toBeDefined();
+        expect($.$and).toBeDefined();
+        expect($.and).toStrictEqual($.$and);
+      });
+      it('returns expected result', () => {
+        expect($.and($.or('$a', '$b'), '$c')).toEqual({ $and: [{ $or: ['$a', '$b'] }, '$c'], });
+      });
+      it('accepts array as first arg', () => {
+        expect($.and([$.or('$a', '$b'), '$c'])).toEqual({ $and: [{ $or: ['$a', '$b'] }, '$c'], });
+      });
+    });
+    describe('$anyElementTrue', () => {
+      it('exports expected vars', () => {
+        expect($.anyElementTrue).toBeDefined();
+        expect($.$anyElementTrue).toBeDefined();
+        expect($.anyElementTrue).toStrictEqual($.$anyElementTrue);
+      });
+      it('returns expected result', () => {
+        expect($.anyElementTrue('$a', '$b', ['$c', '$d'])).toEqual({ $anyElementTrue: ['$a', '$b', ['$c', '$d']] });
+        expect($.anyElementTrue(['$a', '$b', '$c'])).toEqual({ $anyElementTrue: [['$a', '$b', '$c']] });
+      });
+    });
     describe('$arrayElemAt', () => {
       it('exports expected vars', () => {
         expect($.arrayElemAt).toBeDefined();
@@ -424,6 +497,105 @@ describe('aggregation', () => {
         expect($.arrayElemAt('expression', 1)).toEqual({ $arrayElemAt: ['expression', 1] });
       });
     });
+    describe('$arrayToObject', () => {
+      it('exports expected vars', () => {
+        expect($.arrayToObject).toBeDefined();
+        expect($.$arrayToObject).toBeDefined();
+        expect($.arrayToObject).toStrictEqual($.$arrayToObject);
+      });
+      describe('key-value object input', () => {
+        it('returns expected result', () => {
+          expect($.arrayToObject([{ k: 'item', v: 'abc123' }, { k: 'qty', v: '$qty' }]))
+            .toEqual({ $arrayToObject: [{ k: 'item', v: 'abc123' }, { k: 'qty', v: '$qty' }]});
+        });
+      });
+      describe('key-value pair input', () => {
+        it('returns expected result', () => {
+          expect($.arrayToObject([['item', 'abc123'], ['qty', '$qty']]))
+            .toEqual({ $arrayToObject: [['item', 'abc123'], ['qty', '$qty']]});
+        });
+      });
+    });
+    describe('$asin', () => {
+      it('exports expected vars', () => {
+        expect($.asin).toBeDefined();
+        expect($.$asin).toBeDefined();
+        expect($.asin).toStrictEqual($.$asin);
+      });
+      it('returns expected result', () => {
+        expect($.asin($.divide('$side_a', '$hypotenuse'))).toEqual({ $asin: { $divide: ['$side_a', '$hypotenuse'] } });
+      });
+    });
+    describe('$asinh', () => {
+      it('exports expected vars', () => {
+        expect($.asinh).toBeDefined();
+        expect($.$asinh).toBeDefined();
+        expect($.asinh).toStrictEqual($.$asinh);
+      });
+      it('returns expected result', () => {
+        expect($.asinh('$x-coordinate')).toEqual({ $asinh: '$x-coordinate' });
+      });
+    });
+    describe('$atan', () => {
+      it('exports expected vars', () => {
+        expect($.atan).toBeDefined();
+        expect($.$atan).toBeDefined();
+        expect($.atan).toStrictEqual($.$atan);
+      });
+      it('returns expected result', () => {
+        expect($.atan('$value')).toEqual({ $atan: '$value' });
+      });
+    });
+    describe('$atanh', () => {
+      it('exports expected vars', () => {
+        expect($.atanh).toBeDefined();
+        expect($.$atanh).toBeDefined();
+        expect($.atanh).toStrictEqual($.$atanh);
+      });
+      it('returns expected result', () => {
+        expect($.atan('$value')).toEqual({ $atan: '$value' });
+      });
+    });
+    describe('$avg', () => {
+      it('exports expected vars', () => {
+        expect($.avg).toBeDefined();
+        expect($.$avg).toBeDefined();
+        expect($.avg).toStrictEqual($.$avg);
+      });
+      it('returns expected result', () => {
+        expect($.avg('$quantity')).toEqual({ $avg: '$quantity' });
+      });
+    });
+    describe('$binarySize', () => {
+      it('exports expected vars', () => {
+        expect($.binarySize).toBeDefined();
+        expect($.$binarySize).toBeDefined();
+        expect($.binarySize).toStrictEqual($.$binarySize);
+      });
+      it('returns expected result', () => {
+        expect($.binarySize('$value')).toEqual({ $binarySize: '$value' });
+      });
+    });
+    describe('$bsonSize', () => {
+      it('exports expected vars', () => {
+        expect($.bsonSize).toBeDefined();
+        expect($.$bsonSize).toBeDefined();
+        expect($.bsonSize).toStrictEqual($.$bsonSize);
+      });
+      it('returns expected result', () => {
+        expect($.bsonSize('$$ROOT')).toEqual({ $bsonSize: '$$ROOT' });
+      });
+    });
+    describe('$ceil', () => {
+      it('exports expected vars', () => {
+        expect($.ceil).toBeDefined();
+        expect($.$ceil).toBeDefined();
+        expect($.ceil).toStrictEqual($.$ceil);
+      });
+      it('returns expected result', () => {
+        expect($.ceil('$value')).toEqual({ $ceil: '$value' });
+      });
+    });
     describe('$cmp', () => {
       it('exports expected vars', () => {
         expect($.cmp).toBeDefined();
@@ -436,6 +608,30 @@ describe('aggregation', () => {
       });
       it('returns expected result', () => {
         expect($.cmp(1, 2)).toEqual({ $cmp: [1, 2] });
+      });
+    });
+    describe('$concat', () => {
+      it('exports expected vars', () => {
+        expect($.concat).toBeDefined();
+        expect($.$concat).toBeDefined();
+        expect($.concat).toStrictEqual($.$concat);
+      });
+      it('returns expected result', () => {
+        expect($.concat('$item', ' - ', '$description')).toEqual({ $concat: ['$item', ' - ', '$description'] });
+      });
+      it('supports array input as first argument', () => {
+        expect($.concat(['$item', ' - ', '$description'])).toEqual({ $concat: ['$item', ' - ', '$description'] });
+      });
+    });
+    describe('$concatArrays', () => {
+      it('exports expected vars', () => {
+        expect($.concatArrays).toBeDefined();
+        expect($.$concatArrays).toBeDefined();
+        expect($.concatArrays).toStrictEqual($.$concatArrays);
+      });
+      it('returns expected result', () => {
+        expect($.concatArrays('$myArr', [1, 2])).toEqual({ $concatArrays: ['$myArr', [1, 2]] });
+        expect($.concatArrays([1, 2], '$myArr', [3])).toEqual({ $concatArrays: [[1, 2], '$myArr', [3]] });
       });
     });
     describe('$cond', () => {
@@ -461,6 +657,206 @@ describe('aggregation', () => {
         });
       });
     });
+    describe('$cos', () => {
+      it('exports expected vars', () => {
+        expect($.cos).toBeDefined();
+        expect($.$cos).toBeDefined();
+        expect($.cos).toStrictEqual($.$cos);
+      });
+      it('returns expected result', () => {
+        expect($.cos('$value')).toEqual({ $cos: '$value' });
+      });
+    });
+    describe('$cosh', () => {
+      it('exports expected vars', () => {
+        expect($.cosh).toBeDefined();
+        expect($.$cosh).toBeDefined();
+        expect($.cosh).toStrictEqual($.$cosh);
+      });
+      it('returns expected result', () => {
+        expect($.cosh('$value')).toEqual({ $cosh: '$value' });
+      });
+    });
+    describe('$covariancePop', () => {
+      it('exports expected vars', () => {
+        expect($.covariancePop).toBeDefined();
+        expect($.$covariancePop).toBeDefined();
+        expect($.covariancePop).toStrictEqual($.$covariancePop);
+      });
+      it('returns expected result', () => {
+        expect($.covariancePop($.year('$orderDate'), '$qty')).toEqual({ $covariancePop: [{ $year: '$orderDate' }, '$qty'] });
+      });
+    });
+    describe('$covarianceSamp', () => {
+      it('exports expected vars', () => {
+        expect($.covarianceSamp).toBeDefined();
+        expect($.$covarianceSamp).toBeDefined();
+        expect($.covarianceSamp).toStrictEqual($.$covarianceSamp);
+      });
+      it('returns expected result', () => {
+        expect($.covarianceSamp($.year('$orderDate'), '$qty')).toEqual({ $covarianceSamp: [{ $year: '$orderDate' }, '$qty'] });
+      });
+    });
+    describe('$degreesToRadians', () => {
+      it('exports expected vars', () => {
+        expect($.degreesToRadians).toBeDefined();
+        expect($.$degreesToRadians).toBeDefined();
+        expect($.degreesToRadians).toStrictEqual($.$degreesToRadians);
+      });
+      it('returns expected result', () => {
+        expect($.degreesToRadians('$value')).toEqual({ $degreesToRadians: '$value' });
+      });
+    });
+    // TODO $denseRank
+    // TODO $divide
+    // TODO $divideSafe
+    describe('$documentNumber', () => {
+      it('exports expected vars', () => {
+        expect($.documentNumber).toBeDefined();
+        expect($.$documentNumber).toBeDefined();
+        expect($.documentNumber).toStrictEqual($.$documentNumber);
+      });
+      it('returns expected result', () => {
+        expect($.documentNumber()).toEqual({ $documentNumber: {} });
+      });
+    });
+    describe('$eq', () => {
+      it('exports expected vars', () => {
+        expect($.eq).toBeDefined();
+        expect($.$eq).toBeDefined();
+        expect($.eq).toStrictEqual($.$eq);
+      });
+      it('returns expected result', () => {
+        expect($.eq('$value', 1)).toEqual({ $eq: ['$value', 1] });
+        expect($.eq(['$value'], 1)).toEqual({ $eq: [['$value'], 1] });
+      });
+    });
+    describe('$exp', () => {
+      it('exports expected vars', () => {
+        expect($.exp).toBeDefined();
+        expect($.$exp).toBeDefined();
+        expect($.exp).toStrictEqual($.$exp);
+      });
+      it('returns expected result', () => {
+        expect($.exp('$value')).toEqual({ $exp: '$value' });
+      });
+    });
+    describe('$filter', () => {
+      it('exports expected vars', () => {
+        expect($.filter).toBeDefined();
+        expect($.$filter).toBeDefined();
+        expect($.filter).toStrictEqual($.$filter);
+      });
+      describe('static notation', () => {
+        it('returns expected result', () => {
+          expect($.filter('$myArray', 'item', '$$item.sold'))
+            .toEqual({ $filter: { input: '$myArray', as: 'item', cond: '$$item.sold' } });
+          expect($.filter('$myArray', 'item', '$$item.sold', 10))
+            .toEqual({ $filter: { input: '$myArray', as: 'item', cond: '$$item.sold', limit: 10 } });
+        });
+      });
+      describe('object notation', () => {
+        it('returns expected result', () => {
+          expect($.filter('$myArray').as('item').cond('$$item.sold').limit(10))
+            .toEqual({ $filter: { input: '$myArray', as: 'item', cond: '$$item.sold', limit: 10 } });
+        });
+      });
+    });
+    describe('$first', () => {
+      it('exports expected vars', () => {
+        expect($.first).toBeDefined();
+        expect($.$first).toBeDefined();
+        expect($.first).toStrictEqual($.$first);
+      });
+      it('returns expected result', () => {
+        expect($.first('$value')).toEqual({ $first: '$value' });
+      });
+    });
+    describe('$floor', () => {
+      it('exports expected vars', () => {
+        expect($.floor).toBeDefined();
+        expect($.$floor).toBeDefined();
+        expect($.floor).toStrictEqual($.$floor);
+      });
+      it('returns expected result', () => {
+        expect($.floor('$value')).toEqual({ $floor: '$value' });
+      });
+    });
+    describe('$gt', () => {
+      it('exports expected vars', () => {
+        expect($.gt).toBeDefined();
+        expect($.$gt).toBeDefined();
+        expect($.gt).toStrictEqual($.$gt);
+      });
+      it('returns expected result', () => {
+        expect($.gt('$value', 1)).toEqual({ $gt: ['$value', 1] });
+      });
+    });
+    describe('$gte', () => {
+      it('exports expected vars', () => {
+        expect($.gte).toBeDefined();
+        expect($.$gte).toBeDefined();
+        expect($.gte).toStrictEqual($.$gte);
+      });
+      it('returns expected result', () => {
+        expect($.gte(['$value', 1])).toEqual({ $gte: ['$value', 1] });
+      });
+    });
+    describe('$if', () => {
+      it('exports expected vars', () => {
+        expect($.if).toBeDefined();
+        expect($.$if).toBeDefined();
+        expect($.if).toStrictEqual($.$if);
+      });
+      it('returns expected result', () => {
+        const expected = { $cond: { if: 1, then: 2, else: 3 } };
+        expect($.if(1).then(2).else(3)).toEqual(expected);
+      });
+      it('prevents redundant calls to methods', () => {
+        expect(() => $.if(1).then(2).then(3)).toThrow(/redundant/i);
+        expect(() => $.if(1).else(2).else(3)).toThrow(/redundant/i);
+      });
+    });
+    describe('ifNull', () => {
+      it('exports expected vars', () => {
+        expect($.ifNull).toBeDefined();
+        expect($.$ifNull).toBeDefined();
+        expect($.ifNull).toStrictEqual($.$ifNull);
+      });
+      it('returns expected result', () => {
+        expect($.ifNull('$value', 1)).toEqual({ $ifNull: ['$value', 1] });
+      });
+    });
+    describe('$isArray', () => {
+      it('exports expected vars', () => {
+        expect($.isArray).toBeDefined();
+        expect($.$isArray).toBeDefined();
+        expect($.isArray).toStrictEqual($.$isArray);
+      });
+      it('returns expected result', () => {
+        expect($.isArray('$value')).toEqual({ $isArray: '$value' });
+      });
+    });
+    describe('$isNumber', () => {
+      it('exports expected vars', () => {
+        expect($.isNumber).toBeDefined();
+        expect($.$isNumber).toBeDefined();
+        expect($.isNumber).toStrictEqual($.$isNumber);
+      });
+      it('returns expected result', () => {
+        expect($.isNumber('$value')).toEqual({ $isNumber: '$value' });
+      });
+    });
+    describe('$last', () => {
+      it('exports expected vars', () => {
+        expect($.last).toBeDefined();
+        expect($.$last).toBeDefined();
+        expect($.last).toStrictEqual($.$last);
+      });
+      it('returns expected result', () => {
+        expect($.last('$value')).toEqual({ $last: '$value' });
+      });
+    });
     describe('$let', () => {
       it('exports expected vars', () => {
         expect($.let).toBeDefined();
@@ -475,6 +871,350 @@ describe('aggregation', () => {
       it('prevents redundant calls to methods', () => {
         expect(() => $.let({ x: 1 }).vars({ y: 2 })).toThrow();
         expect(() => $.let().in({ x: 1 }).in({ y: 2 })).toThrow();
+      });
+    });
+    describe('$linearFill', () => {
+      it('exports expected vars', () => {
+        expect($.linearFill).toBeDefined();
+        expect($.$linearFill).toBeDefined();
+        expect($.linearFill).toStrictEqual($.$linearFill);
+      });
+      it('returns expected result', () => {
+        expect($.linearFill('$value')).toEqual({ $linearFill: '$value' });
+      });
+    });
+    describe('$literal', () => {
+      it('exports expected vars', () => {
+        expect($.literal).toBeDefined();
+        expect($.$literal).toBeDefined();
+        expect($.literal).toStrictEqual($.$literal);
+      });
+      it('returns expected result', () => {
+        expect($.literal('value')).toEqual({ $literal: 'value' });
+      });
+    });
+    describe('$locf', () => {
+      it('exports expected vars', () => {
+        expect($.locf).toBeDefined();
+        expect($.$locf).toBeDefined();
+        expect($.locf).toStrictEqual($.$locf);
+      });
+      it('returns expected result', () => {
+        expect($.locf('$value')).toEqual({ $locf: '$value' });
+      });
+    });
+    describe('$log', () => {
+      it('exports expected vars', () => {
+        expect($.log).toBeDefined();
+        expect($.$log).toBeDefined();
+        expect($.log).toStrictEqual($.$log);
+      });
+      it('returns expected result', () => {
+        expect($.log('$int', 2)).toEqual({ $log: ['$int', 2] });
+      });
+    });
+    describe('$log10', () => {
+      it('exports expected vars', () => {
+        expect($.log10).toBeDefined();
+        expect($.$log10).toBeDefined();
+        expect($.log10).toStrictEqual($.$log10);
+      });
+      it('returns expected result', () => {
+        expect($.log10('$value')).toEqual({ $log10: '$value' });
+      });
+    });
+    describe('$lt', () => {
+      it('exports expected vars', () => {
+        expect($.lt).toBeDefined();
+        expect($.$lt).toBeDefined();
+        expect($.lt).toStrictEqual($.$lt);
+      });
+      it('returns expected result', () => {
+        expect($.lt('$value', 1)).toEqual({ $lt: ['$value', 1] });
+      });
+    });
+    describe('$lte', () => {
+      it('exports expected vars', () => {
+        expect($.lte).toBeDefined();
+        expect($.$lte).toBeDefined();
+        expect($.lte).toStrictEqual($.$lte);
+      });
+      it('returns expected result', () => {
+        expect($.lte(['$value', 1])).toEqual({ $lte: ['$value', 1] });
+      });
+    });
+    describe('$map', () => {
+      it('exports expected vars', () => {
+        expect($.map).toBeDefined();
+        expect($.$map).toBeDefined();
+        expect($.map).toStrictEqual($.$map);
+      });
+      describe('static notation', () => {
+        it('returns expected result', () => {
+          expect($.map('$myArray', 'item', '$$item.name'))
+            .toEqual({ $map: { input: '$myArray', as: 'item', in: '$$item.name' } });
+        });
+      });
+      describe('object notation', () => {
+        it('returns expected result', () => {
+          expect($.map('$myArray').as('item').in('$$item.name'))
+            .toEqual({ $map: { input: '$myArray', as: 'item', in: '$$item.name' } });
+        });
+      });
+    });
+    describe('$max', () => {
+      it('exports expected vars', () => {
+        expect($.max).toBeDefined();
+        expect($.$max).toBeDefined();
+        expect($.max).toStrictEqual($.$max);
+      });
+      it('returns expected result', () => {
+        expect($.max('$value')).toEqual({ $max: '$value' });
+      });
+      it('supports array arg', () => {
+        expect($.max(['$value'])).toEqual({ $max: ['$value'] });
+      });
+    });
+    describe('$meta', () => {
+      it('exports expected vars', () => {
+        expect($.meta).toBeDefined();
+        expect($.$meta).toBeDefined();
+        expect($.meta).toStrictEqual($.$meta);
+      });
+      it('returns expected result', () => {
+        expect($.meta('$value')).toEqual({ $meta: '$value' });
+      });
+    });
+    describe('$min', () => {
+      it('exports expected vars', () => {
+        expect($.min).toBeDefined();
+        expect($.$min).toBeDefined();
+        expect($.min).toStrictEqual($.$min);
+      });
+      it('returns expected result', () => {
+        expect($.min('$value')).toEqual({ $min: '$value' });
+      });
+      it('supports array arg', () => {
+        expect($.min(['$value'])).toEqual({ $min: ['$value'] });
+      });
+    });
+    describe('$mod', () => {
+      it('exports expected vars', () => {
+        expect($.mod).toBeDefined();
+        expect($.$mod).toBeDefined();
+        expect($.mod).toStrictEqual($.$mod);
+      });
+      it('returns expected result', () => {
+        expect($.mod('$hours', '$tasks')).toEqual({ $mod: ['$hours', '$tasks'] });
+      });
+    });
+    // TODO $multiply
+    // TODO $multiplySafe
+    describe('$ne', () => {
+      it('exports expected vars', () => {
+        expect($.ne).toBeDefined();
+        expect($.$ne).toBeDefined();
+        expect($.ne).toStrictEqual($.$ne);
+      });
+      it('returns expected result', () => {
+        expect($.ne('$value', 3)).toEqual({ $ne: ['$value', 3] });
+      });
+    });
+    describe('$not', () => {
+      it('exports expected vars', () => {
+        expect($.not).toBeDefined();
+        expect($.$not).toBeDefined();
+        expect($.not).toStrictEqual($.$not);
+      });
+      it('returns expected result', () => {
+        expect($.not('$value')).toEqual({ $not: '$value' });
+      });
+    });
+    describe('$objectToArray', () => {
+      it('exports expected vars', () => {
+        expect($.objectToArray).toBeDefined();
+        expect($.$objectToArray).toBeDefined();
+        expect($.objectToArray).toStrictEqual($.$objectToArray);
+      });
+      it('returns expected result', () => {
+        expect($.objectToArray('$value')).toEqual({ $objectToArray: '$value' });
+      });
+    });
+    describe('$or', () => {
+      it('exports expected vars', () => {
+        expect($.or).toBeDefined();
+        expect($.$or).toBeDefined();
+        expect($.or).toStrictEqual($.$or);
+      });
+      it('returns expected result', () => {
+        expect($.or('$a', '$b', '$c')).toEqual({ $or: ['$a', '$b', '$c'] });
+        expect($.or(['$a', '$b', '$c'])).toEqual({ $or: ['$a', '$b', '$c'] });
+      });
+    });
+    describe('$pow', () => {
+      it('exports expected vars', () => {
+        expect($.pow).toBeDefined();
+        expect($.$pow).toBeDefined();
+        expect($.pow).toStrictEqual($.$pow);
+      });
+      it('returns expected result', () => {
+        expect($.pow('$value', 2)).toEqual({ $pow: ['$value', 2] });
+      });
+    });
+    describe('$push', () => {
+      it('exports expected vars', () => {
+        expect($.push).toBeDefined();
+        expect($.$push).toBeDefined();
+        expect($.push).toStrictEqual($.$push);
+      });
+      it('returns expected result', () => {
+        expect($.push('$value')).toEqual({ $push: '$value' });
+      });
+    });
+    describe('$radiansToDegrees', () => {
+      it('exports expected vars', () => {
+        expect($.radiansToDegrees).toBeDefined();
+        expect($.$radiansToDegrees).toBeDefined();
+        expect($.radiansToDegrees).toStrictEqual($.$radiansToDegrees);
+      });
+      it('returns expected result', () => {
+        expect($.radiansToDegrees('$value')).toEqual({ $radiansToDegrees: '$value' });
+      });
+    });
+    describe('$round', () => {
+      it('exports expected vars', () => {
+        expect($.round).toBeDefined();
+        expect($.$round).toBeDefined();
+        expect($.round).toStrictEqual($.$round);
+      });
+      it('returns expected result', () => {
+        expect($.round('$value', 2)).toEqual({ $round: ['$value', 2] });
+      });
+    });
+    // TODO $roundStandard
+    describe('$sampleRate', () => {
+      it('exports expected vars', () => {
+        expect($.sampleRate).toBeDefined();
+        expect($.$sampleRate).toBeDefined();
+        expect($.sampleRate).toStrictEqual($.$sampleRate);
+      });
+      it('returns expected result', () => {
+        expect($.sampleRate('$value')).toEqual({ $sampleRate: '$value' });
+      });
+    });
+    describe('$setDifference', () => {
+      it('exports expected vars', () => {
+        expect($.setDifference).toBeDefined();
+        expect($.$setDifference).toBeDefined();
+        expect($.setDifference).toStrictEqual($.$setDifference);
+      });
+      it('returns expected result', () => {
+        expect($.setDifference([1, 2, 3], '$value')).toEqual({ $setDifference: [[1, 2, 3], '$value'] });
+        expect($.setDifference('$value', [1, 2, 3])).toEqual({ $setDifference: ['$value', [1, 2, 3]] });
+      });
+    });
+    describe('$setIsSubset', () => {
+      it('exports expected vars', () => {
+        expect($.setIsSubset).toBeDefined();
+        expect($.$setIsSubset).toBeDefined();
+        expect($.setIsSubset).toStrictEqual($.$setIsSubset);
+      });
+      it('returns expected result', () => {
+        expect($.setIsSubset([1, 2, 3], '$value')).toEqual({ $setIsSubset: [[1, 2, 3], '$value'] });
+        expect($.setIsSubset('$value', [1, 2, 3])).toEqual({ $setIsSubset: ['$value', [1, 2, 3]] });
+      });
+    });
+    describe('$in', () => {
+      it('exports expected vars', () => {
+        expect($.in).toBeDefined();
+        expect($.$in).toBeDefined();
+        expect($.in).toStrictEqual($.$in);
+      });
+      it('returns expected result', () => {
+        expect($.in('$myArray')).toEqual({ $in: '$myArray' });
+        expect($.in([1, 3, 5])).toEqual({ $in: [1, 3, 5] });
+        expect($.in('$val', '$myArray')).toEqual({ $in: ['$val', '$myArray'] });
+      });
+    });
+    describe('$size', () => {
+      it('exports expected vars', () => {
+        expect($.size).toBeDefined();
+        expect($.$size).toBeDefined();
+        expect($.size).toStrictEqual($.$size);
+      });
+      it('returns expected result', () => {
+        expect($.size('$myArray')).toEqual({ $size: '$myArray' });
+      });
+    });
+    describe('$split', () => {
+      it('exports expected vars', () => {
+        expect($.split).toBeDefined();
+        expect($.$split).toBeDefined();
+        expect($.split).toStrictEqual($.$split);
+      });
+      it('returns expected result', () => {
+        expect($.split('$myString', '-')).toEqual({ $split: ['$myString', '-'] });
+      });
+    });
+    describe('$sqrt', () => {
+      it('exports expected vars', () => {
+        expect($.sqrt).toBeDefined();
+        expect($.$sqrt).toBeDefined();
+        expect($.sqrt).toStrictEqual($.$sqrt);
+      });
+      it('returns expected result', () => {
+        expect($.sqrt('$value')).toEqual({ $sqrt: '$value' });
+      });
+    });
+    describe('$strcasecmp', () => {
+      it('exports expected vars', () => {
+        expect($.strcasecmp).toBeDefined();
+        expect($.$strcasecmp).toBeDefined();
+        expect($.strcasecmp).toStrictEqual($.$strcasecmp);
+      });
+      it('returns expected result', () => {
+        expect($.strcasecmp('$quarter', '13q4')).toEqual({ $strcasecmp: ['$quarter', '13q4'] });
+      });
+    });
+    describe('$strLenBytes', () => {
+      it('exports expected vars', () => {
+        expect($.strLenBytes).toBeDefined();
+        expect($.$strLenBytes).toBeDefined();
+        expect($.strLenBytes).toStrictEqual($.$strLenBytes);
+      });
+      it('returns expected result', () => {
+        expect($.strLenBytes('$value')).toEqual({ $strLenBytes: '$value' });
+      });
+    });
+    describe('$strLenCP', () => {
+      it('exports expected vars', () => {
+        expect($.strLenCP).toBeDefined();
+        expect($.$strLenCP).toBeDefined();
+        expect($.strLenCP).toStrictEqual($.$strLenCP);
+      });
+      it('returns expected result', () => {
+        expect($.strLenCP('$value')).toEqual({ $strLenCP: '$value' });
+      });
+    });
+    describe('$subtract', () => {
+      it('exports expected vars', () => {
+        expect($.subtract).toBeDefined();
+        expect($.$subtract).toBeDefined();
+        expect($.subtract).toStrictEqual($.$subtract);
+      });
+      it('returns expected result', () => {
+        expect($.subtract('$value', 1)).toEqual({ $subtract: ['$value', 1] });
+      });
+    });
+    describe('$sum', () => {
+      it('exports expected vars', () => {
+        expect($.sum).toBeDefined();
+        expect($.$sum).toBeDefined();
+        expect($.sum).toStrictEqual($.$sum);
+      });
+      it('returns expected result', () => {
+        expect($.sum('$value')).toEqual({ $sum: '$value' });
+        expect($.sum(['$value'])).toEqual({ $sum: ['$value'] });
       });
     });
     describe('$switch', () => {
@@ -514,6 +1254,166 @@ describe('aggregation', () => {
         it('returns expected result', () => {
           expect($.case(1, 1)).toEqual({ case: 1, then: 1 });
         });
+      });
+    });
+    describe('$tan', () => {
+      it('exports expected vars', () => {
+        expect($.tan).toBeDefined();
+        expect($.$tan).toBeDefined();
+        expect($.tan).toStrictEqual($.$tan);
+      });
+      it('returns expected result', () => {
+        expect($.tan('$value')).toEqual({ $tan: '$value' });
+      });
+    });
+    describe('$tanh', () => {
+      it('exports expected vars', () => {
+        expect($.tanh).toBeDefined();
+        expect($.$tanh).toBeDefined();
+        expect($.tanh).toStrictEqual($.$tanh);
+      });
+      it('returns expected result', () => {
+        expect($.tanh('$value')).toEqual({ $tanh: '$value' });
+      });
+    });
+    describe('$toBool', () => {
+      it('exports expected vars', () => {
+        expect($.toBool).toBeDefined();
+        expect($.$toBool).toBeDefined();
+        expect($.toBool).toStrictEqual($.$toBool);
+      });
+      it('returns expected result', () => {
+        expect($.toBool('$value')).toEqual({ $toBool: '$value' });
+      });
+    });
+    describe('$toDate', () => {
+      it('exports expected vars', () => {
+        expect($.toDate).toBeDefined();
+        expect($.$toDate).toBeDefined();
+        expect($.toDate).toStrictEqual($.$toDate);
+      });
+      it('returns expected result', () => {
+        expect($.toDate('$value')).toEqual({ $toDate: '$value' });
+      });
+    });
+    describe('$toDecimal', () => {
+      it('exports expected vars', () => {
+        expect($.toDecimal).toBeDefined();
+        expect($.$toDecimal).toBeDefined();
+        expect($.toDecimal).toStrictEqual($.$toDecimal);
+      });
+      it('returns expected result', () => {
+        expect($.toDecimal('$value')).toEqual({ $toDecimal: '$value' });
+      });
+    });
+    describe('$toDouble', () => {
+      it('exports expected vars', () => {
+        expect($.toDouble).toBeDefined();
+        expect($.$toDouble).toBeDefined();
+        expect($.toDouble).toStrictEqual($.$toDouble);
+      });
+      it('returns expected result', () => {
+        expect($.toDouble('$value')).toEqual({ $toDouble: '$value' });
+      });
+    });
+    describe('$toInt', () => {
+      it('exports expected vars', () => {
+        expect($.toInt).toBeDefined();
+        expect($.$toInt).toBeDefined();
+        expect($.toInt).toStrictEqual($.$toInt);
+      });
+      it('returns expected result', () => {
+        expect($.toInt('$value')).toEqual({ $toInt: '$value' });
+      });
+    });
+    describe('$toLong', () => {
+      it('exports expected vars', () => {
+        expect($.toLong).toBeDefined();
+        expect($.$toLong).toBeDefined();
+        expect($.toLong).toStrictEqual($.$toLong);
+      });
+      it('returns expected result', () => {
+        expect($.toLong('$value')).toEqual({ $toLong: '$value' });
+      });
+    });
+    describe('$toLower', () => {
+      it('exports expected vars', () => {
+        expect($.toLower).toBeDefined();
+        expect($.$toLower).toBeDefined();
+        expect($.toLower).toStrictEqual($.$toLower);
+      });
+      it('returns expected result', () => {
+        expect($.toLower('$value')).toEqual({ $toLower: '$value' });
+      });
+    });
+    describe('$toObjectId', () => {
+      it('exports expected vars', () => {
+        expect($.toObjectId).toBeDefined();
+        expect($.$toObjectId).toBeDefined();
+        expect($.toObjectId).toStrictEqual($.$toObjectId);
+      });
+      it('returns expected result', () => {
+        expect($.toObjectId('$value')).toEqual({ $toObjectId: '$value' });
+      });
+    });
+    describe('$toString', () => {
+      it('exports expected vars', () => {
+        expect($.toString).toBeDefined();
+        expect($.$toString).toBeDefined();
+        expect($.toString).toStrictEqual($.$toString);
+      });
+      it('returns expected result', () => {
+        expect($.toString('$value')).toEqual({ $toString: '$value' });
+      });
+    });
+    describe('$toUpper', () => {
+      it('exports expected vars', () => {
+        expect($.toUpper).toBeDefined();
+        expect($.$toUpper).toBeDefined();
+        expect($.toUpper).toStrictEqual($.$toUpper);
+      });
+      it('returns expected result', () => {
+        expect($.toUpper('$value')).toEqual({ $toUpper: '$value' });
+      });
+    });
+    describe('$trunc', () => {
+      it('exports expected vars', () => {
+        expect($.trunc).toBeDefined();
+        expect($.$trunc).toBeDefined();
+        expect($.trunc).toStrictEqual($.$trunc);
+      });
+      it('returns expected result', () => {
+        expect($.trunc('$myString', 12)).toEqual({ $trunc: ['$myString', 12] });
+      });
+    });
+    describe('$tsIncrement', () => {
+      it('exports expected vars', () => {
+        expect($.tsIncrement).toBeDefined();
+        expect($.$tsIncrement).toBeDefined();
+        expect($.tsIncrement).toStrictEqual($.$tsIncrement);
+      });
+      it('returns expected result', () => {
+        expect($.tsIncrement('$value')).toEqual({ $tsIncrement: '$value' });
+      });
+    });
+    describe('$tsSecond', () => {
+      it('exports expected vars', () => {
+        expect($.tsSecond).toBeDefined();
+        expect($.$tsSecond).toBeDefined();
+        expect($.tsSecond).toStrictEqual($.$tsSecond);
+      });
+      it('returns expected result', () => {
+        expect($.tsSecond('$value')).toEqual({ $tsSecond: '$value' });
+      });
+    });
+    describe('$type', () => {
+      it('exports expected vars', () => {
+        expect($.type).toBeDefined();
+        expect($.$type).toBeDefined();
+        expect($.type).toStrictEqual($.$type);
+      });
+      it('returns expected result', () => {
+        expect($.type('$value')).toEqual({ $type: '$value' });
       });
     });
   });
