@@ -75,6 +75,17 @@ mongoDB.collection('transactions').aggregate([
 
 ```
 
+### Use Minified Build
+
+```js
+const $ = require('mongodb-pipelinejs/min');
+```
+OR
+
+```ts
+import * as $ from 'mongodb-pipelinejs/min';
+```
+
 ## Purpose
 
 In a nutshell, PipelineJS can allow for writing aggregations with less
