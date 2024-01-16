@@ -1202,6 +1202,47 @@ type ArrayElemAtOperator = {
  */
 const $arrayElemAt = at('$arrayElemAt');
 
+
+/**
+ * Returns the first element in an array.
+ * @category Operators
+ * @function
+ * @param {ArrayExpression} inputArray An arra or a valid expression that
+ * resolves to an array.
+ * @returns {ArrayElemAtOperator} Returns an $arrayElemAt operator with 0 as the
+ * idx parameter.
+ * @example
+ * $arrayElemFirst('$myArray')
+ * // returns
+ * { $let: { vars: { inputArray: '$myArray' }, in: { $arrayElemAt: ['$myArray', 0] } } }
+ */
+const $arrayElemFirst = (inputArray: ArrayExpression) => $arrayElemAt(inputArray, 0);
+
+/**
+ * Returns the last element in an array.
+ * @category Operators
+ * @function
+ * @param {ArrayExpression} inputArray An arra or a valid expression that
+ * resolves to an array.
+ * @returns {ArrayElemAtOperator} Returns an $arrayElemAt operator with the idx
+ * parameter calculated from the size of the array for the last element.
+ * @example
+ * $arrayElemLast('$myArray')
+ * // returns
+ * { $let: {
+ *   vars: { inputArray: '$myArray' },
+ *   in: { $let: {
+ *     vars: { length: { $size: '$$inputArray' } },
+ *     in: { $arrayElemAt: ['$$inputArray', { $subtract: ['$$length', -1] } },
+ *   } },
+ * } }
+ */
+const $arrayElemLast = (inputArray: ArrayExpression) => $let({ inputArray }).in(
+  $let({ length: $size('$$inputArray') }).in(
+    $arrayElemAt('$$inputArray', $cond('$$length', $decrement('$$length'), 0)),
+  ),
+);
+
 type KeyValuePair = [string, any];
 type KeyValueObject = {
   k: string,
@@ -1606,6 +1647,20 @@ type DegreesToRadiansOperator = {
 };
 
 /**
+ * Decrement a number by 1.
+ * @category Operators
+ * @param {NumberExpression} value A number of any valid expression that
+ * resolves to a number.
+ * @returns {SubtractOperator} A $subtract operator with `1` fixed as the
+ * subtrahend.
+ * @example
+ * $decrement('$x')
+ * // returns
+ * { $subtract: ['$x', 1] }
+ */
+const $decrement = (value: Expression) => $subtract(value, 1);
+
+/**
  * Converts the input value measured in degrees to radians.
  * @category Operators
  * @function
@@ -1877,6 +1932,19 @@ const $ifNull = at('$ifNull');
 // TODO
 const $in = taf('$in');
 
+/**
+ * Increment a number by 1.
+ * @category Operators
+ * @param {NumberExpression} value A number or any valid expression that
+ * resolves to a number.
+ * @returns {AddOperator} An $add operator with a fixed added of 1.
+ * @example
+ * $increment('$x')
+ * // returns
+ * { $add: ['$x', 1] }
+ */
+const $increment = (value: NumberExpression) => $add(value, 1);
+
 // TODO
 const $inSafe = (...args: any[]) => {
   if (args.length === 2) {
@@ -2146,6 +2214,7 @@ class MapOperator {
 /**
  * Applies an expression to each item in an array and returns an array with the
  * results.
+ * @category Operators
  * @param {ArrayExpression} inputExpr An expression that resolves to an array.
  * @param {string} [asName] A name for the variable that represents each
  * individual element of the input array.
@@ -3028,6 +3097,10 @@ export = {
   anyElementTrue: $anyElementTrue,
   $arrayElemAt,
   arrayElemAt: $arrayElemAt,
+  $arrayElemFirst,
+  arrayElemFirst: $arrayElemFirst,
+  $arrayElemLast,
+  arrayElemLast: $arrayElemLast,
   $arrayToObject,
   arrayToObject: $arrayToObject,
   $asin,
@@ -3074,6 +3147,8 @@ export = {
   covariancePop: $covariancePop,
   $covarianceSamp,
   covarianceSamp: $covarianceSamp,
+  $decrement,
+  decrement: $decrement,
   $degreesToRadians,
   degreesToRadians: $degreesToRadians,
   $denseRank,
@@ -3114,6 +3189,8 @@ export = {
   ifNull: $ifNull,
   $in,
   in: $in,
+  $increment,
+  increment: $increment,
   $inSafe,
   inSafe: $inSafe,
   $isArray,

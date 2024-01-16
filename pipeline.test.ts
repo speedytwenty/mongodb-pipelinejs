@@ -497,6 +497,40 @@ describe('aggregation', () => {
         expect($.arrayElemAt('expression', 1)).toEqual({ $arrayElemAt: ['expression', 1] });
       });
     });
+    describe('$arrayElemFirst', () => {
+      it('exports expected vars', () => {
+        expect($.arrayElemFirst).toBeDefined();
+        expect($.$arrayElemFirst).toBeDefined();
+        expect($.arrayElemFirst).toStrictEqual($.$arrayElemFirst);
+      });
+      it('returns expected result', () => {
+        expect($.arrayElemFirst('$x')).toEqual({ $arrayElemAt: ['$x', 0] });
+      });
+    });
+    describe('$arrayElemLast', () => {
+      it('exports expected vars', () => {
+        expect($.arrayElemLast).toBeDefined();
+        expect($.$arrayElemLast).toBeDefined();
+        expect($.arrayElemLast).toStrictEqual($.$arrayElemLast);
+      });
+      it('returns expected result', () => {
+        const expected = {
+          $let: {
+            vars: { inputArray: '$x' },
+            in: {
+              $let: {
+                vars: { length: { $size: '$$inputArray' } },
+                in: { $arrayElemAt: [
+                  '$$inputArray',
+                  { $cond: { if: '$$length', then: { $subtract: ['$$length', 1] }, else: 0 } },
+                ] },
+              },
+            },
+          },
+        };
+        expect($.arrayElemLast('$x')).toEqual(expected);
+      });
+    });
     describe('$arrayToObject', () => {
       it('exports expected vars', () => {
         expect($.arrayToObject).toBeDefined();
@@ -695,6 +729,16 @@ describe('aggregation', () => {
       });
       it('returns expected result', () => {
         expect($.covarianceSamp($.year('$orderDate'), '$qty')).toEqual({ $covarianceSamp: [{ $year: '$orderDate' }, '$qty'] });
+      });
+    });
+    describe('$decrement', () => {
+      it('exports expected vars', () => {
+        expect($.decrement).toBeDefined();
+        expect($.$decrement).toBeDefined();
+        expect($.decrement).toStrictEqual($.$decrement);
+      });
+      it('returns expected result', () => {
+        expect($.decrement('$value')).toEqual({ $subtract: ['$value', 1] });
       });
     });
     describe('$degreesToRadians', () => {
@@ -1134,6 +1178,16 @@ describe('aggregation', () => {
         expect($.in('$myArray')).toEqual({ $in: '$myArray' });
         expect($.in([1, 3, 5])).toEqual({ $in: [1, 3, 5] });
         expect($.in('$val', '$myArray')).toEqual({ $in: ['$val', '$myArray'] });
+      });
+    });
+    describe('$increment', () => {
+      it('exports expected vars', () => {
+        expect($.increment).toBeDefined();
+        expect($.$increment).toBeDefined();
+        expect($.increment).toStrictEqual($.$increment);
+      });
+      it('returns expected result', () => {
+        expect($.increment('$value')).toEqual({ $add: ['$value', 1] });
       });
     });
     describe('$size', () => {
