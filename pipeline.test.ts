@@ -1303,10 +1303,56 @@ describe('aggregation', () => {
         expect($.round).toStrictEqual($.$round);
       });
       it('returns expected result', () => {
+        expect($.round('$value')).toEqual({ $round: ['$value', 0] });
         expect($.round('$value', 2)).toEqual({ $round: ['$value', 2] });
       });
     });
-    // TODO $roundStandard
+    describe('$roundStandard', () => {
+      it('exports expected vars', () => {
+        expect($.roundStandard).toBeDefined();
+        expect($.$roundStandard).toBeDefined();
+        expect($.roundStandard).toStrictEqual($.$roundStandard);
+      });
+      describe('without decimal places', () => {
+        it('returns expected result', () => {
+          expect($.roundStandard('$value')).toEqual({
+            $let: {
+              vars: { input: '$value' },
+              in: { $let: {
+                vars: {
+                  val: { $add: [
+                    '$$input',
+                    { $cond: { if: { $gte: ['$$input', 0] }, then: 0.5, else: -0.5 } },
+                  ] },
+                },
+                in: { $subtract: ['$$val', { $mod: ['$$val', 1] }] },
+              } },
+            },
+          });
+        });
+      });
+      describe('with decimal places', () => {
+        it('returns expected result', () => {
+          expect($.roundStandard('$value', 2)).toEqual({
+            $let: {
+              vars: { input: '$value' },
+              in: { $let: {
+                vars: {
+                  val: { $add: [
+                    { $multiply: ['$$input', 100] },
+                    { $cond: { if: { $gte: ['$$input', 0] }, then: 0.5, else: -0.5 } },
+                  ] },
+                },
+                in: { $divide: [
+                  { $subtract: ['$$val', { $mod: ['$$val', 1] }] },
+                  100,
+                ] },
+              } },
+            },
+          });
+        });
+      });
+    });
     describe('$sampleRate', () => {
       it('exports expected vars', () => {
         expect($.sampleRate).toBeDefined();

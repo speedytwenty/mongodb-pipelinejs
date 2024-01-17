@@ -2763,11 +2763,11 @@ type RoundOperator = {
  * Rounds a number to a whole integer or to a specified decimal place.
  * @category Operators
  * @function
- * @param {NumberExpression} expression1 A number of any valid expression that
+ * @param {NumberExpression} value A number of any valid expression that
  * resolves to a number.
- * @param {NumberExpression} expression2 A number of any valid expression that
+ * @param {NumberExpression} [places=0] A number of any valid expression that
  * resolves to an integer between -20 and 100. Defaults to 0 if unspecified.
- * @returns {RoundOperator}
+ * @returns {RoundOperator} A $round operator populated with argument input.
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/round/|MongoDB reference}
  * for $round
  * @example
@@ -2776,25 +2776,65 @@ type RoundOperator = {
  * $round(12.5) // 12
  * $round(13.5) // 14
  */
-const $round = at('$round');
+const $round = (value: Expression, places = 0) => ({ $round: [value, places] });
 
-// TODO
-// based on mongo-round
-const $roundStandard = (valueExpression: Expression, decimals: number) => {
-	const multiplier = Math.pow(10, decimals || 0);
-
-	if (multiplier === 1) { // zero decimals
-		return $let({
-      val: $add(valueExpression, $if($gte(valueExpression, 0)).then(0.5).else(-0.5)),
-    }).in($subtract('$$val', $mod('$$val', 1)));
-	}
-
-	return $let({
-    val: $add(
-      $multiply(valueExpression, multiplier),
-      $if($gte(valueExpression, 0)).then(0.5).else(-0.5),
-    ),
-  }).in($divide($subtract('$$val', $mod('$$val', 1)), multiplier));
+/**
+ * Rounds a number to a specified decimal place.
+ * @category Utility Operators
+ * @function
+ * @param {NumberExpression} value A number of any valid expression that
+ * resolves to a number.
+ * @param {NumberExpression} [places=0] A number of any valid expression that
+ * resolves to an integer between -20 and 100. Defaults to 0 if unspecified.
+ * @returns {LetVarsIn} Returns an expression that rounds the value accordingly.
+ * @see $round
+ * @see {@link https://www.npmjs.com/package/mongo-round}
+ * @see {@link https://stackoverflow.com/questions/17482623/rounding-to-2-decimal-places-using-mongodb-aggregation-framework}
+ * @example <caption>Zero decimal places</caption>
+ * $roundStandard('$myVal');
+ * // returns
+ * { $let: {
+ *   input: '$myVal',
+ *   in: { $let: {
+ *     vars: {
+ *       val: { $add: [
+ *         '$$input',
+ *         { $cond: { if: { $gte: ['$$input', 0] }, then: 0.5, else: -0.5 } },
+ *       ] },
+ *     },
+ *     in: { $subtact: ['$$val', { $mod: ['$$val', 1] }] },
+ *   } },
+ * } }
+ * @example <caption>With decimal places</caption>
+ * $roundStandard('$myVal', 2);
+ * // returns
+ * { $let: {
+ *   input: '$myVal',
+ *   in: { $let: {
+ *     vars: {
+ *       val: { $add: [
+ *         { $multiply: ['$$input', 2] },
+ *         { $cond: { if: { $gte: ['$$input', 0] }, then: 0.5, else: -0.5 } },
+ *       ] },
+ *     },
+ *     in: { $divide: [{ $subtract: ['$$val', { $mod: ['$$val', 1] }] }, 2] },
+ *   } },
+ * } },
+ */
+const $roundStandard = (value: Expression, places = 0) => {
+  const expr = $let({ input: value });
+  if (places) {
+    const multiplier = Math.pow(10, places || 0);
+    return expr.in($let({
+      val: $add(
+        $multiply('$$input', multiplier),
+        $if($gte('$$input', 0)).then(0.5).else(-0.5),
+      ),
+    }).in($divide($subtract('$$val', $mod('$$val', 1)), multiplier)));
+  }
+  return expr.in($let({
+    val: $add('$$input', $if($gte('$$input', 0)).then(0.5).else(-0.5)),
+  }).in($subtract('$$val', $mod('$$val', 1))));
 };
 
 type SampleRateOperator = {
