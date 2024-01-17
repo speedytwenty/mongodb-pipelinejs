@@ -1777,7 +1777,7 @@ type DegreesToRadiansOperator = {
 
 /**
  * Decrement a number by 1.
- * @category Operators
+ * @category Utility Operators
  * @param {NumberExpression} value A number of any valid expression that
  * resolves to a number.
  * @returns {SubtractOperator} A $subtract operator with `1` fixed as the
@@ -2208,7 +2208,7 @@ const $gte = taf('$gte');
 
 /**
  * Shortcut object-notation for the $cond operation (if/then/else).
- * @category Operators
+ * @category Utility Operators
  * @function
  * @param {Expression} ifExpr A boolean expression.
  * @returns {Condition} A Condition object that resembles the $cond operation
@@ -2243,7 +2243,7 @@ const $ifNull = at('$ifNull');
 
 /**
  * Increment a number by 1.
- * @category Operators
+ * @category Utility Operators
  * @param {NumberExpression} value A number or any valid expression that
  * resolves to a number.
  * @returns {AddOperator} An $add operator with a fixed added of 1.
