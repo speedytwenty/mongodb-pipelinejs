@@ -657,6 +657,24 @@ describe('aggregation', () => {
         expect($.concat(['$item', ' - ', '$description'])).toEqual({ $concat: ['$item', ' - ', '$description'] });
       });
     });
+    describe('$concatSafe', () => {
+      it('exports expected vars', () => {
+        expect($.concatSafe).toBeDefined();
+        expect($.$concatSafe).toBeDefined();
+        expect($.concatSafe).toStrictEqual($.$concatSafe);
+      });
+      const expected = { $concat: [
+        { $convert: { input: '$item', to: 2, onNull: '', onError: '' } },
+        ' - ',
+        { $convert: { input: '$description', to: 2, onNull: '', onError: '' } },
+      ]};
+      it('returns expected result', () => {
+        expect($.concatSafe('$item', ' - ', '$description')).toEqual(expected);
+      });
+      it('supports array input as first argument', () => {
+        expect($.concatSafe(['$item', ' - ', '$description'])).toEqual(expected);
+      });
+    });
     describe('$concatArrays', () => {
       it('exports expected vars', () => {
         expect($.concatArrays).toBeDefined();
@@ -688,6 +706,28 @@ describe('aggregation', () => {
         it('prevents redundant calls to methods', () => {
           expect(() => $.cond(1).then(2).then(3)).toThrow(/redundant/i);
           expect(() => $.cond(1).else(2).else(3)).toThrow(/redundant/i);
+        });
+      });
+    });
+    describe('$convert', () => {
+      it('exports expected vars', () => {
+        expect($.convert).toBeDefined();
+        expect($.$convert).toBeDefined();
+        expect($.convert).toStrictEqual($.$convert);
+      });
+      describe('static notation', () => {
+        it('returns expected result', () => {
+          expect($.convert('$value', 2)).toEqual({ $convert: { input: '$value', to: 2 } });
+          expect($.convert('$value', 'string')).toEqual({ $convert: { input: '$value', to: 'string' } });
+          expect($.convert('$value', 'string', 'N/A')).toEqual({ $convert: { input: '$value', to: 'string', onError: 'N/A', onNull: 'N/A' } });
+        });
+      });
+      describe('object notation', () => {
+        it('returns expected result', () => {
+          expect($.convert('$value', 2)).toEqual({ $convert: { input: '$value', to: 2 } });
+          expect($.convert('$value', 'string').default('N/A')).toEqual({ $convert: { input: '$value', to: 'string', onError: 'N/A', onNull: 'N/A' } });
+          expect($.convert('$value', 'string').onError('e').onNull('n'))
+            .toEqual({ $convert: { input: '$value', to: 'string', onError: 'e', onNull: 'n' } });
         });
       });
     });

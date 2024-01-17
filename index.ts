@@ -1482,7 +1482,28 @@ type ConcatOperator = {
  */
 const $concat = ptafaa('$concat');
 
-// TODO $concatSafe
+/**
+ * Safely concatenates values as strings returning the result.
+ * @category Safe Operators
+ * @function
+ * @param {...Expression | Expression[]} args The parts to concatenate.
+ * @returns {ConcatOperator} A $concat operator with each operand ensured to
+ * return a string.
+ * @see $concat
+ * @see $ensureString
+ * @example <caption>String parts as arguments</caption>
+ * $concatSafe('$item', ' - ', '$description');
+ * // wraps each non-literal string with $ensureString
+ * { $concat: [$ensureString('$item'), ' - ', $ensureString('$description')] }
+ * @example <caption>First argument array</caption>
+ * $concatSafe(['$item', ' - ', '$description']);
+ * // returns same as above
+ */
+const $concatSafe = (...args: Expression[]) => {
+  let parts = args;
+  if (args.length && Array.isArray(args[0])) parts = args[0];
+  return { $concat: parts.map((expr) => $ensureString(expr)) };
+};
 
 type ConcatArraysOperator = {
   $concatArrays: Array<ArrayExpression>,
@@ -1503,6 +1524,7 @@ type ConcatArraysOperator = {
  */
 const $concatArrays = pta('$concatArrays');
 
+// * @category Safe Operators
 // TODO $concatArraysSafe
 
 type ConditionExpression = {
@@ -1554,6 +1576,88 @@ class Condition {
  * using a corresponding method (see the Object Notation example).
  */
 const $cond = (ifExpr: Expression, thenExpr?: Expression, elseExpr?: Expression) => new Condition(ifExpr, thenExpr, elseExpr);
+
+enum ConversionType {
+  double = 1,
+  string = 2,
+  objectId = 7,
+  bool = 8,
+  date = 9,
+  int = 16,
+  long = 18,
+  decimal = 19,
+}
+
+type ConversionTypeExpression = ConversionType | StringExpression | NumberExpression;
+
+type ConvertExpression = {
+  input: Expression,
+  to: ConversionTypeExpression,
+  onError?: Expression,
+  onNull?: Expression,
+};
+
+class ConvertOperator {
+  public $convert: Partial<ConvertExpression> = {};
+  constructor(
+    input: Expression,
+    to?: ConversionTypeExpression,
+    onErrorOrNull?: Expression,
+  ) {
+    this.input(input);
+    if (to) this.to(to);
+    if (onErrorOrNull !== undefined) this.default(onErrorOrNull);
+  }
+
+  input(input: Expression) {
+    this.$convert.input = input;
+    return this;
+  }
+
+  to(type: ConversionTypeExpression) {
+    this.$convert.to = type;
+    return this;
+  }
+
+  onError(expression: Expression) {
+    this.$convert.onError = expression;
+    return this;
+  }
+
+  onNull(expression: Expression) {
+    this.$convert.onNull = expression;
+    return this;
+  }
+
+  default(onErrorAndNull: Expression) {
+    this.onError(onErrorAndNull);
+    this.onNull(onErrorAndNull);
+    return this;
+  }
+}
+
+/**
+ * Converts a value to a specified type.
+ * @category Operators
+ * @function
+ * @param {Expression} value The value to convert. Can be any valid expression.
+ * @param {ConversionTypeExpression} toType The 
+ * @param {Expression} defaultValue The result if the value to convert is null
+ * or induces an error.
+ * @returns {ConvertOperator} A $convert operator object populated based on
+ * input with additional methods for advanced usage.
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/convert/|MongoDB reference}
+ * for $convert
+ * @example <caption>Static notation</caption>
+ * $convert('$myValue', 'int');
+ * // returns
+ * { $convert: { input: '$myValue', to: 'int' } }
+ * @example <caption>Object notation</caption>
+ * $convert('$myValue', 'int').onError(-1).onNull(0);
+ * // returns
+ * { $convert: { input: '$myValue', to: 'int', onError: -1, onNull: 0 } }
+ */
+const $convert = (value: Expression, toType?: ConversionTypeExpression, defaultValue?: Expression) => new ConvertOperator(value, toType, defaultValue);
 
 type CosOperator = {
   $cos: NumberExpression,
@@ -1721,6 +1825,14 @@ type DocumentNumberOperator = {
  */
 const $documentNumber = ne('$documentNumber');
 
+// TODO
+const $ensureType = (type: ConversionTypeExpression, value: Expression, defaultValue?: Expression) => new ConvertOperator(value, type, defaultValue);
+
+const $ensureString = (value: Expression, defaultValue: StringExpression = '') => {
+  if (typeof value === 'string' && !value.match(/^\$/)) return value;
+  return $ensureType(ConversionType.string, value, defaultValue);
+};
+
 type EqOperator = {
   $eq: [Expression, Expression],
 };
@@ -1771,7 +1883,6 @@ const $elemMatch = se('$elemMatch');
 // TODO - Determine if query components should be included
 const $expr = se('$expr');
 
-// TODO
 type FilterExpression = {
   input: ArrayExpression,
   cond: Expression,
@@ -1853,6 +1964,7 @@ type FirstOperator = {
  * Returns the result of an expression for the first document in a group of
  * documents.
  * @category Operators
+ * @function
  * @param {Expression} expression Expression that resolves a value from the 
  * document.
  * @returns {FirstOperator}
@@ -1946,6 +2058,7 @@ const $in = taf('$in');
 const $increment = (value: NumberExpression) => $add(value, 1);
 
 // TODO
+// * @category Safe Operators
 const $inSafe = (...args: any[]) => {
   if (args.length === 2) {
     const [val, arr] = args;
@@ -2292,6 +2405,7 @@ const $mul = se('$mul');
 const $multiply = ptafaa('$multiply');
 
 // TODO
+// * @category Safe Operators
 const $multiplySafe = safeNumberArgs($multiply);
 
 type NeOperator = {
@@ -2687,6 +2801,7 @@ type SubtractOperator = {
 const $subtract = at('$subtract');
 
 // TODO
+// * @category Safe Operators
 const $subtractSafe = safeNumberArgs($subtract);
 
 type SumOperator = {
@@ -3131,12 +3246,14 @@ export = {
   cmp: $cmp,
   $concat,
   concat: $concat,
+  $concatSafe,
+  concatSafe: $concatSafe,
   $concatArrays,
   concatArrays: $concatArrays,
   $cond,
   cond: $cond,
-  // TODO
-  // $convert
+  $convert,
+  convert: $convert,
   $cos,
   cos: $cos,
   $cosh,
@@ -3165,6 +3282,10 @@ export = {
   each: $each,
   $elemMatch,
   elemMatch: $elemMatch,
+  $ensureType,
+  ensureType: $ensureType,
+  $ensureString,
+  ensureString: $ensureString,
   $eq,
   eq: $eq,
   $exp,
