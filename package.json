@@ -38,7 +38,6 @@
     "watch": "nodemon -w index.ts -x yarn docs"
   },
   "files": [
-    "index.js",
     "index.d.js",
     "min.js"
   ]
