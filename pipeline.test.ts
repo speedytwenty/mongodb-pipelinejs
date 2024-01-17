@@ -688,6 +688,25 @@ describe('aggregation', () => {
         expect($.concatArrays([1, 2], '$myArr', [3])).toEqual({ $concatArrays: [[1, 2], '$myArr', [3]] });
       });
     });
+    describe('$concatArraysSafe', () => {
+      it('exports expected vars', () => {
+        expect($.concatArraysSafe).toBeDefined();
+        expect($.$concatArraysSafe).toBeDefined();
+        expect($.concatArraysSafe).toStrictEqual($.$concatArraysSafe);
+      });
+      it('returns expected result', () => {
+        expect($.concatArraysSafe([1, 2], [4, 5], '$c')).toEqual({
+          $concatArrays: [
+            [1, 2],
+            [4, 5],
+            { $let: {
+              vars: { input: '$c' },
+              in: { $cond: { if: { $isArray: '$$input' }, then: '$$input', else: [] } },
+            } },
+          ],
+        });
+      });
+    });
     describe('$cond', () => {
       it('exports expected vars', () => {
         expect($.cond).toBeDefined();

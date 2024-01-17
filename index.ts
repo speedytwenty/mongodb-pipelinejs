@@ -1537,8 +1537,20 @@ type ConcatArraysOperator = {
  */
 const $concatArrays = pta('$concatArrays');
 
-// * @category Safe Operators
-// TODO $concatArraysSafe
+/**
+ * Safely concatenate arrays.
+ * @category Safe Operators
+ * @function
+ * @param {...ArrayExpression} args The arrays to concatenate.
+ * @returns {ConcatArraysOperator} Returns a $concatArrays operator with each
+ * operand ensured to be an array.
+ * @see $concatArrays
+ * @example
+ * $concatArraySafe([1, 2, 3], [4, 5], '$c')
+ * // returns
+ * { $concatArrays: [[1, 2, 3], [4, 5], { $cond: { if: { $isArray: '$c' }, then: '$c', else: [] } }] }
+ */
+const $concatArraysSafe = (...args: Array<any>) => ({ $concatArrays: args.map((v) => $ensureArray(v)) });
 
 type ConditionExpression = {
   if: Expression,
@@ -2071,15 +2083,6 @@ type ExpOperator = {
  */
 const $exp = se('$exp');
 
-// TODO - Determine if query components should be included
-const $each = se('$each');
-
-// TODO - Determine if query components should be included
-const $elemMatch = se('$elemMatch');
-
-// TODO - Determine if query components should be included
-const $expr = se('$expr');
-
 type FilterExpression = {
   input: ArrayExpression,
   cond: Expression,
@@ -2238,9 +2241,6 @@ type IfNullOperator = {
  */
 const $ifNull = at('$ifNull');
 
-// TODO
-const $in = taf('$in');
-
 /**
  * Increment a number by 1.
  * @category Operators
@@ -2253,6 +2253,9 @@ const $in = taf('$in');
  * { $add: ['$x', 1] }
  */
 const $increment = (value: NumberExpression) => $add(value, 1);
+
+// TODO
+const $in = taf('$in');
 
 // TODO
 // * @category Safe Operators
@@ -2594,9 +2597,6 @@ type ModOperator = {
  * { $mod: ['$hours', '$tasks'] }
  */
 const $mod = at('$mod');
-
-// TODO - Determine if query components should be included
-const $mul = se('$mul');
 
 type MultiplyOperator = {
   $multiply: NumberExpression[],
@@ -3544,6 +3544,8 @@ export = {
   concatSafe: $concatSafe,
   $concatArrays,
   concatArrays: $concatArrays,
+  $concatArraysSafe,
+  concatArraysSafe: $concatArraysSafe,
   $cond,
   cond: $cond,
   $convert,
@@ -3572,10 +3574,6 @@ export = {
   documentNumber: $documentNumber,
   $documents,
   documents: $documents,
-  $each,
-  each: $each,
-  $elemMatch,
-  elemMatch: $elemMatch,
   $ensureArray,
   ensureArray: $ensureArray,
   $ensureNumber,
@@ -3586,8 +3584,6 @@ export = {
   eq: $eq,
   $exp,
   exp: $exp,
-  $expr,
-  expr: $expr,
   $filter,
   filter: $filter,
   $first,
@@ -3656,8 +3652,6 @@ export = {
   multiply: $multiply,
   $multiplySafe,
   multiplySafe: $multiplySafe,
-  $mul,
-  mul: $mul,
   $ne,
   ne: $ne,
   $not,
