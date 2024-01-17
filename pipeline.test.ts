@@ -1,5 +1,7 @@
 import $ = require('.');
 
+afterEach(() => jest.clearAllMocks());
+
 describe('aggregation', () => {
   describe('stages', () => {
     describe('$addFields', () => {
@@ -657,6 +659,24 @@ describe('aggregation', () => {
         expect($.concat(['$item', ' - ', '$description'])).toEqual({ $concat: ['$item', ' - ', '$description'] });
       });
     });
+    describe('$concatSafe', () => {
+      it('exports expected vars', () => {
+        expect($.concatSafe).toBeDefined();
+        expect($.$concatSafe).toBeDefined();
+        expect($.concatSafe).toStrictEqual($.$concatSafe);
+      });
+      const expected = { $concat: [
+        { $convert: { input: '$item', to: 2, onNull: '', onError: '' } },
+        ' - ',
+        { $convert: { input: '$description', to: 2, onNull: '', onError: '' } },
+      ]};
+      it('returns expected result', () => {
+        expect($.concatSafe('$item', ' - ', '$description')).toEqual(expected);
+      });
+      it('supports array input as first argument', () => {
+        expect($.concatSafe(['$item', ' - ', '$description'])).toEqual(expected);
+      });
+    });
     describe('$concatArrays', () => {
       it('exports expected vars', () => {
         expect($.concatArrays).toBeDefined();
@@ -666,6 +686,25 @@ describe('aggregation', () => {
       it('returns expected result', () => {
         expect($.concatArrays('$myArr', [1, 2])).toEqual({ $concatArrays: ['$myArr', [1, 2]] });
         expect($.concatArrays([1, 2], '$myArr', [3])).toEqual({ $concatArrays: [[1, 2], '$myArr', [3]] });
+      });
+    });
+    describe('$concatArraysSafe', () => {
+      it('exports expected vars', () => {
+        expect($.concatArraysSafe).toBeDefined();
+        expect($.$concatArraysSafe).toBeDefined();
+        expect($.concatArraysSafe).toStrictEqual($.$concatArraysSafe);
+      });
+      it('returns expected result', () => {
+        expect($.concatArraysSafe([1, 2], [4, 5], '$c')).toEqual({
+          $concatArrays: [
+            [1, 2],
+            [4, 5],
+            { $let: {
+              vars: { input: '$c' },
+              in: { $cond: { if: { $isArray: '$$input' }, then: '$$input', else: [] } },
+            } },
+          ],
+        });
       });
     });
     describe('$cond', () => {
@@ -688,6 +727,28 @@ describe('aggregation', () => {
         it('prevents redundant calls to methods', () => {
           expect(() => $.cond(1).then(2).then(3)).toThrow(/redundant/i);
           expect(() => $.cond(1).else(2).else(3)).toThrow(/redundant/i);
+        });
+      });
+    });
+    describe('$convert', () => {
+      it('exports expected vars', () => {
+        expect($.convert).toBeDefined();
+        expect($.$convert).toBeDefined();
+        expect($.convert).toStrictEqual($.$convert);
+      });
+      describe('static notation', () => {
+        it('returns expected result', () => {
+          expect($.convert('$value', 2)).toEqual({ $convert: { input: '$value', to: 2 } });
+          expect($.convert('$value', 'string')).toEqual({ $convert: { input: '$value', to: 'string' } });
+          expect($.convert('$value', 'string', 'N/A')).toEqual({ $convert: { input: '$value', to: 'string', onError: 'N/A', onNull: 'N/A' } });
+        });
+      });
+      describe('object notation', () => {
+        it('returns expected result', () => {
+          expect($.convert('$value', 2)).toEqual({ $convert: { input: '$value', to: 2 } });
+          expect($.convert('$value', 'string').default('N/A')).toEqual({ $convert: { input: '$value', to: 'string', onError: 'N/A', onNull: 'N/A' } });
+          expect($.convert('$value', 'string').onError('e').onNull('n'))
+            .toEqual({ $convert: { input: '$value', to: 'string', onError: 'e', onNull: 'n' } });
         });
       });
     });
@@ -752,8 +813,45 @@ describe('aggregation', () => {
       });
     });
     // TODO $denseRank
-    // TODO $divide
-    // TODO $divideSafe
+    describe('$divide', () => {
+      it('exports expected vars', () => {
+        expect($.divide).toBeDefined();
+        expect($.$divide).toBeDefined();
+        expect($.divide).toStrictEqual($.$divide);
+      });
+      it('returns expected result', () => {
+        expect($.divide('$a', '$b')).toEqual({ $divide: ['$a', '$b'] });
+      });
+    });
+    describe('$divideSafe', () => {
+      it('exports expected vars', () => {
+        expect($.divideSafe).toBeDefined();
+        expect($.$divideSafe).toBeDefined();
+        expect($.divideSafe).toStrictEqual($.$divideSafe);
+      });
+      it('returns expected result', () => {
+        expect($.divideSafe('$a', '$b')).toEqual({
+          $let: {
+            vars: {
+              dividend: { $ifNull: ['$a', 0] },
+              divisor: { $ifNull: ['$b', 0] },
+            },
+            in: { $cond: {
+              if: { $eq: ['$$divisor', 0] },
+              then: '$$REMOVE',
+              else: { $divide: ['$$dividend', '$$divisor'] },
+            } },
+          },
+        });
+      });
+      describe('literal input', () => {
+        expect($.divideSafe(9, 3)).toEqual({ $divide: [9, 3] });
+        expect($.divideSafe(true, 3)).toEqual(0);
+        expect($.divideSafe(9, false)).toEqual(0);
+        expect($.divideSafe(9, null)).toEqual(0);
+        expect($.divideSafe(null, 3)).toEqual(0);
+      });
+    });
     describe('$documentNumber', () => {
       it('exports expected vars', () => {
         expect($.documentNumber).toBeDefined();
@@ -762,6 +860,80 @@ describe('aggregation', () => {
       });
       it('returns expected result', () => {
         expect($.documentNumber()).toEqual({ $documentNumber: {} });
+      });
+    });
+    describe('$ensureArray', () => {
+      it('exports expected vars', () => {
+        expect($.ensureArray).toBeDefined();
+        expect($.$ensureArray).toBeDefined();
+        expect($.ensureArray).toStrictEqual($.$ensureArray);
+      });
+      it('returns expected result', () => {
+        expect($.ensureArray('$myVar'))
+          .toEqual({ $let: {
+            vars: { input: '$myVar' },
+            in: { $cond: { if: { $isArray: '$$input' }, then: '$$input', else: [] } }
+          }});
+      });
+      describe('literal input', () => {
+        it('returns expected result', () => {
+          expect($.ensureArray('myVar')).toEqual([]);
+          expect($.ensureArray(123)).toEqual([]);
+          expect($.ensureArray(123.4)).toEqual([]);
+          expect($.ensureArray(true)).toEqual([]);
+          expect($.ensureArray(false)).toEqual([]);
+          expect($.ensureArray(null)).toEqual([]);
+          expect($.ensureArray(undefined)).toEqual([]);
+        });
+      });
+    });
+    describe('$ensureNumber', () => {
+      it('exports expected vars', () => {
+        expect($.ensureNumber).toBeDefined();
+        expect($.$ensureNumber).toBeDefined();
+        expect($.ensureNumber).toStrictEqual($.$ensureNumber);
+      });
+      it('returns expected result', () => {
+        expect($.ensureNumber('$myVar'))
+          .toEqual({ $let: {
+            vars: { input: '$myVar' },
+            in: { $cond: {
+              if: { $isNumber: '$$input' },
+              then: '$$input',
+              else: { $convert: { input: '$$input', to: 1, onError: 0, onNull: 0 } },
+            } },
+          }});
+      });
+      describe('literal input', () => {
+        it('returns expected result', () => {
+          expect($.ensureNumber('myVar')).toEqual({ $toDouble: 'myVar' });
+          expect($.ensureNumber(123)).toEqual(123);
+          expect($.ensureNumber(123.4)).toEqual(123.4);
+          expect($.ensureNumber(true)).toEqual(1);
+          expect($.ensureNumber(false)).toEqual(0);
+          expect($.ensureNumber(null)).toEqual(0);
+          expect($.ensureNumber(undefined)).toEqual(0);
+        });
+      });
+    });
+    describe('$ensureString', () => {
+      it('exports expected vars', () => {
+        expect($.ensureString).toBeDefined();
+        expect($.$ensureString).toBeDefined();
+        expect($.ensureString).toStrictEqual($.$ensureString);
+      });
+      it('returns expected result', () => {
+        expect($.ensureString('$myVar')).toEqual({ $convert: { input: '$myVar', to: 2, onError: '', onNull: '' } });
+      });
+      describe('literal input', () => {
+        it('returns expected result', () => {
+          expect($.ensureString('value')).toEqual('value');
+          expect($.ensureString(123)).toEqual('123');
+          expect($.ensureString(123.4)).toEqual('123.4');
+          expect($.ensureString(true)).toEqual('true');
+          expect($.ensureString(false)).toEqual('false');
+          expect($.ensureString(null, '-')).toEqual('-');
+        });
       });
     });
     describe('$eq', () => {
@@ -1052,8 +1224,26 @@ describe('aggregation', () => {
         expect($.mod('$hours', '$tasks')).toEqual({ $mod: ['$hours', '$tasks'] });
       });
     });
-    // TODO $multiply
-    // TODO $multiplySafe
+    describe('$multiply', () => {
+      it('exports expected vars', () => {
+        expect($.multiply).toBeDefined();
+        expect($.$multiply).toBeDefined();
+        expect($.multiply).toStrictEqual($.$multiply);
+      });
+      it('returns expected result', () => {
+        expect($.multiply('$a', '$b', '$c')).toEqual({ $multiply: ['$a', '$b', '$c'] });
+      });
+    });
+    describe('$multiplySafe', () => {
+      it('exports expected vars', () => {
+        expect($.multiplySafe).toBeDefined();
+        expect($.$multiplySafe).toBeDefined();
+        expect($.multiplySafe).toStrictEqual($.$multiplySafe);
+      });
+      it('returns expected result', () => {
+        expect($.multiplySafe('$hours', '$tasks')).toEqual({ $multiply: [{ $ifNull: ['$hours', 0] }, { $ifNull: ['$tasks', 0] }] });
+      });
+    });
     describe('$ne', () => {
       it('exports expected vars', () => {
         expect($.ne).toBeDefined();
@@ -1132,10 +1322,56 @@ describe('aggregation', () => {
         expect($.round).toStrictEqual($.$round);
       });
       it('returns expected result', () => {
+        expect($.round('$value')).toEqual({ $round: ['$value', 0] });
         expect($.round('$value', 2)).toEqual({ $round: ['$value', 2] });
       });
     });
-    // TODO $roundStandard
+    describe('$roundStandard', () => {
+      it('exports expected vars', () => {
+        expect($.roundStandard).toBeDefined();
+        expect($.$roundStandard).toBeDefined();
+        expect($.roundStandard).toStrictEqual($.$roundStandard);
+      });
+      describe('without decimal places', () => {
+        it('returns expected result', () => {
+          expect($.roundStandard('$value')).toEqual({
+            $let: {
+              vars: { input: '$value' },
+              in: { $let: {
+                vars: {
+                  val: { $add: [
+                    '$$input',
+                    { $cond: { if: { $gte: ['$$input', 0] }, then: 0.5, else: -0.5 } },
+                  ] },
+                },
+                in: { $subtract: ['$$val', { $mod: ['$$val', 1] }] },
+              } },
+            },
+          });
+        });
+      });
+      describe('with decimal places', () => {
+        it('returns expected result', () => {
+          expect($.roundStandard('$value', 2)).toEqual({
+            $let: {
+              vars: { input: '$value' },
+              in: { $let: {
+                vars: {
+                  val: { $add: [
+                    { $multiply: ['$$input', 100] },
+                    { $cond: { if: { $gte: ['$$input', 0] }, then: 0.5, else: -0.5 } },
+                  ] },
+                },
+                in: { $divide: [
+                  { $subtract: ['$$val', { $mod: ['$$val', 1] }] },
+                  100,
+                ] },
+              } },
+            },
+          });
+        });
+      });
+    });
     describe('$sampleRate', () => {
       it('exports expected vars', () => {
         expect($.sampleRate).toBeDefined();
@@ -1258,6 +1494,28 @@ describe('aggregation', () => {
       });
       it('returns expected result', () => {
         expect($.subtract('$value', 1)).toEqual({ $subtract: ['$value', 1] });
+      });
+    });
+    describe('$subtractSafe', () => {
+      it('exports expected vars', () => {
+        expect($.subtractSafe).toBeDefined();
+        expect($.$subtractSafe).toBeDefined();
+        expect($.subtractSafe).toStrictEqual($.$subtractSafe);
+      });
+      it('returns expected result', () => {
+        expect($.subtractSafe('$a', '$b')).toEqual({ $subtract: [{ $ifNull: ['$a', 0] }, { $ifNull: ['$b', 0] }] });
+      });
+      describe('literal input', () => {
+        it('returns expected result', () => {
+          expect($.subtractSafe('$a', 1)).toEqual({ $subtract: [{ $ifNull: ['$a', 0] }, 1] });
+          expect($.subtractSafe(3, '$b')).toEqual({ $subtract: [3, { $ifNull: ['$b', 0] }] });
+          expect($.subtractSafe(3, 1)).toEqual({ $subtract: [3, 1] });
+          expect($.subtractSafe(true, 1)).toEqual({ $subtract: [1, 1] });
+          expect($.subtractSafe('$a', false)).toEqual({ $subtract: [{ $ifNull: ['$a', 0] }, 0] });
+          expect($.subtractSafe(3, false)).toEqual({ $subtract: [3, 0] });
+          expect($.subtractSafe(3, null)).toEqual({ $subtract: [3, 0] });
+          expect($.subtractSafe(3, undefined)).toEqual({ $subtract: [3, 0] });
+        });
       });
     });
     describe('$sum', () => {

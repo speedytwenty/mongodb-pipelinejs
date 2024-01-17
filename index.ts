@@ -118,9 +118,23 @@ type OperatorFn = (...args: any[]) => ObjectExpression;
 
 const safeNumberArgs = (fn: OperatorFn) => (...args: any[]) => {
   const nums = args.length === 1 && Array.isArray(args[0]) ? args[0] : args;
-  console.log('NUMS', nums);
   return fn(...nums.map((arg) => {
-    return typeof arg === 'number' ? arg : $ifNull(arg, 0);
+    switch (typeof arg) {
+      case 'boolean':
+        return arg ? 1 : 0;
+      case 'number':
+        return arg;
+      case 'string':
+        if (arg.match(/^[^$]/)) return 0;
+        break;
+      case 'object':
+        if (arg === null) return 0;
+        break;
+      case 'undefined':
+        return 0;
+      default:
+    }
+    return $ifNull(arg, 0);
   }));
 };
 
@@ -587,7 +601,6 @@ class Lookup {
     } else {
       this.$lookup.pipeline.push(...stages as PipelineStage[]);
     }
-    console.log(this.$lookup.pipeline);
     onlyOnce(this, 'pipeline');
     return this;
   }
@@ -1482,7 +1495,28 @@ type ConcatOperator = {
  */
 const $concat = ptafaa('$concat');
 
-// TODO $concatSafe
+/**
+ * Safely concatenates values as strings returning the result.
+ * @category Safe Operators
+ * @function
+ * @param {...Expression | Expression[]} args The parts to concatenate.
+ * @returns {ConcatOperator} A $concat operator with each operand ensured to
+ * return a string.
+ * @see $concat
+ * @see $ensureString
+ * @example <caption>String parts as arguments</caption>
+ * $concatSafe('$item', ' - ', '$description');
+ * // wraps each non-literal string with $ensureString
+ * { $concat: [$ensureString('$item'), ' - ', $ensureString('$description')] }
+ * @example <caption>First argument array</caption>
+ * $concatSafe(['$item', ' - ', '$description']);
+ * // returns same as above
+ */
+const $concatSafe = (...args: Expression[]) => {
+  let parts = args;
+  if (args.length && Array.isArray(args[0])) parts = args[0];
+  return { $concat: parts.map((expr) => $ensureString(expr)) };
+};
 
 type ConcatArraysOperator = {
   $concatArrays: Array<ArrayExpression>,
@@ -1503,7 +1537,20 @@ type ConcatArraysOperator = {
  */
 const $concatArrays = pta('$concatArrays');
 
-// TODO $concatArraysSafe
+/**
+ * Safely concatenate arrays.
+ * @category Safe Operators
+ * @function
+ * @param {...ArrayExpression} args The arrays to concatenate.
+ * @returns {ConcatArraysOperator} Returns a $concatArrays operator with each
+ * operand ensured to be an array.
+ * @see $concatArrays
+ * @example
+ * $concatArraySafe([1, 2, 3], [4, 5], '$c')
+ * // returns
+ * { $concatArrays: [[1, 2, 3], [4, 5], { $cond: { if: { $isArray: '$c' }, then: '$c', else: [] } }] }
+ */
+const $concatArraysSafe = (...args: Array<any>) => ({ $concatArrays: args.map((v) => $ensureArray(v)) });
 
 type ConditionExpression = {
   if: Expression,
@@ -1554,6 +1601,88 @@ class Condition {
  * using a corresponding method (see the Object Notation example).
  */
 const $cond = (ifExpr: Expression, thenExpr?: Expression, elseExpr?: Expression) => new Condition(ifExpr, thenExpr, elseExpr);
+
+enum ConversionType {
+  double = 1,
+  string = 2,
+  objectId = 7,
+  bool = 8,
+  date = 9,
+  int = 16,
+  long = 18,
+  decimal = 19,
+}
+
+type ConversionTypeExpression = ConversionType | StringExpression | NumberExpression;
+
+type ConvertExpression = {
+  input: Expression,
+  to: ConversionTypeExpression,
+  onError?: Expression,
+  onNull?: Expression,
+};
+
+class ConvertOperator {
+  public $convert: Partial<ConvertExpression> = {};
+  constructor(
+    input: Expression,
+    to?: ConversionTypeExpression,
+    onErrorOrNull?: Expression,
+  ) {
+    this.input(input);
+    if (to) this.to(to);
+    if (onErrorOrNull !== undefined) this.default(onErrorOrNull);
+  }
+
+  input(input: Expression) {
+    this.$convert.input = input;
+    return this;
+  }
+
+  to(type: ConversionTypeExpression) {
+    this.$convert.to = type;
+    return this;
+  }
+
+  onError(expression: Expression) {
+    this.$convert.onError = expression;
+    return this;
+  }
+
+  onNull(expression: Expression) {
+    this.$convert.onNull = expression;
+    return this;
+  }
+
+  default(onErrorAndNull: Expression) {
+    this.onError(onErrorAndNull);
+    this.onNull(onErrorAndNull);
+    return this;
+  }
+}
+
+/**
+ * Converts a value to a specified type.
+ * @category Operators
+ * @function
+ * @param {Expression} value The value to convert. Can be any valid expression.
+ * @param {ConversionTypeExpression} toType The 
+ * @param {Expression} defaultValue The result if the value to convert is null
+ * or induces an error.
+ * @returns {ConvertOperator} A $convert operator object populated based on
+ * input with additional methods for advanced usage.
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/convert/|MongoDB reference}
+ * for $convert
+ * @example <caption>Static notation</caption>
+ * $convert('$myValue', 'int');
+ * // returns
+ * { $convert: { input: '$myValue', to: 'int' } }
+ * @example <caption>Object notation</caption>
+ * $convert('$myValue', 'int').onError(-1).onNull(0);
+ * // returns
+ * { $convert: { input: '$myValue', to: 'int', onError: -1, onNull: 0 } }
+ */
+const $convert = (value: Expression, toType?: ConversionTypeExpression, defaultValue?: Expression) => new ConvertOperator(value, toType, defaultValue);
 
 type CosOperator = {
   $cos: NumberExpression,
@@ -1648,7 +1777,7 @@ type DegreesToRadiansOperator = {
 
 /**
  * Decrement a number by 1.
- * @category Operators
+ * @category Utility Operators
  * @param {NumberExpression} value A number of any valid expression that
  * resolves to a number.
  * @returns {SubtractOperator} A $subtract operator with `1` fixed as the
@@ -1686,22 +1815,90 @@ type DivideOperator = {
  * Divides one number by another and returns the result.
  * @category Operators
  * @function
- * @param {NumberExpression} expression1 A number of any valid expression that
+ * @param {NumberExpression} dividend A number of any valid expression that
  * resolves to a number.
- * @param {NumberExpression} expression2 A number of any valid expression that
+ * @param {NumberExpression} divisor A number of any valid expression that
  * resolves to a number.
  * @returns {DivideOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/divide/|MongoDB reference}
  * for $divide
+ * @example
+ * $divide(9, 3);
+ * // returns
+ * { $divide: [9, 3 }
  */
 const $divide = at('$divide');
 
-// TODO
-const $divideSafe = (dividend: number | string, divisor: number | string, defaultValue = '$$REMOVE') => $let({
-  dividend: typeof dividend === 'number' ? dividend : $ifNull(dividend, 0),
-  divisor: typeof divisor === 'number' ? divisor : $ifNull(divisor, 0),
-}).in($cond($eq('$$divisor', 0), defaultValue, $divide('$$dividend', '$$divisor')));
-// }).in($if($not($eq('$$divisor', 0))).then($divide('$$dividend', '$$divisor')).else(defaultValue));
+/**
+ * Safely divide one number by another. Division by zero will return the
+ * `defaultValue`.
+ * @category Safe Operators
+ * @param {NumberExpression | null | undefined} dividend A number or any expression that resolves
+ * to a number.
+ * @param {NumberExpression | null | undefined} divisor A number or any expression that resolves
+ * to a number.
+ * @param {NumberExpression} [defaultValue=0] The default value if the division
+ * operation cannot be performed.
+ * @returns {DivideOperator} A $divide operator populated according to argument
+ * input.
+ * @example
+ * $divideSafe('$a', '$b');
+ * // returns
+ * { $let: {
+ *   vars: {
+ *     dividend: { $ifNull: ['$a', 0] },
+ *     divisor: { $ifNull: ['$b', 0] },
+ *   },
+ *   in: { $cond: {
+ *     if: { $eq: ['$$divisor', 0] },
+ *     then: 0,
+ *     else: { $divide: ['$dividend', '$divisor'] },
+ *   } },
+ * } }
+ * @example <caption>Literal input</caption>
+ * $divideSafe(9, 3); // returns { $divide: [9, 3] }
+ * $divideSafe(true, 3); // returns 0
+ * $divideSafe(9, false); // returns 0
+ * $divideSafe(9, null); // returns 0
+ * $divideSafe(null, 3); // returns 0
+ */
+const $divideSafe = (
+  dividend: NumberExpression | null | undefined | boolean,
+  divisor: NumberExpression | null | undefined | boolean,
+  defaultValue = '$$REMOVE',
+) => {
+  switch (typeof divisor) {
+    case 'number':
+      if (typeof dividend === 'number') return $divide(dividend, divisor);
+      break;
+    case 'string':
+      if (divisor.match(/^[^$]/)) return 0;
+      break;
+    case 'boolean':
+    case 'undefined':
+      return 0;
+    case 'object':
+      if (divisor === null) return 0;
+      break;
+    default:
+  }
+  switch (typeof dividend) {
+    case 'undefined':
+    case 'boolean':
+      return 0;
+    case 'string':
+      if (dividend.match(/^[^$]/)) return 0;
+      break;
+    case 'object':
+      if (dividend === null) return 0;
+      break;
+    default:
+  }
+  return $let({
+    dividend: typeof dividend === 'number' ? dividend : $ifNull(dividend, 0),
+    divisor: typeof divisor === 'number' ? divisor : $ifNull(divisor, 0),
+  }).in($cond($eq('$$divisor', 0), defaultValue, $divide('$$dividend', '$$divisor')));
+};
 
 type DocumentNumberOperator = {
   $documentNumber: ObjectExpression,
@@ -1720,6 +1917,130 @@ type DocumentNumberOperator = {
  * { $documentNumber: {} }
  */
 const $documentNumber = ne('$documentNumber');
+
+/**
+ * Ensure an expression resolves an array. Non-array values return an empty
+ * array.
+ * @category Utility Operators
+ * @function
+ * @param {Expression | null | undefined} value The value to ensure is an array.
+ * @returns {Array<any>|Condition} Returns a literal array for invalid literal
+ * input and a Condition for variable input.
+ * @example
+ * $ensureArray('$myVar');
+ * // returns
+ * { $let: {
+ *   vars: { input: '$myVar' },
+ *   in: { $cond: { if: { $isArray: '$$input' }, then: '$$input', else: [] } },
+ * } }
+ * @example <caption>Literal input</caption>
+ * $ensureArray([1, 2, 3]); // returns [1, 2 3]
+ * $ensureArray('myString'); // returns [];
+ * $ensureArray(1); // returns [];
+ * $ensureArray(true); // returns [];
+ * $ensureArray(false); // returns [];
+ * $ensureArray(undefined); // returns [];
+ * $ensureArray(null); // returns [];
+ */
+const $ensureArray = (value: Expression | null | undefined) => {
+  if (Array.isArray(value)) return value;
+  switch (typeof value) {
+    case 'string':
+      if (value.match(/^[^$]/)) return [];
+      break;
+    case 'object':
+      if (value === null) return [];
+      break;
+    case 'number':
+    case 'undefined':
+    case 'boolean':
+      return [];
+    default:
+  }
+    return $let({ input: value }).in($if($isArray('$$input')).then('$$input').else([]));
+};
+
+/**
+ * Ensure an expression resolves a number.
+ * @category Utility Operators
+ * @function
+ * @param {Expression | null | undefined} value The value to ensure is a number.
+ * is null or induces an error.
+ * @param {NumberExpression} [defaultValue=0] The value to return for null
+ * values or when converting the input value to a double produces an error.
+ * @returns {number | Condition} Returns a number of a $cond expression that
+ * will convert non-numeric types to a double.
+ * @example
+ * $ensureNumber('$myVar');
+ * // returns
+ * { $cond: {
+ *   if: { $in: [{ $type: '$myVar' }, ['decimal', 'int', 'double', 'long'] },
+ *   then: '$myVar',
+ *   else: { $convert: { input: '$myVar', to: 1, onError: 0, onNull: 0 },
+ * } }
+ * @example <caption>Literal input</caption>
+ * $ensureNumber(123); // returns 123
+ * $ensureNumber(true); // returns 1
+ * $ensureNumber(false); // returns 0
+ */
+const $ensureNumber = (value: Expression | null | undefined, defaultValue: NumberExpression = 0) => {
+  switch (typeof value) {
+    case 'number': return value;
+    case 'boolean': return value ? 1 : 0;
+    case 'string':
+      if (value.match(/^[^$]/)) return $toDouble(value);
+      break;
+    case 'object':
+      if (value === null) return defaultValue;
+      break;
+    case 'undefined':
+      return defaultValue;
+    default:
+  }
+  return $let({ input: value }).in($if($isNumber('$$input')).then('$$input').else($convert('$$input', 1, defaultValue)));
+};
+
+/**
+ * Ensure an expression resolves a string.
+ * @category Utility Operators
+ * @function
+ * @param {Expression | null | undefined} value The value to ensure is of the specified type.
+ * @param {StringExpression} [defaultValue=''] Override the default value of ""
+ * if the conversion results in null or induces an error.
+ * @returns {string | ConvertOperator} A literal string if the input value is a
+ * literal string. Otherwise a ConvertOperator populated accordinly is returned.
+ * @see $convert
+ * @example
+ * $ensureString('$myVariable');
+ * // returns
+ * { $convert: { input: '$myVariable', to: 2, onError: '', onNull: '' } },
+ * @example <caption>Literal string input</caption>
+ * $ensureString('literalString');
+ * @example <caption>Literal number input</caption>
+ * $ensureString(1); // returns "1"
+ * $ensureString(1.1); // returns "1.1"
+ * @example <caption>Literal boolean input</caption>
+ * $ensureString(true); // returns ""
+ * $ensureString(false); // return ""
+ */
+const $ensureString = (value: Expression | null | undefined, defaultValue: StringExpression = '') => {
+  switch (typeof value) {
+    case 'string':
+      if (value[0] !== '$') return value;
+      break;
+    case 'number':
+      return `${value}`;
+    case 'boolean':
+      return value ? 'true' :'false';
+    case 'object':
+      if (value === null) return defaultValue;
+      break;
+    case 'undefined':
+      return defaultValue;
+    default:
+  }
+  return $convert(value as Expression, ConversionType.string, defaultValue);
+};
 
 type EqOperator = {
   $eq: [Expression, Expression],
@@ -1762,16 +2083,6 @@ type ExpOperator = {
  */
 const $exp = se('$exp');
 
-// TODO - Determine if query components should be included
-const $each = se('$each');
-
-// TODO - Determine if query components should be included
-const $elemMatch = se('$elemMatch');
-
-// TODO - Determine if query components should be included
-const $expr = se('$expr');
-
-// TODO
 type FilterExpression = {
   input: ArrayExpression,
   cond: Expression,
@@ -1853,6 +2164,7 @@ type FirstOperator = {
  * Returns the result of an expression for the first document in a group of
  * documents.
  * @category Operators
+ * @function
  * @param {Expression} expression Expression that resolves a value from the 
  * document.
  * @returns {FirstOperator}
@@ -1896,7 +2208,7 @@ const $gte = taf('$gte');
 
 /**
  * Shortcut object-notation for the $cond operation (if/then/else).
- * @category Operators
+ * @category Utility Operators
  * @function
  * @param {Expression} ifExpr A boolean expression.
  * @returns {Condition} A Condition object that resembles the $cond operation
@@ -1929,12 +2241,9 @@ type IfNullOperator = {
  */
 const $ifNull = at('$ifNull');
 
-// TODO
-const $in = taf('$in');
-
 /**
  * Increment a number by 1.
- * @category Operators
+ * @category Utility Operators
  * @param {NumberExpression} value A number or any valid expression that
  * resolves to a number.
  * @returns {AddOperator} An $add operator with a fixed added of 1.
@@ -1946,6 +2255,10 @@ const $in = taf('$in');
 const $increment = (value: NumberExpression) => $add(value, 1);
 
 // TODO
+const $in = taf('$in');
+
+// TODO
+// * @category Safe Operators
 const $inSafe = (...args: any[]) => {
   if (args.length === 2) {
     const [val, arr] = args;
@@ -2285,13 +2598,45 @@ type ModOperator = {
  */
 const $mod = at('$mod');
 
-// TODO - Determine if query components should be included
-const $mul = se('$mul');
+type MultiplyOperator = {
+  $multiply: NumberExpression[],
+};
 
-// TODO
+/**
+ * Multiplies numbers together and returns the result.
+ * @category Operators
+ * @function
+ * @param {...NumberExpression} expressions Any valid expression that resolves
+ * to a number.
+ * @returns {MultiplyOperator}
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/multiply/|MongoDB reference}
+ * for $multiply
+ * @example
+ * $multiply(1, 2, 3, 4);
+ * // returns
+ * { $multiply: [1, 2, 3, 4] }
+ */
 const $multiply = ptafaa('$multiply');
 
-// TODO
+/**
+ * Safely multiply numbers together.
+ * @category Safe Operators
+ * @function
+ * @param {...NumberExpression} expressions Any valid expression that resolves
+ * to a number.
+ * @returns {MultiplyOperator}
+ * @see $multiply
+ * @example
+ * $multiplySafe('$a', 2, '$c');
+ * // returns
+ * { $multiply: [{ $ifNull: ['$a', 0] }, 2, { $ifNull: ['$c', 0] } }
+ * @example <caption>Literal input</caption>
+ * $multiplySafe(1, 2, 3, 4); // returns { $multiply: [1, 2, 3, 4] }
+ * $multiplySafe(1, true); // returns 0;
+ * $multiplySafe(false, 2); // returns 0;
+ * $multiplySafe(null, 2); // returns 0;
+ * $multiplySafe(1, undefined); // returns 0;
+ */
 const $multiplySafe = safeNumberArgs($multiply);
 
 type NeOperator = {
@@ -2418,11 +2763,11 @@ type RoundOperator = {
  * Rounds a number to a whole integer or to a specified decimal place.
  * @category Operators
  * @function
- * @param {NumberExpression} expression1 A number of any valid expression that
+ * @param {NumberExpression} value A number of any valid expression that
  * resolves to a number.
- * @param {NumberExpression} expression2 A number of any valid expression that
+ * @param {NumberExpression} [places=0] A number of any valid expression that
  * resolves to an integer between -20 and 100. Defaults to 0 if unspecified.
- * @returns {RoundOperator}
+ * @returns {RoundOperator} A $round operator populated with argument input.
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/round/|MongoDB reference}
  * for $round
  * @example
@@ -2431,25 +2776,65 @@ type RoundOperator = {
  * $round(12.5) // 12
  * $round(13.5) // 14
  */
-const $round = at('$round');
+const $round = (value: Expression, places = 0) => ({ $round: [value, places] });
 
-// TODO
-// based on mongo-round
-const $roundStandard = (valueExpression: Expression, decimals: number) => {
-	const multiplier = Math.pow(10, decimals || 0);
-
-	if (multiplier === 1) { // zero decimals
-		return $let({
-      val: $add(valueExpression, $if($gte(valueExpression, 0)).then(0.5).else(-0.5)),
-    }).in($subtract('$$val', $mod('$$val', 1)));
-	}
-
-	return $let({
-    val: $add(
-      $multiply(valueExpression, multiplier),
-      $if($gte(valueExpression, 0)).then(0.5).else(-0.5),
-    ),
-  }).in($divide($subtract('$$val', $mod('$$val', 1)), multiplier));
+/**
+ * Rounds a number to a specified decimal place.
+ * @category Utility Operators
+ * @function
+ * @param {NumberExpression} value A number of any valid expression that
+ * resolves to a number.
+ * @param {NumberExpression} [places=0] A number of any valid expression that
+ * resolves to an integer between -20 and 100. Defaults to 0 if unspecified.
+ * @returns {LetVarsIn} Returns an expression that rounds the value accordingly.
+ * @see $round
+ * @see {@link https://www.npmjs.com/package/mongo-round}
+ * @see {@link https://stackoverflow.com/questions/17482623/rounding-to-2-decimal-places-using-mongodb-aggregation-framework}
+ * @example <caption>Zero decimal places</caption>
+ * $roundStandard('$myVal');
+ * // returns
+ * { $let: {
+ *   input: '$myVal',
+ *   in: { $let: {
+ *     vars: {
+ *       val: { $add: [
+ *         '$$input',
+ *         { $cond: { if: { $gte: ['$$input', 0] }, then: 0.5, else: -0.5 } },
+ *       ] },
+ *     },
+ *     in: { $subtact: ['$$val', { $mod: ['$$val', 1] }] },
+ *   } },
+ * } }
+ * @example <caption>With decimal places</caption>
+ * $roundStandard('$myVal', 2);
+ * // returns
+ * { $let: {
+ *   input: '$myVal',
+ *   in: { $let: {
+ *     vars: {
+ *       val: { $add: [
+ *         { $multiply: ['$$input', 2] },
+ *         { $cond: { if: { $gte: ['$$input', 0] }, then: 0.5, else: -0.5 } },
+ *       ] },
+ *     },
+ *     in: { $divide: [{ $subtract: ['$$val', { $mod: ['$$val', 1] }] }, 2] },
+ *   } },
+ * } },
+ */
+const $roundStandard = (value: Expression, places = 0) => {
+  const expr = $let({ input: value });
+  if (places) {
+    const multiplier = Math.pow(10, places || 0);
+    return expr.in($let({
+      val: $add(
+        $multiply('$$input', multiplier),
+        $if($gte('$$input', 0)).then(0.5).else(-0.5),
+      ),
+    }).in($divide($subtract('$$val', $mod('$$val', 1)), multiplier)));
+  }
+  return expr.in($let({
+    val: $add('$$input', $if($gte('$$input', 0)).then(0.5).else(-0.5)),
+  }).in($subtract('$$val', $mod('$$val', 1))));
 };
 
 type SampleRateOperator = {
@@ -2672,9 +3057,9 @@ type SubtractOperator = {
  * the resulting date.
  * @category Operators
  * @function
- * @param {NumberExpression} expression1 A number of any valid expression that
+ * @param {NumberExpression} minuend A number of any valid expression that
  * resolves to a number.
- * @param {NumberExpression} expression2 A number of any valid expression that
+ * @param {NumberExpression} subtrahend number of any valid expression that
  * resolves to a number.
  * @returns {SubtractOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/subtract/|MongoDB reference}
@@ -2686,7 +3071,31 @@ type SubtractOperator = {
  */
 const $subtract = at('$subtract');
 
-// TODO
+/**
+ * Safely subtract two numbers returning the difference.
+ * @category Safe Operators
+ * @function
+ * @param {NumberExpression | null | undefined | boolean} minuend A number of any valid expression that
+ * resolves to a number.
+ * @param {NumberExpression | null | undefined | boolean} subtrahend number of any valid expression that
+ * resolves to a number.
+ * @returns {SubtractOperator | number}
+ * @see $subtract
+ * @example
+ * $subtractSafe('$a', '$b')
+ * // returns
+ * { $subtract: [{ $ifNull: ['$a', 0] }, { $ifNull: ['$b', 0] }] }
+ * @example <caption>Literal input</caption>
+ * $subtractSafe('$a', 1); // returns { $subtract: [{ $ifNull: ['$a', 0] }, 1] }
+ * $subtractSafe(3, '$b'); // returns { $subtract: [3, { $ifNull: ['$b', 0] }] }
+ * $subtractSafe(3, 1); // returns { $subtract: [3, 1] }
+ * $subtractSafe(true, 1); // returns { $subtract: [1, 1]
+ * $subtractSafe(3, false); // returns { $subtract: [3, 0] }
+ * $subtractSafe(3, undefined); // returns { $subtract: [3, 0] }
+ * $subtractSafe(3, null); // returns { $subtract: [3, 0] }
+ * $subtractSafe(undefined, 1); // returns { $subtract: [0, 1] }
+ * $subtractSafe(null, 1); // returns { $subtract: [0, 1] }
+ */
 const $subtractSafe = safeNumberArgs($subtract);
 
 type SumOperator = {
@@ -3131,12 +3540,16 @@ export = {
   cmp: $cmp,
   $concat,
   concat: $concat,
+  $concatSafe,
+  concatSafe: $concatSafe,
   $concatArrays,
   concatArrays: $concatArrays,
+  $concatArraysSafe,
+  concatArraysSafe: $concatArraysSafe,
   $cond,
   cond: $cond,
-  // TODO
-  // $convert
+  $convert,
+  convert: $convert,
   $cos,
   cos: $cos,
   $cosh,
@@ -3161,16 +3574,16 @@ export = {
   documentNumber: $documentNumber,
   $documents,
   documents: $documents,
-  $each,
-  each: $each,
-  $elemMatch,
-  elemMatch: $elemMatch,
+  $ensureArray,
+  ensureArray: $ensureArray,
+  $ensureNumber,
+  ensureNumber: $ensureNumber,
+  $ensureString,
+  ensureString: $ensureString,
   $eq,
   eq: $eq,
   $exp,
   exp: $exp,
-  $expr,
-  expr: $expr,
   $filter,
   filter: $filter,
   $first,
@@ -3239,8 +3652,6 @@ export = {
   multiply: $multiply,
   $multiplySafe,
   multiplySafe: $multiplySafe,
-  $mul,
-  mul: $mul,
   $ne,
   ne: $ne,
   $not,
