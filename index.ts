@@ -1857,6 +1857,39 @@ const $ensureType = (type: ConversionTypeExpression, value: Expression, defaultV
 };
 
 /**
+ * Ensure an expression resolves a number.
+ * @category Utility Operators
+ * @function
+ * @param {Expression} value The value to ensure is a number.
+ * is null or induces an error.
+ * @returns {number | Condition} Returns a number of a $cond expression that
+ * will convert non-numeric types to a double.
+ * @example
+ * $ensureNumber('$myVar');
+ * // returns
+ * { $cond: {
+ *   if: { $in: [{ $type: '$myVar' }, ['decimal', 'int', 'double', 'long'] },
+ *   then: '$myVar',
+ *   else: { $toDouble: '$myVar' }
+ * } }
+ * @example <caption>Literal input</caption>
+ * $ensureNumber(123); // returns 123
+ * $ensureNumber(true); // returns 1
+ * $ensureNumber(false); // returns 0
+ */
+const $ensureNumber = (value: Expression) => {
+  switch (typeof value) {
+    case 'number': return value;
+    case 'boolean': return value ? 1 : 0;
+    case 'string':
+      if (value.match(/^[^$]/)) return $toDouble(value);
+      break;
+    default:
+  }
+  return $if($in($type(value), ['decimal', 'double', 'int', 'long'])).then(value).else($toDouble(value));
+};
+
+/**
  * Ensure an expression resolves a string.
  * @category Utility Operators
  * @function
@@ -3332,6 +3365,8 @@ export = {
   elemMatch: $elemMatch,
   $ensureType,
   ensureType: $ensureType,
+  $ensureNumber,
+  ensureNumber: $ensureNumber,
   $ensureString,
   ensureString: $ensureString,
   $eq,
