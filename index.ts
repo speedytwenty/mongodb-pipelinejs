@@ -1790,22 +1790,90 @@ type DivideOperator = {
  * Divides one number by another and returns the result.
  * @category Operators
  * @function
- * @param {NumberExpression} expression1 A number of any valid expression that
+ * @param {NumberExpression} dividend A number of any valid expression that
  * resolves to a number.
- * @param {NumberExpression} expression2 A number of any valid expression that
+ * @param {NumberExpression} divisor A number of any valid expression that
  * resolves to a number.
  * @returns {DivideOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/divide/|MongoDB reference}
  * for $divide
+ * @example
+ * $divide(9, 3);
+ * // returns
+ * { $divide: [9, 3 }
  */
 const $divide = at('$divide');
 
-// TODO
-const $divideSafe = (dividend: number | string, divisor: number | string, defaultValue = '$$REMOVE') => $let({
-  dividend: typeof dividend === 'number' ? dividend : $ifNull(dividend, 0),
-  divisor: typeof divisor === 'number' ? divisor : $ifNull(divisor, 0),
-}).in($cond($eq('$$divisor', 0), defaultValue, $divide('$$dividend', '$$divisor')));
-// }).in($if($not($eq('$$divisor', 0))).then($divide('$$dividend', '$$divisor')).else(defaultValue));
+/**
+ * Safely divide one number by another. Division by zero will return the
+ * `defaultValue`.
+ * @category Safe Operators
+ * @param {NumberExpression | null | undefined} dividend A number or any expression that resolves
+ * to a number.
+ * @param {NumberExpression | null | undefined} divisor A number or any expression that resolves
+ * to a number.
+ * @param {NumberExpression} [defaultValue=0] The default value if the division
+ * operation cannot be performed.
+ * @returns {DivideOperator} A $divide operator populated according to argument
+ * input.
+ * @example
+ * $divideSafe('$a', '$b');
+ * // returns
+ * { $let: {
+ *   vars: {
+ *     dividend: { $ifNull: ['$a', 0] },
+ *     divisor: { $ifNull: ['$b', 0] },
+ *   },
+ *   in: { $cond: {
+ *     if: { $eq: ['$$divisor', 0] },
+ *     then: 0,
+ *     else: { $divide: ['$dividend', '$divisor'] },
+ *   } },
+ * } }
+ * @example <caption>Literal input</caption>
+ * $divideSafe(9, 3); // returns { $divide: [9, 3] }
+ * $divideSafe(true, 3); // returns 0
+ * $divideSafe(9, false); // returns 0
+ * $divideSafe(9, null); // returns 0
+ * $divideSafe(null, 3); // returns 0
+ */
+const $divideSafe = (
+  dividend: NumberExpression | null | undefined | boolean,
+  divisor: NumberExpression | null | undefined | boolean,
+  defaultValue = '$$REMOVE',
+) => {
+  switch (typeof divisor) {
+    case 'number':
+      if (typeof dividend === 'number') return $divide(dividend, divisor);
+      break;
+    case 'string':
+      if (divisor.match(/^[^$]/)) return 0;
+      break;
+    case 'boolean':
+    case 'undefined':
+      return 0;
+    case 'object':
+      if (divisor === null) return 0;
+      break;
+    default:
+  }
+  switch (typeof dividend) {
+    case 'undefined':
+    case 'boolean':
+      return 0;
+    case 'string':
+      if (dividend.match(/^[^$]/)) return 0;
+      break;
+    case 'object':
+      if (dividend === null) return 0;
+      break;
+    default:
+  }
+  return $let({
+    dividend: typeof dividend === 'number' ? dividend : $ifNull(dividend, 0),
+    divisor: typeof divisor === 'number' ? divisor : $ifNull(divisor, 0),
+  }).in($cond($eq('$$divisor', 0), defaultValue, $divide('$$dividend', '$$divisor')));
+};
 
 type DocumentNumberOperator = {
   $documentNumber: ObjectExpression,
@@ -2517,11 +2585,45 @@ const $mod = at('$mod');
 // TODO - Determine if query components should be included
 const $mul = se('$mul');
 
-// TODO
+type MultiplyOperator = {
+  $multiply: NumberExpression[],
+};
+
+/**
+ * Multiplies numbers together and returns the result.
+ * @category Operators
+ * @function
+ * @param {...NumberExpression} expressions Any valid expression that resolves
+ * to a number.
+ * @returns {MultiplyOperator}
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/multiply/|MongoDB reference}
+ * for $multiply
+ * @example
+ * $multiply(1, 2, 3, 4);
+ * // returns
+ * { $multiply: [1, 2, 3, 4] }
+ */
 const $multiply = ptafaa('$multiply');
 
-// TODO
-// * @category Safe Operators
+/**
+ * Safely multiply numbers together.
+ * @category Safe Operators
+ * @function
+ * @param {...NumberExpression} expressions Any valid expression that resolves
+ * to a number.
+ * @returns {MultiplyOperator}
+ * @see $multiply
+ * @example
+ * $multiplySafe('$a', 2, '$c');
+ * // returns
+ * { $multiply: [{ $ifNull: ['$a', 0] }, 2, { $ifNull: ['$c', 0] } }
+ * @example <caption>Literal input</caption>
+ * $multiplySafe(1, 2, 3, 4); // returns { $multiply: [1, 2, 3, 4] }
+ * $multiplySafe(1, true); // returns 0;
+ * $multiplySafe(false, 2); // returns 0;
+ * $multiplySafe(null, 2); // returns 0;
+ * $multiplySafe(1, undefined); // returns 0;
+ */
 const $multiplySafe = safeNumberArgs($multiply);
 
 type NeOperator = {

@@ -794,8 +794,45 @@ describe('aggregation', () => {
       });
     });
     // TODO $denseRank
-    // TODO $divide
-    // TODO $divideSafe
+    describe('$divide', () => {
+      it('exports expected vars', () => {
+        expect($.divide).toBeDefined();
+        expect($.$divide).toBeDefined();
+        expect($.divide).toStrictEqual($.$divide);
+      });
+      it('returns expected result', () => {
+        expect($.divide('$a', '$b')).toEqual({ $divide: ['$a', '$b'] });
+      });
+    });
+    describe('$divideSafe', () => {
+      it('exports expected vars', () => {
+        expect($.divideSafe).toBeDefined();
+        expect($.$divideSafe).toBeDefined();
+        expect($.divideSafe).toStrictEqual($.$divideSafe);
+      });
+      it('returns expected result', () => {
+        expect($.divideSafe('$a', '$b')).toEqual({
+          $let: {
+            vars: {
+              dividend: { $ifNull: ['$a', 0] },
+              divisor: { $ifNull: ['$b', 0] },
+            },
+            in: { $cond: {
+              if: { $eq: ['$$divisor', 0] },
+              then: '$$REMOVE',
+              else: { $divide: ['$$dividend', '$$divisor'] },
+            } },
+          },
+        });
+      });
+      describe('literal input', () => {
+        expect($.divideSafe(9, 3)).toEqual({ $divide: [9, 3] });
+        expect($.divideSafe(true, 3)).toEqual(0);
+        expect($.divideSafe(9, false)).toEqual(0);
+        expect($.divideSafe(9, null)).toEqual(0);
+        expect($.divideSafe(null, 3)).toEqual(0);
+      });
+    });
     describe('$documentNumber', () => {
       it('exports expected vars', () => {
         expect($.documentNumber).toBeDefined();
@@ -1168,8 +1205,26 @@ describe('aggregation', () => {
         expect($.mod('$hours', '$tasks')).toEqual({ $mod: ['$hours', '$tasks'] });
       });
     });
-    // TODO $multiply
-    // TODO $multiplySafe
+    describe('$multiply', () => {
+      it('exports expected vars', () => {
+        expect($.multiply).toBeDefined();
+        expect($.$multiply).toBeDefined();
+        expect($.multiply).toStrictEqual($.$multiply);
+      });
+      it('returns expected result', () => {
+        expect($.multiply('$a', '$b', '$c')).toEqual({ $multiply: ['$a', '$b', '$c'] });
+      });
+    });
+    describe('$multiplySafe', () => {
+      it('exports expected vars', () => {
+        expect($.multiplySafe).toBeDefined();
+        expect($.$multiplySafe).toBeDefined();
+        expect($.multiplySafe).toStrictEqual($.$multiplySafe);
+      });
+      it('returns expected result', () => {
+        expect($.multiplySafe('$hours', '$tasks')).toEqual({ $multiply: [{ $ifNull: ['$hours', 0] }, { $ifNull: ['$tasks', 0] }] });
+      });
+    });
     describe('$ne', () => {
       it('exports expected vars', () => {
         expect($.ne).toBeDefined();
