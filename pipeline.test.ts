@@ -1,5 +1,7 @@
 import $ = require('.');
 
+afterEach(() => jest.clearAllMocks());
+
 describe('aggregation', () => {
   describe('stages', () => {
     describe('$addFields', () => {
@@ -802,6 +804,37 @@ describe('aggregation', () => {
       });
       it('returns expected result', () => {
         expect($.documentNumber()).toEqual({ $documentNumber: {} });
+      });
+    });
+    describe('$ensureType', () => {
+      it('exports expected vars', () => {
+        expect($.ensureType).toBeDefined();
+        expect($.$ensureType).toBeDefined();
+        expect($.ensureType).toStrictEqual($.$ensureType);
+      });
+      it('returns expected result for variable values', () => {
+        expect($.ensureType(1, '$value', '-'))
+          .toEqual({ $convert: { input: '$value', to: 1, onError: '-', onNull: '-' } });
+      });
+      describe('literal value input', () => {
+        describe('for string conversion', () => {
+          it('returns expected result', () => {
+            expect($.ensureType(2, 'value', '-')).toEqual('value');
+            expect($.ensureType('string', 123, '-')).toEqual('123');
+            expect($.ensureType(2, 123.4, '-')).toEqual('123.4');
+          });
+        });
+        // TODO expand types to include boolean, int, double
+      });
+    });
+    describe('$ensureString', () => {
+      it('exports expected vars', () => {
+        expect($.ensureString).toBeDefined();
+        expect($.$ensureString).toBeDefined();
+        expect($.ensureString).toStrictEqual($.$ensureString);
+      });
+      it('returns expected result', () => {
+        expect($.ensureString('$myVar')).toEqual({ $convert: { input: '$myVar', to: 2, onError: '', onNull: '' } });
       });
     });
     describe('$eq', () => {

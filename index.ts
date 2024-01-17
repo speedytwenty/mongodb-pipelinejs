@@ -1825,13 +1825,61 @@ type DocumentNumberOperator = {
  */
 const $documentNumber = ne('$documentNumber');
 
-// TODO
-const $ensureType = (type: ConversionTypeExpression, value: Expression, defaultValue?: Expression) => new ConvertOperator(value, type, defaultValue);
-
-const $ensureString = (value: Expression, defaultValue: StringExpression = '') => {
-  if (typeof value === 'string' && !value.match(/^\$/)) return value;
-  return $ensureType(ConversionType.string, value, defaultValue);
+/**
+ * Ensure an expression resolves a specific data type.
+ * @category Utility Operators
+ * @function
+ * @param {ConversionTypeExpression} type The type to ensure the input value is.
+ * @param {Expression} value The value to ensure is of the specified type.
+ * @param {Expression} [defaultValue] The value to return if the conversion
+ * results in null or induces an error.
+ * @returns {ConvertOperator | string} If the input value is a variable a
+ * convert operator is returned. If the input value is a literal value of the
+ * same type, the raw value is returned.
+ * @example <caption>Static notation</caption>
+ * $ensureType('string', '$myVariable', 'N/A');
+ * // returns
+ * { $convert: { input: '$myVariable', to: 'string', onError: 'N/A', onNull: 'N/A' } }
+ * @example <caption>Object notation</caption>
+ * $ensureType('string', '$myVariable').onError('ERR').onNull('N/A');
+ * // returns
+ * { $convert: { input: '$myVariable', to: 'string', onError: 'ERR', onNull: 'N/A' } }
+ */
+const $ensureType = (type: ConversionTypeExpression, value: Expression, defaultValue?: Expression) => {
+  if (type === 'string' || type === 2) {
+    if (typeof value === 'string') {
+      if (value.match(/^[^$]/)) return value;
+    } else if (typeof value === 'number') {
+      return `${value}`;
+    } else if (typeof value === 'boolean') return value ? 'true' :'false';
+  }
+  return new ConvertOperator(value, type, defaultValue);
 };
+
+/**
+ * Ensure an expression resolves a string.
+ * @category Utility Operators
+ * @function
+ * @param {Expression} value The value to ensure is of the specified type.
+ * @param {StringExpression} [defaultValue=''] Override the default value of ""
+ * if the conversion results in null or induces an error.
+ * @returns {string | ConvertOperator} A literal string if the input value is a
+ * literal string. Otherwise a ConvertOperator populated accordinly is returned.
+ * @see $convert
+ * @example
+ * $ensureString('$myVariable');
+ * // returns
+ * { $convert: { input: '$myVariable', to: 2, onError: '', onNull: '' } },
+ * @example <caption>Literal string input</caption>
+ * $ensureString('literalString');
+ * @example <caption>Literal number input</caption>
+ * $ensureString(1); // returns "1"
+ * $ensureString(1.1); // returns "1.1"
+ * @example <caption>Literal boolean input</caption>
+ * $ensureString(true); // returns ""
+ * $ensureString(false); // return ""
+ */
+const $ensureString = (value: Expression, defaultValue: StringExpression = '') => $ensureType(ConversionType.string, value, defaultValue);
 
 type EqOperator = {
   $eq: [Expression, Expression],
