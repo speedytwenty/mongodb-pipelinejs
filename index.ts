@@ -118,9 +118,23 @@ type OperatorFn = (...args: any[]) => ObjectExpression;
 
 const safeNumberArgs = (fn: OperatorFn) => (...args: any[]) => {
   const nums = args.length === 1 && Array.isArray(args[0]) ? args[0] : args;
-  console.log('NUMS', nums);
   return fn(...nums.map((arg) => {
-    return typeof arg === 'number' ? arg : $ifNull(arg, 0);
+    switch (typeof arg) {
+      case 'boolean':
+        return arg ? 1 : 0;
+      case 'number':
+        return arg;
+      case 'string':
+        if (arg.match(/^[^$]/)) return 0;
+        break;
+      case 'object':
+        if (arg === null) return 0;
+        break;
+      case 'undefined':
+        return 0;
+      default:
+    }
+    return $ifNull(arg, 0);
   }));
 };
 
@@ -587,7 +601,6 @@ class Lookup {
     } else {
       this.$lookup.pipeline.push(...stages as PipelineStage[]);
     }
-    console.log(this.$lookup.pipeline);
     onlyOnce(this, 'pipeline');
     return this;
   }
@@ -3004,9 +3017,9 @@ type SubtractOperator = {
  * the resulting date.
  * @category Operators
  * @function
- * @param {NumberExpression} expression1 A number of any valid expression that
+ * @param {NumberExpression} minuend A number of any valid expression that
  * resolves to a number.
- * @param {NumberExpression} expression2 A number of any valid expression that
+ * @param {NumberExpression} subtrahend number of any valid expression that
  * resolves to a number.
  * @returns {SubtractOperator}
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/subtract/|MongoDB reference}
@@ -3018,8 +3031,31 @@ type SubtractOperator = {
  */
 const $subtract = at('$subtract');
 
-// TODO
-// * @category Safe Operators
+/**
+ * Safely subtract two numbers returning the difference.
+ * @category Safe Operators
+ * @function
+ * @param {NumberExpression | null | undefined | boolean} minuend A number of any valid expression that
+ * resolves to a number.
+ * @param {NumberExpression | null | undefined | boolean} subtrahend number of any valid expression that
+ * resolves to a number.
+ * @returns {SubtractOperator | number}
+ * @see $subtract
+ * @example
+ * $subtractSafe('$a', '$b')
+ * // returns
+ * { $subtract: [{ $ifNull: ['$a', 0] }, { $ifNull: ['$b', 0] }] }
+ * @example <caption>Literal input</caption>
+ * $subtractSafe('$a', 1); // returns { $subtract: [{ $ifNull: ['$a', 0] }, 1] }
+ * $subtractSafe(3, '$b'); // returns { $subtract: [3, { $ifNull: ['$b', 0] }] }
+ * $subtractSafe(3, 1); // returns { $subtract: [3, 1] }
+ * $subtractSafe(true, 1); // returns { $subtract: [1, 1]
+ * $subtractSafe(3, false); // returns { $subtract: [3, 0] }
+ * $subtractSafe(3, undefined); // returns { $subtract: [3, 0] }
+ * $subtractSafe(3, null); // returns { $subtract: [3, 0] }
+ * $subtractSafe(undefined, 1); // returns { $subtract: [0, 1] }
+ * $subtractSafe(null, 1); // returns { $subtract: [0, 1] }
+ */
 const $subtractSafe = safeNumberArgs($subtract);
 
 type SumOperator = {

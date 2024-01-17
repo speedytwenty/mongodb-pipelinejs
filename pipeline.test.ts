@@ -1431,6 +1431,28 @@ describe('aggregation', () => {
         expect($.subtract('$value', 1)).toEqual({ $subtract: ['$value', 1] });
       });
     });
+    describe('$subtractSafe', () => {
+      it('exports expected vars', () => {
+        expect($.subtractSafe).toBeDefined();
+        expect($.$subtractSafe).toBeDefined();
+        expect($.subtractSafe).toStrictEqual($.$subtractSafe);
+      });
+      it('returns expected result', () => {
+        expect($.subtractSafe('$a', '$b')).toEqual({ $subtract: [{ $ifNull: ['$a', 0] }, { $ifNull: ['$b', 0] }] });
+      });
+      describe('literal input', () => {
+        it('returns expected result', () => {
+          expect($.subtractSafe('$a', 1)).toEqual({ $subtract: [{ $ifNull: ['$a', 0] }, 1] });
+          expect($.subtractSafe(3, '$b')).toEqual({ $subtract: [3, { $ifNull: ['$b', 0] }] });
+          expect($.subtractSafe(3, 1)).toEqual({ $subtract: [3, 1] });
+          expect($.subtractSafe(true, 1)).toEqual({ $subtract: [1, 1] });
+          expect($.subtractSafe('$a', false)).toEqual({ $subtract: [{ $ifNull: ['$a', 0] }, 0] });
+          expect($.subtractSafe(3, false)).toEqual({ $subtract: [3, 0] });
+          expect($.subtractSafe(3, null)).toEqual({ $subtract: [3, 0] });
+          expect($.subtractSafe(3, undefined)).toEqual({ $subtract: [3, 0] });
+        });
+      });
+    });
     describe('$sum', () => {
       it('exports expected vars', () => {
         expect($.sum).toBeDefined();
