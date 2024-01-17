@@ -806,25 +806,58 @@ describe('aggregation', () => {
         expect($.documentNumber()).toEqual({ $documentNumber: {} });
       });
     });
-    describe('$ensureType', () => {
+    describe('$ensureArray', () => {
       it('exports expected vars', () => {
-        expect($.ensureType).toBeDefined();
-        expect($.$ensureType).toBeDefined();
-        expect($.ensureType).toStrictEqual($.$ensureType);
+        expect($.ensureArray).toBeDefined();
+        expect($.$ensureArray).toBeDefined();
+        expect($.ensureArray).toStrictEqual($.$ensureArray);
       });
-      it('returns expected result for variable values', () => {
-        expect($.ensureType(1, '$value', '-'))
-          .toEqual({ $convert: { input: '$value', to: 1, onError: '-', onNull: '-' } });
+      it('returns expected result', () => {
+        expect($.ensureArray('$myVar'))
+          .toEqual({ $let: {
+            vars: { input: '$myVar' },
+            in: { $cond: { if: { $isArray: '$$input' }, then: '$$input', else: [] } }
+          }});
       });
-      describe('literal value input', () => {
-        describe('for string conversion', () => {
-          it('returns expected result', () => {
-            expect($.ensureType(2, 'value', '-')).toEqual('value');
-            expect($.ensureType('string', 123, '-')).toEqual('123');
-            expect($.ensureType(2, 123.4, '-')).toEqual('123.4');
-          });
+      describe('literal input', () => {
+        it('returns expected result', () => {
+          expect($.ensureArray('myVar')).toEqual([]);
+          expect($.ensureArray(123)).toEqual([]);
+          expect($.ensureArray(123.4)).toEqual([]);
+          expect($.ensureArray(true)).toEqual([]);
+          expect($.ensureArray(false)).toEqual([]);
+          expect($.ensureArray(null)).toEqual([]);
+          expect($.ensureArray(undefined)).toEqual([]);
         });
-        // TODO expand types to include boolean, int, double
+      });
+    });
+    describe('$ensureNumber', () => {
+      it('exports expected vars', () => {
+        expect($.ensureNumber).toBeDefined();
+        expect($.$ensureNumber).toBeDefined();
+        expect($.ensureNumber).toStrictEqual($.$ensureNumber);
+      });
+      it('returns expected result', () => {
+        expect($.ensureNumber('$myVar'))
+          .toEqual({ $let: {
+            vars: { input: '$myVar' },
+            in: { $cond: {
+              if: { $isNumber: '$$input' },
+              then: '$$input',
+              else: { $convert: { input: '$$input', to: 1, onError: 0, onNull: 0 } },
+            } },
+          }});
+      });
+      describe('literal input', () => {
+        it('returns expected result', () => {
+          expect($.ensureNumber('myVar')).toEqual({ $toDouble: 'myVar' });
+          expect($.ensureNumber(123)).toEqual(123);
+          expect($.ensureNumber(123.4)).toEqual(123.4);
+          expect($.ensureNumber(true)).toEqual(1);
+          expect($.ensureNumber(false)).toEqual(0);
+          expect($.ensureNumber(null)).toEqual(0);
+          expect($.ensureNumber(undefined)).toEqual(0);
+        });
       });
     });
     describe('$ensureString', () => {
@@ -836,28 +869,14 @@ describe('aggregation', () => {
       it('returns expected result', () => {
         expect($.ensureString('$myVar')).toEqual({ $convert: { input: '$myVar', to: 2, onError: '', onNull: '' } });
       });
-    });
-    describe('$ensureNumber', () => {
-      it('exports expected vars', () => {
-        expect($.ensureNumber).toBeDefined();
-        expect($.$ensureNumber).toBeDefined();
-        expect($.ensureNumber).toStrictEqual($.$ensureNumber);
-      });
-      it('returns expected result', () => {
-        expect($.ensureNumber('$myVar'))
-          .toEqual({ $cond: {
-            if: { $in: [{ $type: '$myVar'}, ['decimal', 'double', 'int', 'long']] },
-            then: '$myVar',
-            else: { $convert: { input: '$myVar', to: 1, onError: 0, onNull: 0 } },
-          }});
-      });
       describe('literal input', () => {
         it('returns expected result', () => {
-          expect($.ensureNumber('myVar')).toEqual({ $toDouble: 'myVar' });
-          expect($.ensureNumber(123)).toEqual(123);
-          expect($.ensureNumber(123.4)).toEqual(123.4);
-          expect($.ensureNumber(true)).toEqual(1);
-          expect($.ensureNumber(false)).toEqual(0);
+          expect($.ensureString('value')).toEqual('value');
+          expect($.ensureString(123)).toEqual('123');
+          expect($.ensureString(123.4)).toEqual('123.4');
+          expect($.ensureString(true)).toEqual('true');
+          expect($.ensureString(false)).toEqual('false');
+          expect($.ensureString(null, '-')).toEqual('-');
         });
       });
     });

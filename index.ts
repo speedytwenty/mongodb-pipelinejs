@@ -1826,42 +1826,55 @@ type DocumentNumberOperator = {
 const $documentNumber = ne('$documentNumber');
 
 /**
- * Ensure an expression resolves a specific data type.
+ * Ensure an expression resolves an array. Non-array values return an empty
+ * array.
  * @category Utility Operators
  * @function
- * @param {ConversionTypeExpression} type The type to ensure the input value is.
- * @param {Expression} value The value to ensure is of the specified type.
- * @param {Expression} [defaultValue] The value to return if the conversion
- * results in null or induces an error.
- * @returns {ConvertOperator | string} If the input value is a variable a
- * convert operator is returned. If the input value is a literal value of the
- * same type, the raw value is returned.
- * @example <caption>Static notation</caption>
- * $ensureType('string', '$myVariable', 'N/A');
+ * @param {Expression | null | undefined} value The value to ensure is an array.
+ * @returns {Array<any>|Condition} Returns a literal array for invalid literal
+ * input and a Condition for variable input.
+ * @example
+ * $ensureArray('$myVar');
  * // returns
- * { $convert: { input: '$myVariable', to: 'string', onError: 'N/A', onNull: 'N/A' } }
- * @example <caption>Object notation</caption>
- * $ensureType('string', '$myVariable').onError('ERR').onNull('N/A');
- * // returns
- * { $convert: { input: '$myVariable', to: 'string', onError: 'ERR', onNull: 'N/A' } }
+ * { $let: {
+ *   vars: { input: '$myVar' },
+ *   in: { $cond: { if: { $isArray: '$$input' }, then: '$$input', else: [] } },
+ * } }
+ * @example <caption>Literal input</caption>
+ * $ensureArray([1, 2, 3]); // returns [1, 2 3]
+ * $ensureArray('myString'); // returns [];
+ * $ensureArray(1); // returns [];
+ * $ensureArray(true); // returns [];
+ * $ensureArray(false); // returns [];
+ * $ensureArray(undefined); // returns [];
+ * $ensureArray(null); // returns [];
  */
-const $ensureType = (type: ConversionTypeExpression, value: Expression, defaultValue?: Expression) => {
-  if (type === 'string' || type === 2) {
-    if (typeof value === 'string') {
-      if (value.match(/^[^$]/)) return value;
-    } else if (typeof value === 'number') {
-      return `${value}`;
-    } else if (typeof value === 'boolean') return value ? 'true' :'false';
+const $ensureArray = (value: Expression | null | undefined) => {
+  if (Array.isArray(value)) return value;
+  switch (typeof value) {
+    case 'string':
+      if (value.match(/^[^$]/)) return [];
+      break;
+    case 'object':
+      if (value === null) return [];
+      break;
+    case 'number':
+    case 'undefined':
+    case 'boolean':
+      return [];
+    default:
   }
-  return new ConvertOperator(value, type, defaultValue);
+    return $let({ input: value }).in($if($isArray('$$input')).then('$$input').else([]));
 };
 
 /**
  * Ensure an expression resolves a number.
  * @category Utility Operators
  * @function
- * @param {Expression} value The value to ensure is a number.
+ * @param {Expression | null | undefined} value The value to ensure is a number.
  * is null or induces an error.
+ * @param {NumberExpression} [defaultValue=0] The value to return for null
+ * values or when converting the input value to a double produces an error.
  * @returns {number | Condition} Returns a number of a $cond expression that
  * will convert non-numeric types to a double.
  * @example
@@ -1870,30 +1883,35 @@ const $ensureType = (type: ConversionTypeExpression, value: Expression, defaultV
  * { $cond: {
  *   if: { $in: [{ $type: '$myVar' }, ['decimal', 'int', 'double', 'long'] },
  *   then: '$myVar',
- *   else: { $toDouble: '$myVar' }
+ *   else: { $convert: { input: '$myVar', to: 1, onError: 0, onNull: 0 },
  * } }
  * @example <caption>Literal input</caption>
  * $ensureNumber(123); // returns 123
  * $ensureNumber(true); // returns 1
  * $ensureNumber(false); // returns 0
  */
-const $ensureNumber = (value: Expression) => {
+const $ensureNumber = (value: Expression | null | undefined, defaultValue: NumberExpression = 0) => {
   switch (typeof value) {
     case 'number': return value;
     case 'boolean': return value ? 1 : 0;
     case 'string':
       if (value.match(/^[^$]/)) return $toDouble(value);
       break;
+    case 'object':
+      if (value === null) return defaultValue;
+      break;
+    case 'undefined':
+      return defaultValue;
     default:
   }
-  return $if($in($type(value), ['decimal', 'double', 'int', 'long'])).then(value).else($toDouble(value));
+  return $let({ input: value }).in($if($isNumber('$$input')).then('$$input').else($convert('$$input', 1, defaultValue)));
 };
 
 /**
  * Ensure an expression resolves a string.
  * @category Utility Operators
  * @function
- * @param {Expression} value The value to ensure is of the specified type.
+ * @param {Expression | null | undefined} value The value to ensure is of the specified type.
  * @param {StringExpression} [defaultValue=''] Override the default value of ""
  * if the conversion results in null or induces an error.
  * @returns {string | ConvertOperator} A literal string if the input value is a
@@ -1912,7 +1930,24 @@ const $ensureNumber = (value: Expression) => {
  * $ensureString(true); // returns ""
  * $ensureString(false); // return ""
  */
-const $ensureString = (value: Expression, defaultValue: StringExpression = '') => $ensureType(ConversionType.string, value, defaultValue);
+const $ensureString = (value: Expression | null | undefined, defaultValue: StringExpression = '') => {
+  switch (typeof value) {
+    case 'string':
+      if (value[0] !== '$') return value;
+      break;
+    case 'number':
+      return `${value}`;
+    case 'boolean':
+      return value ? 'true' :'false';
+    case 'object':
+      if (value === null) return defaultValue;
+      break;
+    case 'undefined':
+      return defaultValue;
+    default:
+  }
+  return $convert(value as Expression, ConversionType.string, defaultValue);
+};
 
 type EqOperator = {
   $eq: [Expression, Expression],
@@ -3363,8 +3398,8 @@ export = {
   each: $each,
   $elemMatch,
   elemMatch: $elemMatch,
-  $ensureType,
-  ensureType: $ensureType,
+  $ensureArray,
+  ensureArray: $ensureArray,
   $ensureNumber,
   ensureNumber: $ensureNumber,
   $ensureString,
