@@ -1,7 +1,7 @@
 {
   "name": "mongodb-pipelinejs",
   "version": "0.0.4",
-  "description": "Use short and sweet JS syntax (instead of JSON) to compose and cleanly format MongoDB aggregations.",
+  "description": "Use short and sweet JS syntax to compose and cleanly format MongoDB aggregations.",
   "main": "index.js",
   "repository": "git@github.com:speedytwenty/mongodb-pipelinejs.git",
   "author": "speedytwenty <speedytwenty@gmail.com>",
@@ -31,14 +31,30 @@
   },
   "scripts": {
     "build": "tsc --build && terser index.js -o min.js",
+    "cleanup": "rm -fr index.js index.d.ts min.js",
     "docs": "jsdoc -c jsdoc.json -d docs index.ts",
     "lint": "eslint --fix --ext .ts .",
+    "prepack": "yarn build",
+    "postpack": "yarn cleanup",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "watch": "nodemon -w index.ts -x yarn docs"
   },
   "files": [
-    "index.d.js",
+    "index.d.ts",
     "min.js"
+  ],
+  "keywords": [
+    "mongodb",
+    "mongoose",
+    "aggregate",
+    "pipeline",
+    "aggregate",
+    "aggregation",
+    "mongo round",
+    "mongodb round",
+    "mongodb stages",
+    "mongodb operators",
+    "pipemongo"
   ]
 }
