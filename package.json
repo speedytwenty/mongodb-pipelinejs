@@ -3,6 +3,7 @@
   "version": "0.0.5",
   "description": "Use short and sweet JS syntax to compose and cleanly format MongoDB aggregations.",
   "main": "index.js",
+  "types": "index.d.ts",
   "repository": "git@github.com:speedytwenty/mongodb-pipelinejs.git",
   "author": "speedytwenty <speedytwenty@gmail.com>",
   "license": "Apache-2.0",
