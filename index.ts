@@ -10,12 +10,12 @@ type Binary<N extends number = number> = string & {
   length: N;
 };
 
-type ObjectExpression = { [k: string]: any };
+type ObjectExpression = { [k: string]: any } | string;
 
 /**
  * A valid expression, string, number, boolean or null.
  */
-type Expression = ObjectExpression | string | number | boolean;
+type Expression = ObjectExpression | number | boolean;
 
 /**
  * A number or any valid expression that resolves to a number.
@@ -1913,6 +1913,31 @@ type DocumentNumberOperator = {
  */
 const $documentNumber = ne('$documentNumber');
 
+type EachOperator = { $each: Expression }
+
+/**
+ * Query operator. Not known to work in aggregations.
+ * @function
+ * @category Other Operators
+ * @param {ArrayExpression} expression A valid expression that resolves to an array.
+ * @returns {EachOperator} Operator with the expression embedded.
+ * @deprecated Unless new information is discovered.
+ */
+const $each = (expression: ArrayExpression): EachOperator => ({ $each: expression });
+
+type ElemMatchOperator = { $elemMatch: Expression };
+
+/**
+ * Matches documents that contain an array field with at least one elements
+ * matching the query criteria.
+ * @function
+ * @category Other Operators
+ * @param {ObjectExpression} query A valid expression that resolves to an array.
+ * @returns {ElemMatchOperator} Operator with the expression embedded.
+ * @deprecated Unless new information is discovered.
+ */
+const $elemMatch = (query: ObjectExpression): ElemMatchOperator => ({ $elemMatch: query });
+
 /**
  * Ensure an expression resolves an array. Non-array values return an empty
  * array.
@@ -2064,8 +2089,8 @@ type ExpOperator = {
 
 /**
  * Raises Euler's number to the specified exponent and returns the result.
- * @category Operators
  * @function
+ * @category Operators
  * @param {NumberExpression} numberExpression Any valid expression that resolves
  * to a number.
  * @returns {ExpOperator}
@@ -2077,6 +2102,20 @@ type ExpOperator = {
  * { $exp: '$interestRate' }
  */
 const $exp = se('$exp');
+
+type ExprOperator = {
+  $expr: Expression,
+};
+
+/**
+ * Allows the use of some aggregation operators otherwise unavailable to the
+ * aggregation stage.
+ * @category Operators
+ * @function
+ * @param {Expression} expression Any valid aggregation expression.
+ * @returns {ExprOperator} The compiled $expr expression.
+ */
+const $expr = (expression: Expression): ExprOperator => ({ $expr: expression });
 
 type FilterExpression = {
   input: ArrayExpression,
@@ -3570,6 +3609,10 @@ export = {
   $documents,
   documents: $documents,
   $ensureArray,
+  $each,
+  each: $each,
+  $elemMatch,
+  elemMatch: $elemMatch,
   ensureArray: $ensureArray,
   $ensureNumber,
   ensureNumber: $ensureNumber,
@@ -3579,6 +3622,8 @@ export = {
   eq: $eq,
   $exp,
   exp: $exp,
+  $expr,
+  expr: $expr,
   $filter,
   filter: $filter,
   $first,
