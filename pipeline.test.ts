@@ -1,4 +1,4 @@
-import $ = require('.');
+import $ from '.';
 
 afterEach(() => jest.clearAllMocks());
 

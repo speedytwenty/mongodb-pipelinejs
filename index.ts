@@ -13,32 +13,27 @@ type Binary<N extends number = number> = string & {
 type ObjectExpression = { [k: string]: any };
 
 /**
- * @typedef {ObjectExpression | string | number | boolean | null} Expression 
- * @description A valid expression, string, number, boolean or null.
+ * A valid expression, string, number, boolean or null.
  */
 type Expression = ObjectExpression | string | number | boolean;
 
 /**
- * @typedef {ObjectExpression | number} NumberExpression
- * @description A number or any valid expression that resolves to a number.
+ * A number or any valid expression that resolves to a number.
  */
 type NumberExpression = ObjectExpression | number | string;
 
 /**
- * @typedef {ObjectExpression | Array<any>} ArrayExpression
- * @description An array or any valid expression that resolves to an array.
+ * An array or any valid expression that resolves to an array.
  */
 type ArrayExpression = ObjectExpression | Array<any> | string;
 
 /**
- * @typedef {ObjectExpression | string} StringExpression
- * @description A string or any valid expression that resolves to a string.
+ * A string or any valid expression that resolves to a string.
  */
 type StringExpression = ObjectExpression | Array<any> | string;
 
 /**
- * @typedef {ObjectExpression | number} DateExpression
- * @description A date or any valid expression that resolves to a date.
+ * A date or any valid expression that resolves to a date.
  */
 type DateExpression = ObjectExpression | Date | string;
 
@@ -446,7 +441,7 @@ type CountOperator = {
  * documents input to the stage.
  * @category Stages
  * @function
- * @param {string} [name=count] The name of the output field for the count value.
+ * @param {string} [name] The name of the output field for the count value.
  * Must be a non-empty string, must not start with `$` nor contain `.`.
  * @returns {CountOperator} A $count operator expression.
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/addFields/|MongoDB reference}
@@ -1837,7 +1832,7 @@ const $divide = at('$divide');
  * to a number.
  * @param {NumberExpression | null | undefined} divisor A number or any expression that resolves
  * to a number.
- * @param {NumberExpression} [defaultValue=0] The default value if the division
+ * @param {NumberExpression} [defaultValue] The default value if the division
  * operation cannot be performed.
  * @returns {DivideOperator} A $divide operator populated according to argument
  * input.
@@ -1966,7 +1961,7 @@ const $ensureArray = (value: Expression | null | undefined) => {
  * @function
  * @param {Expression | null | undefined} value The value to ensure is a number.
  * is null or induces an error.
- * @param {NumberExpression} [defaultValue=0] The value to return for null
+ * @param {NumberExpression} [defaultValue] The value to return for null
  * values or when converting the input value to a double produces an error.
  * @returns {number | Condition} Returns a number of a $cond expression that
  * will convert non-numeric types to a double.
@@ -2005,7 +2000,7 @@ const $ensureNumber = (value: Expression | null | undefined, defaultValue: Numbe
  * @category Utility Operators
  * @function
  * @param {Expression | null | undefined} value The value to ensure is of the specified type.
- * @param {StringExpression} [defaultValue=''] Override the default value of ""
+ * @param {StringExpression} [defaultValue] Override the default value of ""
  * if the conversion results in null or induces an error.
  * @returns {string | ConvertOperator} A literal string if the input value is a
  * literal string. Otherwise a ConvertOperator populated accordinly is returned.
@@ -2765,7 +2760,7 @@ type RoundOperator = {
  * @function
  * @param {NumberExpression} value A number of any valid expression that
  * resolves to a number.
- * @param {NumberExpression} [places=0] A number of any valid expression that
+ * @param {NumberExpression} [places] A number of any valid expression that
  * resolves to an integer between -20 and 100. Defaults to 0 if unspecified.
  * @returns {RoundOperator} A $round operator populated with argument input.
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/round/|MongoDB reference}
@@ -2784,7 +2779,7 @@ const $round = (value: Expression, places = 0) => ({ $round: [value, places] });
  * @function
  * @param {NumberExpression} value A number of any valid expression that
  * resolves to a number.
- * @param {NumberExpression} [places=0] A number of any valid expression that
+ * @param {NumberExpression} [places] A number of any valid expression that
  * resolves to an integer between -20 and 100. Defaults to 0 if unspecified.
  * @returns {LetVarsIn} Returns an expression that rounds the value accordingly.
  * @see $round
