@@ -936,6 +936,26 @@ describe('aggregation', () => {
         });
       });
     });
+    describe('$each', () => {
+      it('exports expected vars', () => {
+        expect($.each).toBeDefined();
+        expect($.$each).toBeDefined();
+        expect($.each).toStrictEqual($.$each);
+      });
+      it('returns expected result', () => {
+        expect($.each('$value')).toEqual({ $each: '$value' });
+      });
+    });
+    describe('$elemMatch', () => {
+      it('exports expected vars', () => {
+        expect($.elemMatch).toBeDefined();
+        expect($.$elemMatch).toBeDefined();
+        expect($.elemMatch).toStrictEqual($.$elemMatch);
+      });
+      it('returns expected result', () => {
+        expect($.elemMatch('$value')).toEqual({ $elemMatch: '$value' });
+      });
+    });
     describe('$eq', () => {
       it('exports expected vars', () => {
         expect($.eq).toBeDefined();
@@ -955,6 +975,16 @@ describe('aggregation', () => {
       });
       it('returns expected result', () => {
         expect($.exp('$value')).toEqual({ $exp: '$value' });
+      });
+    });
+    describe('$expr', () => {
+      it('exports expected vars', () => {
+        expect($.expr).toBeDefined();
+        expect($.$expr).toBeDefined();
+        expect($.expr).toStrictEqual($.$expr);
+      });
+      it('returns expected result', () => {
+        expect($.expr('$value')).toEqual({ $expr: '$value' });
       });
     });
     describe('$filter', () => {
