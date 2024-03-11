@@ -13,32 +13,27 @@ type Binary<N extends number = number> = string & {
 type ObjectExpression = { [k: string]: any };
 
 /**
- * @typedef {ObjectExpression | string | number | boolean | null} Expression 
- * @description A valid expression, string, number, boolean or null.
+ * A valid expression, string, number, boolean or null.
  */
 type Expression = ObjectExpression | string | number | boolean;
 
 /**
- * @typedef {ObjectExpression | number} NumberExpression
- * @description A number or any valid expression that resolves to a number.
+ * A number or any valid expression that resolves to a number.
  */
 type NumberExpression = ObjectExpression | number | string;
 
 /**
- * @typedef {ObjectExpression | Array<any>} ArrayExpression
- * @description An array or any valid expression that resolves to an array.
+ * An array or any valid expression that resolves to an array.
  */
 type ArrayExpression = ObjectExpression | Array<any> | string;
 
 /**
- * @typedef {ObjectExpression | string} StringExpression
- * @description A string or any valid expression that resolves to a string.
+ * A string or any valid expression that resolves to a string.
  */
 type StringExpression = ObjectExpression | Array<any> | string;
 
 /**
- * @typedef {ObjectExpression | number} DateExpression
- * @description A date or any valid expression that resolves to a date.
+ * A date or any valid expression that resolves to a date.
  */
 type DateExpression = ObjectExpression | Date | string;
 
