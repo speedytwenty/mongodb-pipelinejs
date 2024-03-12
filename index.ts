@@ -1123,6 +1123,20 @@ type AddToSetOperator = {
  */
 const $addToSet = se('$addToSet');
 
+type AllOperator = {
+  $all: ArrayExpression,
+}
+
+/**
+ * Selects documents where the value of a field is an array that contains all
+ * the specified elements.
+ * @function
+ * @category Other Operators
+ * @param {...Expression[]} expressions Match expression.
+ * @returns {AllOperator} The compiled $all operator.
+ */
+const $all = (...expressions: Expression[] ) => ({ $all: [...expressions ]});
+
 type AllElementsTrueOperator = {
   $allElementsTrue: Array<Expression>,
 };
@@ -3532,6 +3546,8 @@ export = {
   addFields: $addFields,
   $addToSet,
   addToSet: $addToSet,
+  $all,
+  all: $all,
   $allElementsTrue,
   allElementsTrue: $allElementsTrue,
   $and,
