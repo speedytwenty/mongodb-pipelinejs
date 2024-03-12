@@ -450,6 +450,16 @@ describe('aggregation', () => {
         expect($.addToSet('$myVar')).toEqual({ $addToSet: '$myVar' });
       });
     });
+    describe('$all', () => {
+      it('exports expected vars', () => {
+        expect($.all).toBeDefined();
+        expect($.$all).toBeDefined();
+        expect($.all).toStrictEqual($.$all);
+      });
+      it('returns expected result', () => {
+        expect($.all(1, 2, 3)).toEqual({ $all: [1, 2, 3] });
+      });
+    });
     describe('$allElementsTrue', () => {
       it('exports expected vars', () => {
         expect($.allElementsTrue).toBeDefined();
