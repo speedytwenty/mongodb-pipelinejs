@@ -1,6 +1,6 @@
 {
   "name": "mongodb-pipelinejs",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Use short and sweet JS syntax to compose and cleanly format MongoDB aggregations.",
   "main": "index.js",
   "types": "index.d.ts",
