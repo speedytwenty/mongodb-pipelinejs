@@ -653,6 +653,19 @@ describe('aggregation', () => {
         expect($.binarySize('$value')).toEqual({ $binarySize: '$value' });
       });
     });
+    describe('$bitAnd', () => {
+      it('exports expected vars', () => {
+        expect($.bitAnd).toBeDefined();
+        expect($.$bitAnd).toBeDefined();
+        expect($.bitAnd).toStrictEqual($.$bitAnd);
+      });
+      it('returns expected result', () => {
+        expect($.bitAnd('$a', '$b')).toEqual({ $bitAnd: ['$a', '$b'] });
+      });
+      it('supports array input', () => {
+        expect($.bitAnd(['$a', '$b'])).toEqual({ $bitAnd: ['$a', '$b'] });
+      });
+    });
     describe('$bsonSize', () => {
       it('exports expected vars', () => {
         expect($.bsonSize).toBeDefined();

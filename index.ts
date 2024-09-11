@@ -37,6 +37,8 @@ type StringExpression = ObjectExpression | Array<any> | string;
  */
 type DateExpression = ObjectExpression | Date | string;
 
+type ArrayOfExpressions = Array<ObjectExpression>;
+
 type Timestamp = number;
 
 // always two
@@ -1478,6 +1480,65 @@ type BinarySizeOperator = {
  * { $binarySize: '$binary' }
  */
 const $binarySize = se('$binarySize');
+
+/**
+ * Returns the result of a bitwise and operation on an array of int or long
+ * values.
+ * @category Operators
+ * @function
+ * @param {...ObjectExpression} expressions int or long values.
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/bitAnd/|MongoDB reference}
+ * for $bitAnd
+ * @example
+ * $bitAnd('$myInt', '$myLong');
+ * // returns
+ * { $bitAnd: ['$myInt', '$myLong'] }
+ */
+const $bitAnd = ptafaa('$bitAnd');
+
+/**
+ * Returns the result of a bitwise not operation on a single int or long value.
+ * @category Operators
+ * @function
+ * @param {...ObjectExpression} expressions int or long values.
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/bitNot/|MongoDB reference}
+ * for $bitAny
+ * @example
+ * $bitNot('$x');
+ * // returns
+ * { $bitNot: '$x' } 
+ */
+const $bitNot = se('$bitNot');
+
+/**
+ * Returns the result of a bitwise or operation on an array of int and long
+ * values.
+ * @category Operators
+ * @function
+ * @param {...ObjectExpression} expressions int or long values.
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/bitOr/|MongoDB reference}
+ * for $bitOr
+ * @example
+ * $bitOr('$myInt', '$myLong');
+ * // returns
+ * { $bitOr: ['$myInt', '$myLong'] }
+ */
+const $bitOr = ptafaa('$bitOr');
+
+/**
+ * Returns the result of a bitwise xor operation on an array of int and long
+ * values.
+ * @category Operators
+ * @function
+ * @param {...ObjectExpression} expressions int or long values.
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/bitXor/|MongoDB reference}
+ * for $bitXor
+ * @example
+ * $bitXor('$myInt', '$myLong');
+ * // returns
+ * { $bitXor: ['$myInt', '$myLong'] }
+ */
+const $bitXor = ptafaa('$bitXor');
 
 type BsonSizeOperator = {
   $bsonSize: ObjectExpression | null,
@@ -3636,6 +3697,14 @@ export = {
   $binarySize,
   binarySize: $binarySize,
   branch,
+  $bitAnd,
+  bitAnd: $bitAnd,
+  $bitNot,
+  bitNot: $bitNot,
+  $bitOr,
+  bitOr: $bitOr,
+  $bitXor,
+  bitXor: $bitXor,
   $bsonSize,
   bsonSize: $bsonSize,
   case: branch,
