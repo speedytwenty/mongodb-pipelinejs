@@ -457,7 +457,7 @@ type CountOperator = {
  */
 const $count = (name = 'count') => ({ $count: name });
 
-type DocumentsOperator = {
+type DocumentsStage = {
   $documents: ObjectExpression;
 };
 
@@ -469,7 +469,7 @@ type DocumentsOperator = {
  * or an array of documents.
  * @param {...ObjectExpression[]} [args] Additional documents to input into the
  * pipeline.
- * @returns {DocumentsOperator} Returns a $document operator based on input.
+ * @returns {DocumentsStage} Returns a $document operator based on input.
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/documents/|MongoDB reference}
  * for $documents
  * @example
@@ -486,6 +486,25 @@ const $documents = (mixed: ObjectExpression | Array<ObjectExpression>, ...args: 
   }
   return { $documents: documents };
 };
+
+type FacetExpression = { [k: string]: Array<PipelineStage> };
+type FacetStage = { $facet: FacetExpression };
+
+/**
+ * Processes multiple aggregation pipelines within a single stage on the same
+ * set of input documents.
+ * @category Stages
+ * @function
+ * @param {FacetExpression} expression Refer to documentation.
+ * @returns {FacetStage}
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/project/|MongoDB reference}
+ * for $project
+ * @example
+ * $project({ x: '$y' });
+ * // returns
+ * { $project: { x: '$y' } }
+ */
+const $facet = se('$facet');
 
 type GroupStage = {
   $group: ObjectExpression,
@@ -870,6 +889,24 @@ type ReplaceRootStage = {
  */
 const $replaceRoot = (newRoot: string | ObjectExpression) => ({ $replaceRoot: { newRoot } });
 
+type ReplaceWithStage = { $replaceWith: ObjectExpression };
+
+/**
+ * Replaces the input document with the specified document.
+ * @category Stages
+ * @function
+ * @param {string | ObjectExpression} replacementDocument The replacement
+ * document can be any valid express
+ * @returns {ReplaceWithStage} Returns a $replaceWith operator stage.
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/replaceWith/|MongoDB reference}
+ * for $replaceWith
+ * @example
+ * $replaceWith('$subpath');
+ * // returns
+ * { $replaceWith: '$subpath' }
+ */
+const $replaceWith = (replacementDocument: string | ObjectExpression) => ({ $replaceWith: replacementDocument });
+
 type SetStage = { $set: ObjectExpression };
 
 /**
@@ -925,6 +962,26 @@ type SortStage = {
  * { $sort: { x: 1 } }
  */
 const $sort = se('$sort');
+
+type SortByCountStage = {
+  $sortByCount: ObjectExpression,
+};
+
+/**
+ * Groups incoming documents based on the value of a specified expression, then
+ * computes the count of documents in each distinct group.
+ * @category Stages
+ * @function
+ * @param {Expression} expression Refer to documentation.
+ * @returns {SortByCountStage}
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/sortByCount/|MongoDB reference}
+ * for $sortByCount
+ * @example
+ * $sortByCount('$employee');
+ * // returns
+ * { $sortByCount: '$employee' }
+ */
+const $sortByCount = se('$sortByCount');
 
 type UnwindExpression = {
   path: string;
@@ -3640,6 +3697,8 @@ export = {
   exp: $exp,
   $expr,
   expr: $expr,
+  $facet,
+  facet: $facet,
   $filter,
   filter: $filter,
   $first,
@@ -3735,6 +3794,8 @@ export = {
   redact: $redact,
   $replaceRoot,
   replaceRoot: $replaceRoot,
+  $replaceWith,
+  replaceWith: $replaceWith,
   $round,
   round: $round,
   $roundStandard,
@@ -3755,6 +3816,8 @@ export = {
   setUnion: $setUnion,
   $sort,
   sort: $sort,
+  $sortByCount,
+  sortByCount: $sortByCount,
   $split,
   split: $split,
   $strcasecmp,

@@ -137,6 +137,17 @@ describe('aggregation', () => {
         expect($.documents([{ x: 1 }, { x: 2 }, { x: 3 }])).toEqual(expected);
       });
     });
+    describe('$facet', () => {
+      it('exports expected vars', () => {
+        expect($.facet).toBeDefined();
+        expect($.$facet).toBeDefined();
+        expect($.facet).toStrictEqual($.$facet);
+      });
+      const expected = { $facet: { x: [{ $foo: 1 }], y: [{ $bar: 2}] } };
+      it('returns expected result', () => {
+        expect($.facet({ x: [{ $foo: 1 }] , y: [{ $bar: 2 }] })).toEqual(expected);
+      });
+    });
     describe('$group', () => {
       it('exports expected vars', () => {
         expect($.group).toBeDefined();
@@ -317,6 +328,16 @@ describe('aggregation', () => {
         expect($.replaceRoot('subdoc')).toEqual({ $replaceRoot: { newRoot: 'subdoc' } });
       });
     });
+    describe('$replaceWith', () => {
+      it('exports expected vars', () => {
+        expect($.replaceWith).toBeDefined();
+        expect($.$replaceWith).toBeDefined();
+        expect($.replaceWith).toStrictEqual($.$replaceWith);
+      });
+      it('returns expected result', () => {
+        expect($.replaceWith('subdoc')).toEqual({ $replaceWith: 'subdoc' });
+      });
+    });
     describe('$set', () => { // alias of $addFields
       it('exports expects vars', () => {
         expect($.set).toBeDefined();
@@ -349,6 +370,16 @@ describe('aggregation', () => {
       });
       it('returns expected result', () => {
         expect($.sort({ created: 1 })).toEqual({ $sort: { created: 1 } });
+      });
+    });
+    describe('$sortByCount', () => {
+      it('exports expected vars', () => {
+        expect($.sortByCount).toBeDefined();
+        expect($.$sortByCount).toBeDefined();
+        expect($.sortByCount).toStrictEqual($.$sortByCount);
+      });
+      it('returns expected result', () => {
+        expect($.sortByCount('$x')).toEqual({ $sortByCount: '$x' });
       });
     });
     describe('$unwind', () => {
