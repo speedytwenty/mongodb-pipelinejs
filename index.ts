@@ -457,7 +457,7 @@ type CountOperator = {
  */
 const $count = (name = 'count') => ({ $count: name });
 
-type DocumentsOperator = {
+type DocumentsStage = {
   $documents: ObjectExpression;
 };
 
@@ -469,7 +469,7 @@ type DocumentsOperator = {
  * or an array of documents.
  * @param {...ObjectExpression[]} [args] Additional documents to input into the
  * pipeline.
- * @returns {DocumentsOperator} Returns a $document operator based on input.
+ * @returns {DocumentsStage} Returns a $document operator based on input.
  * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/documents/|MongoDB reference}
  * for $documents
  * @example
