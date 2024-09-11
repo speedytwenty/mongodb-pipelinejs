@@ -37,6 +37,8 @@ type StringExpression = ObjectExpression | Array<any> | string;
  */
 type DateExpression = ObjectExpression | Date | string;
 
+type ArrayOfExpressions = Array<ObjectExpression>;
+
 type Timestamp = number;
 
 // always two
@@ -1479,6 +1481,65 @@ type BinarySizeOperator = {
  */
 const $binarySize = se('$binarySize');
 
+/**
+ * Returns the result of a bitwise and operation on an array of int or long
+ * values.
+ * @category Operators
+ * @function
+ * @param {...ObjectExpression} expressions int or long values.
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/bitAnd/|MongoDB reference}
+ * for $bitAnd
+ * @example
+ * $bitAnd('$myInt', '$myLong');
+ * // returns
+ * { $bitAnd: ['$myInt', '$myLong'] }
+ */
+const $bitAnd = ptafaa('$bitAnd');
+
+/**
+ * Returns the result of a bitwise not operation on a single int or long value.
+ * @category Operators
+ * @function
+ * @param {...ObjectExpression} expressions int or long values.
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/bitNot/|MongoDB reference}
+ * for $bitAny
+ * @example
+ * $bitNot('$x');
+ * // returns
+ * { $bitNot: '$x' } 
+ */
+const $bitNot = se('$bitNot');
+
+/**
+ * Returns the result of a bitwise or operation on an array of int and long
+ * values.
+ * @category Operators
+ * @function
+ * @param {...ObjectExpression} expressions int or long values.
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/bitOr/|MongoDB reference}
+ * for $bitOr
+ * @example
+ * $bitOr('$myInt', '$myLong');
+ * // returns
+ * { $bitOr: ['$myInt', '$myLong'] }
+ */
+const $bitOr = ptafaa('$bitOr');
+
+/**
+ * Returns the result of a bitwise xor operation on an array of int and long
+ * values.
+ * @category Operators
+ * @function
+ * @param {...ObjectExpression} expressions int or long values.
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/bitXor/|MongoDB reference}
+ * for $bitXor
+ * @example
+ * $bitXor('$myInt', '$myLong');
+ * // returns
+ * { $bitXor: ['$myInt', '$myLong'] }
+ */
+const $bitXor = ptafaa('$bitXor');
+
 type BsonSizeOperator = {
   $bsonSize: ObjectExpression | null,
 };
@@ -2765,6 +2826,19 @@ type NeOperator = {
  */
 const $ne = at('$ne');
 
+// TODO
+const $nin = taf('$nin');
+
+// TODO
+// * @category Safe Operators
+const $ninSafe = (...args: any[]) => {
+  if (args.length === 2) {
+    const [val, arr] = args;
+    return $in(val, $ifNull(arr, []));
+  }
+  return $in(...args);
+};
+
 type NotOperator = {
   $not: Expression,
 };
@@ -3057,6 +3131,8 @@ type SizeOperator = {
  */
 const $size = se('$size');
 
+const $slice = pta('$slice');
+
 type SplitOperator = {
   $split: [StringExpression, StringExpression],
 };
@@ -3202,6 +3278,10 @@ const $subtract = at('$subtract');
  * $subtractSafe(null, 1); // returns { $subtract: [0, 1] }
  */
 const $subtractSafe = safeNumberArgs($subtract);
+
+const $substr = pta('$substr');
+const $substrBytes = pta('$substrBytes');
+const $substrCP = pta('$substrCP');
 
 type SumOperator = {
   $sum: Expression,
@@ -3636,6 +3716,14 @@ export = {
   $binarySize,
   binarySize: $binarySize,
   branch,
+  $bitAnd,
+  bitAnd: $bitAnd,
+  $bitNot,
+  bitNot: $bitNot,
+  $bitOr,
+  bitOr: $bitOr,
+  $bitXor,
+  bitXor: $bitXor,
   $bsonSize,
   bsonSize: $bsonSize,
   case: branch,
@@ -3769,6 +3857,8 @@ export = {
   multiplySafe: $multiplySafe,
   $ne,
   ne: $ne,
+  $nin,
+  nin: $nin,
   $not,
   not: $not,
   $or,
@@ -3822,12 +3912,20 @@ export = {
   split: $split,
   $strcasecmp,
   strcasecmp: $strcasecmp,
+  $substr,
+  substr: $substr,
+  $substrBytes,
+  substrBytes: $substrBytes,
+  $substrCP,
+  substrCP: $substrCP,
   $subtract,
   subtract: $subtract,
   $subtractSafe,
   subtractSafe: $subtractSafe,
   $size,
   size: $size,
+  $slice,
+  slice: $slice,
   $sin,
   sin: $sin,
   $sinh,
