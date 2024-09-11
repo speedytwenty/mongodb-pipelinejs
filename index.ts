@@ -487,6 +487,25 @@ const $documents = (mixed: ObjectExpression | Array<ObjectExpression>, ...args: 
   return { $documents: documents };
 };
 
+type FacetExpression = { [k: string]: Array<PipelineStage> };
+type FacetStage = { $facet: FacetExpression };
+
+/**
+ * Processes multiple aggregation pipelines within a single stage on the same
+ * set of input documents.
+ * @category Stages
+ * @function
+ * @param {FacetExpression} expression Refer to documentation.
+ * @returns {FacetStage}
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/project/|MongoDB reference}
+ * for $project
+ * @example
+ * $project({ x: '$y' });
+ * // returns
+ * { $project: { x: '$y' } }
+ */
+const $facet = se('$facet');
+
 type GroupStage = {
   $group: ObjectExpression,
 };
@@ -3640,6 +3659,8 @@ export = {
   exp: $exp,
   $expr,
   expr: $expr,
+  $facet,
+  facet: $facet,
   $filter,
   filter: $filter,
   $first,

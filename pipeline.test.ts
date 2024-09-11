@@ -137,6 +137,17 @@ describe('aggregation', () => {
         expect($.documents([{ x: 1 }, { x: 2 }, { x: 3 }])).toEqual(expected);
       });
     });
+    describe('$facet', () => {
+      it('exports expected vars', () => {
+        expect($.facet).toBeDefined();
+        expect($.$facet).toBeDefined();
+        expect($.facet).toStrictEqual($.$facet);
+      });
+      const expected = { $facet: { x: [{ $foo: 1 }], y: [{ $bar: 2}] } };
+      it('returns expected result', () => {
+        expect($.facet({ x: [{ $foo: 1 }] , y: [{ $bar: 2 }] })).toEqual(expected);
+      });
+    });
     describe('$group', () => {
       it('exports expected vars', () => {
         expect($.group).toBeDefined();
