@@ -963,6 +963,26 @@ type SortStage = {
  */
 const $sort = se('$sort');
 
+type SortByCountStage = {
+  $sortByCount: ObjectExpression,
+};
+
+/**
+ * Groups incoming documents based on the value of a specified expression, then
+ * computes the count of documents in each distinct group.
+ * @category Stages
+ * @function
+ * @param {Expression} expression Refer to documentation.
+ * @returns {SortByCountStage}
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/sortByCount/|MongoDB reference}
+ * for $sortByCount
+ * @example
+ * $sortByCount('$employee');
+ * // returns
+ * { $sortByCount: '$employee' }
+ */
+const $sortByCount = se('$sortByCount');
+
 type UnwindExpression = {
   path: string;
   preserveNullAndEmptyArrays?: boolean;
@@ -3796,6 +3816,8 @@ export = {
   setUnion: $setUnion,
   $sort,
   sort: $sort,
+  $sortByCount,
+  sortByCount: $sortByCount,
   $split,
   split: $split,
   $strcasecmp,

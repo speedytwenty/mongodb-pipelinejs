@@ -372,6 +372,16 @@ describe('aggregation', () => {
         expect($.sort({ created: 1 })).toEqual({ $sort: { created: 1 } });
       });
     });
+    describe('$sortByCount', () => {
+      it('exports expected vars', () => {
+        expect($.sortByCount).toBeDefined();
+        expect($.$sortByCount).toBeDefined();
+        expect($.sortByCount).toStrictEqual($.$sortByCount);
+      });
+      it('returns expected result', () => {
+        expect($.sortByCount('$x')).toEqual({ $sortByCount: '$x' });
+      });
+    });
     describe('$unwind', () => {
       it('exports expected vars', () => {
         expect($.unwind).toBeDefined();
