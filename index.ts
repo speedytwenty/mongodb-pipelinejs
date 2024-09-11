@@ -2826,6 +2826,19 @@ type NeOperator = {
  */
 const $ne = at('$ne');
 
+// TODO
+const $nin = taf('$nin');
+
+// TODO
+// * @category Safe Operators
+const $ninSafe = (...args: any[]) => {
+  if (args.length === 2) {
+    const [val, arr] = args;
+    return $in(val, $ifNull(arr, []));
+  }
+  return $in(...args);
+};
+
 type NotOperator = {
   $not: Expression,
 };
@@ -3118,6 +3131,8 @@ type SizeOperator = {
  */
 const $size = se('$size');
 
+const $slice = pta('$slice');
+
 type SplitOperator = {
   $split: [StringExpression, StringExpression],
 };
@@ -3263,6 +3278,10 @@ const $subtract = at('$subtract');
  * $subtractSafe(null, 1); // returns { $subtract: [0, 1] }
  */
 const $subtractSafe = safeNumberArgs($subtract);
+
+const $substr = pta('$substr');
+const $substrBytes = pta('$substrBytes');
+const $substrCP = pta('$substrCP');
 
 type SumOperator = {
   $sum: Expression,
@@ -3838,6 +3857,8 @@ export = {
   multiplySafe: $multiplySafe,
   $ne,
   ne: $ne,
+  $nin,
+  nin: $nin,
   $not,
   not: $not,
   $or,
@@ -3891,12 +3912,20 @@ export = {
   split: $split,
   $strcasecmp,
   strcasecmp: $strcasecmp,
+  $substr,
+  substr: $substr,
+  $substrBytes,
+  substrBytes: $substrBytes,
+  $substrCP,
+  substrCP: $substrCP,
   $subtract,
   subtract: $subtract,
   $subtractSafe,
   subtractSafe: $subtractSafe,
   $size,
   size: $size,
+  $slice,
+  slice: $slice,
   $sin,
   sin: $sin,
   $sinh,

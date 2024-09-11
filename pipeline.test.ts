@@ -1338,6 +1338,18 @@ describe('aggregation', () => {
         expect($.ne('$value', 3)).toEqual({ $ne: ['$value', 3] });
       });
     });
+    describe('$nin', () => {
+      it('exports expected vars', () => {
+        expect($.nin).toBeDefined();
+        expect($.$nin).toBeDefined();
+        expect($.nin).toStrictEqual($.$nin);
+      });
+      it('returns expected result', () => {
+        expect($.nin('$myArray')).toEqual({ $nin: '$myArray' });
+        expect($.nin([1, 3, 5])).toEqual({ $nin: [1, 3, 5] });
+        expect($.nin('$val', '$myArray')).toEqual({ $nin: ['$val', '$myArray'] });
+      });
+    });
     describe('$not', () => {
       it('exports expected vars', () => {
         expect($.not).toBeDefined();
@@ -1520,6 +1532,16 @@ describe('aggregation', () => {
         expect($.size('$myArray')).toEqual({ $size: '$myArray' });
       });
     });
+    describe('$slice', () => {
+      it('exports expected vars', () => {
+        expect($.slice).toBeDefined();
+        expect($.$slice).toBeDefined();
+        expect($.slice).toStrictEqual($.$slice);
+      });
+      it('returns expected result', () => {
+        expect($.slice('$myArray', 2)).toEqual({ $slice: ['$myArray', 2] });
+      });
+    });
     describe('$split', () => {
       it('exports expected vars', () => {
         expect($.split).toBeDefined();
@@ -1600,6 +1622,17 @@ describe('aggregation', () => {
           expect($.subtractSafe(3, null)).toEqual({ $subtract: [3, 0] });
           expect($.subtractSafe(3, undefined)).toEqual({ $subtract: [3, 0] });
         });
+      });
+    });
+    describe('$substr', () => {
+      it('exports expected vars', () => {
+        expect($.substr).toBeDefined();
+        expect($.$substr).toBeDefined();
+        expect($.substr).toStrictEqual($.$substr);
+      });
+      it('returns expected result', () => {
+        expect($.substr('$value', 1)).toEqual({ $substr: ['$value', 1] });
+        expect($.substr('$value', 1, 2)).toEqual({ $substr: ['$value', 1, 2] });
       });
     });
     describe('$sum', () => {
