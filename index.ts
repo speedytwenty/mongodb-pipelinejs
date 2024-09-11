@@ -889,6 +889,24 @@ type ReplaceRootStage = {
  */
 const $replaceRoot = (newRoot: string | ObjectExpression) => ({ $replaceRoot: { newRoot } });
 
+type ReplaceWithStage = { $replaceWith: ObjectExpression };
+
+/**
+ * Replaces the input document with the specified document.
+ * @category Stages
+ * @function
+ * @param {string | ObjectExpression} replacementDocument The replacement
+ * document can be any valid express
+ * @returns {ReplaceWithStage} Returns a $replaceWith operator stage.
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/replaceWith/|MongoDB reference}
+ * for $replaceWith
+ * @example
+ * $replaceWith('$subpath');
+ * // returns
+ * { $replaceWith: '$subpath' }
+ */
+const $replaceWith = (replacementDocument: string | ObjectExpression) => ({ $replaceWith: replacementDocument });
+
 type SetStage = { $set: ObjectExpression };
 
 /**
@@ -3756,6 +3774,8 @@ export = {
   redact: $redact,
   $replaceRoot,
   replaceRoot: $replaceRoot,
+  $replaceWith,
+  replaceWith: $replaceWith,
   $round,
   round: $round,
   $roundStandard,

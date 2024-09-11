@@ -328,6 +328,16 @@ describe('aggregation', () => {
         expect($.replaceRoot('subdoc')).toEqual({ $replaceRoot: { newRoot: 'subdoc' } });
       });
     });
+    describe('$replaceWith', () => {
+      it('exports expected vars', () => {
+        expect($.replaceWith).toBeDefined();
+        expect($.$replaceWith).toBeDefined();
+        expect($.replaceWith).toStrictEqual($.$replaceWith);
+      });
+      it('returns expected result', () => {
+        expect($.replaceWith('subdoc')).toEqual({ $replaceWith: 'subdoc' });
+      });
+    });
     describe('$set', () => { // alias of $addFields
       it('exports expects vars', () => {
         expect($.set).toBeDefined();
