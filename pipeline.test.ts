@@ -1062,6 +1062,24 @@ describe('aggregation', () => {
         });
       });
     });
+    describe('$find', () => {
+      it('exports expected vars', () => {
+        expect($.find).toBeDefined();
+        expect($.$find).toBeDefined();
+        expect($.find).toStrictEqual($.$find);
+      });
+      it('returns expected result', () => {
+        expect($.find('$input', 'foo', '$cond')).toEqual({
+          $arrayElemAt: [{
+            $filter: {
+              input: '$input',
+              as: 'foo',
+              cond: '$cond',
+            },
+          }, 0],
+        });
+      });
+    });
     describe('$first', () => {
       it('exports expected vars', () => {
         expect($.first).toBeDefined();

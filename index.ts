@@ -2322,6 +2322,15 @@ const $filter = (
   limit?: number,
 ) => new FilterOperator(inputExpr, asName, condExpr, limit);
 
+type FindParams = [
+  ArrayExpression,
+  string,
+  Expression,
+  number?,
+];
+
+const $find = (...args: FindParams) => $arrayElemAt($filter(...args), 0);
+
 type FirstOperator = {
   $first: Expression,
 };
@@ -3789,6 +3798,8 @@ export = {
   facet: $facet,
   $filter,
   filter: $filter,
+  $find,
+  find: $find,
   $first,
   first: $first,
   $floor,
