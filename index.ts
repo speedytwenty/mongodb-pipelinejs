@@ -1580,6 +1580,18 @@ type CeilOperator = {
  */
 const $ceil = se('$ceil');
 
+type CommentOperator = {
+  $comment: string,
+};
+
+/**
+ * Associates a comment to any expression taking a query predicate.
+ * Adding a comment can make your profile data easier to interpret and trace.
+ * @param {string} text Comment text
+ * @returns {CommentOperator}
+ */
+const $comment = se('$comment');
+
 type CmpOperator = {
   $cmp: [Expression, Expression],
 };
@@ -2215,6 +2227,18 @@ type EqOperator = {
  */
 const $eq = at('$eq');
 
+type ExistsOperator = {
+  $exists: boolean | Expression,
+};
+
+/**
+ * Matches documents that contain or do not contain a specified field, including
+ * documents where the field value is null.
+ * @param {Expression} match Boolean expression.
+ * @returns {ExistsOperator}
+ */
+const $exists = se('$exists');
+
 type ExpOperator = {
   $exp: NumberExpression,
 };
@@ -2373,7 +2397,9 @@ type FloorOperator = {
 const $floor = se('$floor');
 
 // TODO
-// const $getField
+const $getField = (field: string, input: ObjectExpression|undefined = undefined) => {
+  return  { $getField: input ? { field, input } : { field } };
+};
 
 // TODO
 const $gt = taf('$gt');
@@ -2848,6 +2874,25 @@ const $ninSafe = (...args: any[]) => {
   return $in(...args);
 };
 
+type NorOperator = {
+  $not: Expression,
+};
+
+/**
+ * Evalutes a boolean and returns the opposite boolean value.
+ * @category Operators
+ * @function
+ * @param {Expression} expression Any valid expression.
+ * @returns {NorOperator}
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/nor/|MongoDB reference}
+ * for $nor
+ * @example
+ * $nor('$a', '$b');
+ * // returns
+ * { $nor: ['$a', '$b'] }
+ */
+const $nor = se('$nor');
+
 type NotOperator = {
   $not: Expression,
 };
@@ -3061,6 +3106,11 @@ const $setDifference = at('$setDifference');
 
 // TODO
 const $setEquals = pta('$setEquals');
+
+// TODO
+const $setField = (field: string, value: Expression, input: ObjectExpression) => ({
+  $setField: { field, input, value },
+});
 
 // TODO
 const $setIntersection = pta('$setIntersection');
@@ -3675,6 +3725,11 @@ type TypeOperator = {
 const $type = se('$type');
 
 // TODO
+const $unsetField = (field: string, input: ObjectExpression) => ({
+  $unsetField: { field, input },
+});
+
+// TODO
 const $year = se('$year');
 
 export = {
@@ -3742,6 +3797,8 @@ export = {
   changeStream: $changeStream,
   $cmp,
   cmp: $cmp,
+  $comment,
+  comment: $comment,
   $concat,
   concat: $concat,
   $concatSafe,
@@ -3790,6 +3847,8 @@ export = {
   ensureString: $ensureString,
   $eq,
   eq: $eq,
+  $exists,
+  exists: $exists,
   $exp,
   exp: $exp,
   $expr,
@@ -3806,6 +3865,8 @@ export = {
   floor: $floor,
   $group,
   group: $group,
+  $getField,
+  getField: $getField,
   $gt,
   gt: $gt,
   $gte,
@@ -3870,6 +3931,8 @@ export = {
   ne: $ne,
   $nin,
   nin: $nin,
+  $nor,
+  nor: $nor,
   $not,
   not: $not,
   $or,
@@ -3905,10 +3968,12 @@ export = {
   sampleRate: $sampleRate,
   $set,
   set: $set,
-  $setEquals,
   $setDifference,
   setDifference: $setDifference,
+  $setEquals,
   setEquals: $setEquals,
+  $setField,
+  setField: $setField,
   $setIntersection,
   setIntersection: $setIntersection,
   $setIsSubset,
@@ -3985,6 +4050,8 @@ export = {
   trunc: $trunc,
   $type,
   type: $type,
+  $unsetField,
+  unsetField: $unsetField,
   $unwind,
   unwind: $unwind,
   $year,

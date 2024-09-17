@@ -686,6 +686,16 @@ describe('aggregation', () => {
         expect($.ceil('$value')).toEqual({ $ceil: '$value' });
       });
     });
+    describe('$comment', () => {
+      it('exports expected vars', () => {
+        expect($.comment).toBeDefined();
+        expect($.$comment).toBeDefined();
+        expect($.comment).toStrictEqual($.$comment);
+      });
+      it('returns expected result', () => {
+        expect($.comment('foo')).toEqual({ $comment: 'foo' });
+      });
+    });
     describe('$cmp', () => {
       it('exports expected vars', () => {
         expect($.cmp).toBeDefined();
@@ -1021,6 +1031,16 @@ describe('aggregation', () => {
         expect($.eq(['$value'], 1)).toEqual({ $eq: [['$value'], 1] });
       });
     });
+    describe('$exists', () => {
+      it('exports expected vars', () => {
+        expect($.exists).toBeDefined();
+        expect($.$exists).toBeDefined();
+        expect($.exists).toStrictEqual($.$exists);
+      });
+      it('returns expected result', () => {
+        expect($.exists('$value')).toEqual({ $exists: '$value' });
+      });
+    });
     describe('$exp', () => {
       it('exports expected vars', () => {
         expect($.exp).toBeDefined();
@@ -1098,6 +1118,17 @@ describe('aggregation', () => {
       });
       it('returns expected result', () => {
         expect($.floor('$value')).toEqual({ $floor: '$value' });
+      });
+    });
+    describe('$getField', () => {
+      it('exports expected vars', () => {
+        expect($.getField).toBeDefined();
+        expect($.$getField).toBeDefined();
+        expect($.getField).toStrictEqual($.$getField);
+      });
+      it('returns expected result', () => {
+        expect($.getField('foo')).toEqual({ $getField: { field: 'foo' } });
+        expect($.getField('foo', '$doc')).toEqual({ $getField: { field: 'foo', input: '$doc' } });
       });
     });
     describe('$gt', () => {
@@ -1368,6 +1399,16 @@ describe('aggregation', () => {
         expect($.nin('$val', '$myArray')).toEqual({ $nin: ['$val', '$myArray'] });
       });
     });
+    describe('$nor', () => {
+      it('exports expected vars', () => {
+        expect($.nor).toBeDefined();
+        expect($.$nor).toBeDefined();
+        expect($.nor).toStrictEqual($.$nor);
+      });
+      it('returns expected result', () => {
+        expect($.nor('$value')).toEqual({ $nor: '$value' });
+      });
+    });
     describe('$not', () => {
       it('exports expected vars', () => {
         expect($.not).toBeDefined();
@@ -1505,6 +1546,22 @@ describe('aggregation', () => {
       it('returns expected result', () => {
         expect($.setDifference([1, 2, 3], '$value')).toEqual({ $setDifference: [[1, 2, 3], '$value'] });
         expect($.setDifference('$value', [1, 2, 3])).toEqual({ $setDifference: ['$value', [1, 2, 3]] });
+      });
+    });
+    describe('$setField', () => {
+      it('exports expected vars', () => {
+        expect($.setField).toBeDefined();
+        expect($.$setField).toBeDefined();
+        expect($.setField).toStrictEqual($.$setField);
+      });
+      it('returns expected result', () => {
+        expect($.setField('foo', '$value', '$doc')).toEqual({
+          $setField: {
+            field: 'foo',
+            value: '$value',
+            input: '$doc',
+          },
+        });
       });
     });
     describe('$setIsSubset', () => {
@@ -1861,6 +1918,18 @@ describe('aggregation', () => {
       });
       it('returns expected result', () => {
         expect($.type('$value')).toEqual({ $type: '$value' });
+      });
+    });
+    describe('$unsetField', () => {
+      it('exports expected vars', () => {
+        expect($.unsetField).toBeDefined();
+        expect($.$unsetField).toBeDefined();
+        expect($.unsetField).toStrictEqual($.$unsetField);
+      });
+      it('returns expected result', () => {
+        expect($.unsetField('foo', '$obj')).toEqual({
+          $unsetField: { field: 'foo', input: '$obj' },
+        });
       });
     });
   });
