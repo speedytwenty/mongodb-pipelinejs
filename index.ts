@@ -2227,6 +2227,18 @@ type EqOperator = {
  */
 const $eq = at('$eq');
 
+type ExistsOperator = {
+  $exists: boolean | Expression,
+};
+
+/**
+ * Matches documents that contain or do not contain a specified field, including
+ * documents where the field value is null.
+ * @param {Expression} match Boolean expression.
+ * @returns {ExistsOperator}
+ */
+const $exists = se('$exists');
+
 type ExpOperator = {
   $exp: NumberExpression,
 };
@@ -3804,6 +3816,8 @@ export = {
   ensureString: $ensureString,
   $eq,
   eq: $eq,
+  $exists,
+  exists: $exists,
   $exp,
   exp: $exp,
   $expr,

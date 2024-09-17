@@ -1031,6 +1031,16 @@ describe('aggregation', () => {
         expect($.eq(['$value'], 1)).toEqual({ $eq: [['$value'], 1] });
       });
     });
+    describe('$exists', () => {
+      it('exports expected vars', () => {
+        expect($.exists).toBeDefined();
+        expect($.$exists).toBeDefined();
+        expect($.exists).toStrictEqual($.$exists);
+      });
+      it('returns expected result', () => {
+        expect($.exists('$value')).toEqual({ $exists: '$value' });
+      });
+    });
     describe('$exp', () => {
       it('exports expected vars', () => {
         expect($.exp).toBeDefined();
