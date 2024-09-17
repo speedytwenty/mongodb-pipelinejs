@@ -2874,6 +2874,25 @@ const $ninSafe = (...args: any[]) => {
   return $in(...args);
 };
 
+type NorOperator = {
+  $not: Expression,
+};
+
+/**
+ * Evalutes a boolean and returns the opposite boolean value.
+ * @category Operators
+ * @function
+ * @param {Expression} expression Any valid expression.
+ * @returns {NorOperator}
+ * @see {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/nor/|MongoDB reference}
+ * for $nor
+ * @example
+ * $nor('$a', '$b');
+ * // returns
+ * { $nor: ['$a', '$b'] }
+ */
+const $nor = se('$nor');
+
 type NotOperator = {
   $not: Expression,
 };
@@ -3912,6 +3931,8 @@ export = {
   ne: $ne,
   $nin,
   nin: $nin,
+  $nor,
+  nor: $nor,
   $not,
   not: $not,
   $or,

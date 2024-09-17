@@ -1399,6 +1399,16 @@ describe('aggregation', () => {
         expect($.nin('$val', '$myArray')).toEqual({ $nin: ['$val', '$myArray'] });
       });
     });
+    describe('$nor', () => {
+      it('exports expected vars', () => {
+        expect($.nor).toBeDefined();
+        expect($.$nor).toBeDefined();
+        expect($.nor).toStrictEqual($.$nor);
+      });
+      it('returns expected result', () => {
+        expect($.nor('$value')).toEqual({ $nor: '$value' });
+      });
+    });
     describe('$not', () => {
       it('exports expected vars', () => {
         expect($.not).toBeDefined();
