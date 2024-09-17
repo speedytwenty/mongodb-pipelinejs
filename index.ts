@@ -3706,6 +3706,11 @@ type TypeOperator = {
 const $type = se('$type');
 
 // TODO
+const $unsetField = (field: string, input: ObjectExpression) => ({
+  $unsetField: { field, input },
+});
+
+// TODO
 const $year = se('$year');
 
 export = {
@@ -4024,6 +4029,8 @@ export = {
   trunc: $trunc,
   $type,
   type: $type,
+  $unsetField,
+  unsetField: $unsetField,
   $unwind,
   unwind: $unwind,
   $year,

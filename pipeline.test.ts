@@ -1910,5 +1910,17 @@ describe('aggregation', () => {
         expect($.type('$value')).toEqual({ $type: '$value' });
       });
     });
+    describe('$unsetField', () => {
+      it('exports expected vars', () => {
+        expect($.unsetField).toBeDefined();
+        expect($.$unsetField).toBeDefined();
+        expect($.unsetField).toStrictEqual($.$unsetField);
+      });
+      it('returns expected result', () => {
+        expect($.unsetField('foo', '$obj')).toEqual({
+          $unsetField: { field: 'foo', input: '$obj' },
+        });
+      });
+    });
   });
 });
