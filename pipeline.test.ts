@@ -686,6 +686,16 @@ describe('aggregation', () => {
         expect($.ceil('$value')).toEqual({ $ceil: '$value' });
       });
     });
+    describe('$comment', () => {
+      it('exports expected vars', () => {
+        expect($.comment).toBeDefined();
+        expect($.$comment).toBeDefined();
+        expect($.comment).toStrictEqual($.$comment);
+      });
+      it('returns expected result', () => {
+        expect($.comment('foo')).toEqual({ $comment: 'foo' });
+      });
+    });
     describe('$cmp', () => {
       it('exports expected vars', () => {
         expect($.cmp).toBeDefined();

@@ -1580,6 +1580,18 @@ type CeilOperator = {
  */
 const $ceil = se('$ceil');
 
+type CommentOperator = {
+  $comment: string,
+};
+
+/**
+ * Associates a comment to any expression taking a query predicate.
+ * Adding a comment can make your profile data easier to interpret and trace.
+ * @param {string} text Comment text
+ * @returns {CommentOperator}
+ */
+const $comment = se('$comment');
+
 type CmpOperator = {
   $cmp: [Expression, Expression],
 };
@@ -3742,6 +3754,8 @@ export = {
   changeStream: $changeStream,
   $cmp,
   cmp: $cmp,
+  $comment,
+  comment: $comment,
   $concat,
   concat: $concat,
   $concatSafe,
