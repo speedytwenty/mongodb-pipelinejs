@@ -1120,6 +1120,17 @@ describe('aggregation', () => {
         expect($.floor('$value')).toEqual({ $floor: '$value' });
       });
     });
+    describe('$getField', () => {
+      it('exports expected vars', () => {
+        expect($.getField).toBeDefined();
+        expect($.$getField).toBeDefined();
+        expect($.getField).toStrictEqual($.$getField);
+      });
+      it('returns expected result', () => {
+        expect($.getField('foo')).toEqual({ $getField: { field: 'foo' } });
+        expect($.getField('foo', '$doc')).toEqual({ $getField: { field: 'foo', input: '$doc' } });
+      });
+    });
     describe('$gt', () => {
       it('exports expected vars', () => {
         expect($.gt).toBeDefined();

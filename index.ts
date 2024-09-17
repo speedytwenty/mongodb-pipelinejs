@@ -2397,7 +2397,9 @@ type FloorOperator = {
 const $floor = se('$floor');
 
 // TODO
-// const $getField
+const $getField = (field: string, input: ObjectExpression|undefined = undefined) => {
+  return  { $getField: input ? { field, input } : { field } };
+};
 
 // TODO
 const $gt = taf('$gt');
@@ -3834,6 +3836,8 @@ export = {
   floor: $floor,
   $group,
   group: $group,
+  $getField,
+  getField: $getField,
   $gt,
   gt: $gt,
   $gte,
