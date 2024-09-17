@@ -1538,6 +1538,22 @@ describe('aggregation', () => {
         expect($.setDifference('$value', [1, 2, 3])).toEqual({ $setDifference: ['$value', [1, 2, 3]] });
       });
     });
+    describe('$setField', () => {
+      it('exports expected vars', () => {
+        expect($.setField).toBeDefined();
+        expect($.$setField).toBeDefined();
+        expect($.setField).toStrictEqual($.$setField);
+      });
+      it('returns expected result', () => {
+        expect($.setField('foo', '$value', '$doc')).toEqual({
+          $setField: {
+            field: 'foo',
+            value: '$value',
+            input: '$doc',
+          },
+        });
+      });
+    });
     describe('$setIsSubset', () => {
       it('exports expected vars', () => {
         expect($.setIsSubset).toBeDefined();

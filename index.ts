@@ -3089,6 +3089,11 @@ const $setDifference = at('$setDifference');
 const $setEquals = pta('$setEquals');
 
 // TODO
+const $setField = (field: string, value: Expression, input: ObjectExpression) => ({
+  $setField: { field, input, value },
+});
+
+// TODO
 const $setIntersection = pta('$setIntersection');
 
 type SetIsSubsetOperator = {
@@ -3937,10 +3942,12 @@ export = {
   sampleRate: $sampleRate,
   $set,
   set: $set,
-  $setEquals,
   $setDifference,
   setDifference: $setDifference,
+  $setEquals,
   setEquals: $setEquals,
+  $setField,
+  setField: $setField,
   $setIntersection,
   setIntersection: $setIntersection,
   $setIsSubset,
