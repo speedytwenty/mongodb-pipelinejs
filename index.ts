@@ -3113,7 +3113,7 @@ const $setDifference = at('$setDifference');
 const $setEquals = pta('$setEquals');
 
 // TODO
-const $setField = (field: string, value: Expression, input: ObjectExpression) => ({
+const $setField = (input: ObjectExpression, field: string, value: Expression) => ({
   $setField: { field, input, value },
 });
 

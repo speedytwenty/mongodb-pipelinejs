@@ -1571,7 +1571,7 @@ describe('aggregation', () => {
         expect($.setField).toStrictEqual($.$setField);
       });
       it('returns expected result', () => {
-        expect($.setField('foo', '$value', '$doc')).toEqual({
+        expect($.setField('$doc', 'foo', '$value')).toEqual({
           $setField: {
             field: 'foo',
             value: '$value',
