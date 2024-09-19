@@ -1470,6 +1470,42 @@ describe('aggregation', () => {
         expect($.radiansToDegrees('$value')).toEqual({ $radiansToDegrees: '$value' });
       });
     });
+    describe('$rand', () => {
+      it('exports expected vars', () => {
+        expect($.rand).toBeDefined();
+        expect($.$rand).toBeDefined();
+        expect($.rand).toStrictEqual($.$rand);
+      });
+      it('returns expected result', () => {
+        expect($.rand()).toEqual({ $rand: {} });
+      });
+    });
+    describe('$rank', () => {
+      it('exports expected vars', () => {
+        expect($.rank).toBeDefined();
+        expect($.$rank).toBeDefined();
+        expect($.rank).toStrictEqual($.$rank);
+      });
+      it('returns expected result', () => {
+        expect($.rank()).toEqual({ $rank: {} });
+      });
+    });
+    describe('$reduce', () => {
+      it('exports expected vars', () => {
+        expect($.reduce).toBeDefined();
+        expect($.$reduce).toBeDefined();
+        expect($.reduce).toStrictEqual($.$reduce);
+      });
+      it('returns expected result', () => {
+        expect($.reduce('$input', 'foo', '$bar')).toEqual({
+          $reduce: {
+            input: '$input',
+            initialValue: 'foo',
+            in: '$bar',
+          },
+        })
+      });
+    });
     describe('$round', () => {
       it('exports expected vars', () => {
         expect($.round).toBeDefined();
@@ -1555,7 +1591,7 @@ describe('aggregation', () => {
         expect($.setField).toStrictEqual($.$setField);
       });
       it('returns expected result', () => {
-        expect($.setField('foo', '$value', '$doc')).toEqual({
+        expect($.setField('$doc', 'foo', '$value')).toEqual({
           $setField: {
             field: 'foo',
             value: '$value',
