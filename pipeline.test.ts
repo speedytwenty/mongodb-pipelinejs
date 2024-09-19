@@ -1470,6 +1470,26 @@ describe('aggregation', () => {
         expect($.radiansToDegrees('$value')).toEqual({ $radiansToDegrees: '$value' });
       });
     });
+    describe('$rand', () => {
+      it('exports expected vars', () => {
+        expect($.rand).toBeDefined();
+        expect($.$rand).toBeDefined();
+        expect($.rand).toStrictEqual($.$rand);
+      });
+      it('returns expected result', () => {
+        expect($.rand()).toEqual({ $rand: {} });
+      });
+    });
+    describe('$rank', () => {
+      it('exports expected vars', () => {
+        expect($.rank).toBeDefined();
+        expect($.$rank).toBeDefined();
+        expect($.rank).toStrictEqual($.$rank);
+      });
+      it('returns expected result', () => {
+        expect($.rank()).toEqual({ $rank: {} });
+      });
+    });
     describe('$reduce', () => {
       it('exports expected vars', () => {
         expect($.reduce).toBeDefined();
