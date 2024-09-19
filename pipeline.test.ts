@@ -1470,6 +1470,22 @@ describe('aggregation', () => {
         expect($.radiansToDegrees('$value')).toEqual({ $radiansToDegrees: '$value' });
       });
     });
+    describe('$reduce', () => {
+      it('exports expected vars', () => {
+        expect($.reduce).toBeDefined();
+        expect($.$reduce).toBeDefined();
+        expect($.reduce).toStrictEqual($.$reduce);
+      });
+      it('returns expected result', () => {
+        expect($.reduce('$input', 'foo', '$bar')).toEqual({
+          $reduce: {
+            input: '$input',
+            initialValue: 'foo',
+            in: '$bar',
+          },
+        })
+      });
+    });
     describe('$round', () => {
       it('exports expected vars', () => {
         expect($.round).toBeDefined();

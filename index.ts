@@ -2988,6 +2988,11 @@ const $rand = ne('$rand');
 // TODO
 const $rank = ne('$rank');
 
+// TODO
+const $reduce = (input: ObjectExpression, initialValue: Expression, inExpr: Expression) => ({
+  $reduce: { input, initialValue, in: inExpr },
+});
+
 type RoundOperator = {
   $round: NumberExpression,
 };
@@ -3956,6 +3961,8 @@ export = {
   rank: $rank,
   $redact,
   redact: $redact,
+  $reduce,
+  reduce: $reduce,
   $replaceRoot,
   replaceRoot: $replaceRoot,
   $replaceWith,
